@@ -1,5 +1,4 @@
-# Trabajo Práctico Nº1 para la materia Sistemas Gráficos - 2c2021
-
+# Trabajo Práctico 1 - Sistemas Gráficos 
 
 ## Objetivo
 
