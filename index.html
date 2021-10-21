@@ -17,6 +17,8 @@
     	</center>
 
         <script type="text/javascript" src="js/gl-matrix.js"></script>
+        <script type="text/javascript" src="js/objeto3D.js"></script>
+        
         
         <script id="shader-vs" type="x-shader/x-vertex">
 
@@ -100,7 +102,17 @@
 
                     setupWebGL();
                     initShaders();
-                    setupBuffers();
+                    objeto = new Objeto3D()
+                    var rows=128;
+                    var cols=256;
+                    vertexBuffer = getVertexBuffer(rows, cols);
+                    indexBuffer = getIndexBuffer(rows, cols);
+                    objeto.setGeometria(vertexBuffer, indexBuffer)
+                    objeto.setPosicion(0,0,0);
+                    objeto.setRotacion(0,0,0);
+                    objeto.setEscala(0.8,0.8,1.2);
+
+                    
                     setupVertexShaderMatrix();
                     tick();   
 
@@ -213,13 +225,12 @@
             }
 
 
-            function setupBuffers()
+            function getVertexBuffer(rows,cols)
             {
                 var pos=[];
+                var uv = [];
                 var normal=[];
-                var r=2;
-                var rows=128;
-                var cols=256;
+                //var r=2;
 
                 for (var i=0;i<rows;i++){
                     for (var j=0;j<cols;j++){
@@ -233,6 +244,9 @@
                         pos.push(p[1]);
                         pos.push(p[2]);
 
+                        uv.push(i/(rows-1))
+                        uv.push(j/(cols-1))
+
                         var n=getNrm(alfa,beta);
 
                         normal.push(n[0]);
@@ -242,33 +256,53 @@
 
                 }
       
-                trianglesVerticeBuffer = gl.createBuffer();
-                gl.bindBuffer(gl.ARRAY_BUFFER, trianglesVerticeBuffer);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(pos), gl.STATIC_DRAW);    
+                webgl_position_buffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, webgl_position_buffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(pos), gl.STATIC_DRAW);
+                webgl_position_buffer.itemSize = 3;
+                webgl_position_buffer.numItems = pos.length / 3;
+
+                webgl_uvs_buffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, webgl_uvs_buffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(uv), gl.STATIC_DRAW);
+                webgl_uvs_buffer.itemSize = 2;
+                webgl_uvs_buffer.numItems = uv.length / 2;
             
 
-                trianglesNormalBuffer = gl.createBuffer();
-                gl.bindBuffer(gl.ARRAY_BUFFER, trianglesNormalBuffer);
+                webgl_normal_buffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, webgl_normal_buffer);
                 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normal), gl.STATIC_DRAW);
+                webgl_normal_buffer.itemSize = 3;
+                webgl_normal_buffer.numItems = normal.length / 3;
 
+                
+                return {
+                    webgl_position_buffer,
+                    webgl_normal_buffer,
+                    webgl_uvs_buffer
+                }
+            }
+            function getIndexBuffer(rows,cols){
                 var index=[];
 
-                for (var i=0;i<rows-1;i++){
-                    index.push(i*cols);
-                    for (var j=0;j<cols-1;j++){
-                        index.push(i*cols+j);
-                        index.push((i+1)*cols+j);
-                        index.push(i*cols+j+1);
-                        index.push((i+1)*cols+j+1);
+                    for (var i=0;i<rows-1;i++){
+                        index.push(i*cols);
+                        for (var j=0;j<cols-1;j++){
+                            index.push(i*cols+j);
+                            index.push((i+1)*cols+j);
+                            index.push(i*cols+j+1);
+                            index.push((i+1)*cols+j+1);
+                        }
+                        index.push((i+1)*cols+cols-1);
                     }
-                    index.push((i+1)*cols+cols-1);
-                }
-                
-                
-                trianglesIndexBuffer = gl.createBuffer();
-                trianglesIndexBuffer.number_vertex_point = index.length;
-                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, trianglesIndexBuffer);
-                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(index), gl.STATIC_DRAW);    
+                    
+                    webgl_index_buffer = gl.createBuffer();
+                    webgl_index_buffer.item_size = 1;
+                    webgl_index_buffer.number_vertex_point = index.length;
+                    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, webgl_index_buffer);
+                    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(index), gl.STATIC_DRAW);  
+
+                    return webgl_index_buffer;
             }
 
             function setupVertexShaderMatrix(){
@@ -285,44 +319,22 @@
             
             function drawScene(){
                 setupVertexShaderMatrix();
-                
-                vertexPositionAttribute = gl.getAttribLocation(glProgram, "aVertexPosition");
-                gl.enableVertexAttribArray(vertexPositionAttribute);
-                gl.bindBuffer(gl.ARRAY_BUFFER, trianglesVerticeBuffer);
-                gl.vertexAttribPointer(vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
+                matPadre= mat4.create() // matriz identidad para objeto principal
 
-                vertexNormalAttribute = gl.getAttribLocation(glProgram, "aVertexNormal");
-                gl.enableVertexAttribArray(vertexNormalAttribute);
-                gl.bindBuffer(gl.ARRAY_BUFFER, trianglesNormalBuffer);
-                gl.vertexAttribPointer(vertexNormalAttribute, 3, gl.FLOAT, false, 0, 0);
-
-                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, trianglesIndexBuffer);
-                gl.drawElements( gl.TRIANGLE_STRIP, trianglesIndexBuffer.number_vertex_point, gl.UNSIGNED_SHORT, 0);
+                objeto.dibujar(matPadre);
             }
 
  
 
 
 
-            function animate(){
-                
-                rotate_angle += 0.01;
-                mat4.identity(modelMatrix);
-                mat4.rotate(modelMatrix,modelMatrix, rotate_angle, [1.0, 0.0, 1.0]);
-
-
-                mat4.identity(normalMatrix);
-                mat4.multiply(normalMatrix,viewMatrix,modelMatrix);
-                mat4.invert(normalMatrix,normalMatrix);
-                mat4.transpose(normalMatrix,normalMatrix);
-
-            }
+            
             
             function tick(){
 
                 requestAnimationFrame(tick);
                 drawScene();
-                animate();
+                objeto.animate();
             }
 
             window.onload=initWebGL;
