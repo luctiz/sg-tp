@@ -18,7 +18,8 @@
 
         <script type="text/javascript" src="js/gl-matrix.js"></script>
         <script type="text/javascript" src="js/objeto3D.js"></script>
-        
+        <script type="text/javascript" src="droneCamera.js"></script>
+
         
         <script id="shader-vs" type="x-shader/x-vertex">
 
@@ -84,7 +85,9 @@
             var projMatrix = mat4.create();
             var normalMatrix = mat4.create();
             var rotate_angle = -1.57078;
+
             
+            let droneCam=new DroneCameraControl([0,0,10]);
 
          
             function initWebGL(){
@@ -297,8 +300,8 @@
                     }
                     
                     webgl_index_buffer = gl.createBuffer();
-                    webgl_index_buffer.item_size = 1;
-                    webgl_index_buffer.number_vertex_point = index.length;
+                    webgl_index_buffer.itemSize = 1;
+                    webgl_index_buffer.numItems = index.length;
                     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, webgl_index_buffer);
                     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(index), gl.STATIC_DRAW);  
 
@@ -331,8 +334,10 @@
             
             
             function tick(){
+                viewMatrix=droneCam.getViewMatrix();
 
                 requestAnimationFrame(tick);
+                droneCam.update();
                 drawScene();
                 objeto.animate();
             }

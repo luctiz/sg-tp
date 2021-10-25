@@ -52,7 +52,7 @@ function Objeto3D (){
             
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
 
-            gl.drawElements( gl.TRIANGLE_STRIP, indexBuffer.number_vertex_point, gl.UNSIGNED_SHORT, 0);
+            gl.drawElements( gl.TRIANGLE_STRIP, indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 
 
             /*if (modo!="wireframe"){
