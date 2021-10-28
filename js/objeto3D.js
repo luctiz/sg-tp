@@ -15,10 +15,10 @@ function Objeto3D (){
 
         mat4.translate(m,m, posicion);
         mat4.rotate(m,m,Math.PI/2,rotacion);
-        console.log(rotacion)
+        //console.log(rotacion)
         mat4.scale(m,m, escala);
         matModelado = m;
-        console.log(matModelado)
+        //console.log(matModelado)
     } 
 
     // metodos publicos

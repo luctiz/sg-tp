@@ -62,7 +62,97 @@
         </script>
         
         <script>
+            function Esfera(radio){
 
+                this.getPosicion=function(u,v){
+                    var tita = v*Math.PI;
+                    var fi = u*Math.PI*2
+                    var x = radio*Math.sin(tita)*Math.cos(fi)
+                    var y = radio*Math.sin(tita)*Math.sin(fi)
+                    var z = radio*Math.cos(tita)
+                    return [x,y,z];
+                }
+
+                this.getNormal=function(u,v){
+                    var delta=0.01;
+                    var p0=this.getPosicion(u,v);
+                    var p1=this.getPosicion(u,v+delta); // tener cuidado si u o v son mayores que 1. En esfera no pasa nada
+                    var p2=this.getPosicion(u+delta,v);
+                    
+                    //var normal = crossProduct(vectorSubstract(p1,p0),vectorSubstract(p2,p0));
+                    //var normal_normalizada = Math.sqrt(normal[0]**2 + normal[1]**2 + normal[2]**2)
+
+                    
+                    var v1=vec3.fromValues(p1[0]-p0[0],p1[1]-p0[1],p1[2]-p0[2]);
+                    var v2=vec3.fromValues(p2[0]-p0[0],p2[1]-p0[1],p2[2]-p0[2]);
+
+                    vec3.normalize(v1,v1);
+                    vec3.normalize(v2,v2);
+                    
+                    var n=vec3.create();
+                    vec3.cross(n,v1,v2);
+                    vec3.scale(n,n,-1);
+                    
+                    return n
+                    //return normal_normalizada;
+                }
+
+                this.getCoordenadasTextura=function(u,v){
+                    return [u,v];
+                }
+            }
+
+            function EsferaRara(radio){
+                this.getPosicion= function(u,v){
+                    var alfa=v*Math.PI*2;
+                    var beta=(0.1+u*0.8)*Math.PI;
+                    var r=radio;
+                    var nx=Math.sin(beta)*Math.sin(alfa);
+                    var ny=Math.sin(beta)*Math.cos(alfa);
+                    var nz=Math.cos(beta);
+
+
+                    var g=beta%0.5;
+                    var h=alfa%1;
+                    var f=1;
+
+                    if (g<0.25) f=0.95;
+                    if (h<0.5) f=f*0.95;
+
+                    var x=nx*r*f;
+                    var y=ny*r*f;
+                    var z=nz*r*f;
+
+                    return [x,y,z];
+                }
+
+                this.getNormal=function(u,v){
+                    //var p=this.getPosicion(u,v);
+                    //var vec=vec3.create();
+                    //vec3.normalize(vec,p);
+
+                    var delta=0.016;
+                    var p1=this.getPosicion(u,v);
+                    var p2=this.getPosicion(u,v+delta);
+                    var p3=this.getPosicion(u+delta,v);
+
+                    var v1=vec3.fromValues(p2[0]-p1[0],p2[1]-p1[1],p2[2]-p1[2]);
+                    var v2=vec3.fromValues(p3[0]-p1[0],p3[1]-p1[1],p3[2]-p1[2]);
+
+                    vec3.normalize(v1,v1);
+                    vec3.normalize(v2,v2);
+                    
+                    var n=vec3.create();
+                    vec3.cross(n,v1,v2);
+                    //vec3.normalize(n,n)
+                    //vec3.scale(n,n,-1);
+                    return n;
+                }
+
+                this.getCoordenadasTextura=function(u,v){
+                    return [u,v];
+                }
+            }
 
             var mat4=glMatrix.mat4;
             var vec3=glMatrix.vec3;
@@ -105,15 +195,16 @@
 
                     setupWebGL();
                     initShaders();
+                    esferaRara = new EsferaRara(2);
                     objeto = new Objeto3D()
                     var rows=128;
                     var cols=256;
-                    vertexBuffer = getVertexBuffer(rows, cols);
+                    vertexBuffer = getVertexBuffer(esferaRara, rows, cols);
                     indexBuffer = getIndexBuffer(rows, cols);
                     objeto.setGeometria(vertexBuffer, indexBuffer)
                     objeto.setPosicion(0,0,0);
-                    objeto.setRotacion(0,0,0);
-                    objeto.setEscala(0.8,0.8,1.2);
+                    objeto.setRotacion(Math.PI/2,0,0);
+                    objeto.setEscala(1,1,1);
 
                     
                     setupVertexShaderMatrix();
@@ -182,79 +273,36 @@
                 }
                 return shader;
             }
-            
-            function getPos(alfa,beta){
-
-                var r=2;
-                var nx=Math.sin(beta)*Math.sin(alfa);
-                var ny=Math.sin(beta)*Math.cos(alfa);
-                var nz=Math.cos(beta);
 
 
-                var g=beta%0.5;
-                var h=alfa%1;
-                var f=1;
-
-                if (g<0.25) f=0.95;
-                if (h<0.5) f=f*0.95;
-                
-                var x=nx*r*f;
-                var y=ny*r*f;
-                var z=nz*r*f;
-
-                return [x,y,z];
-            }
-
-            function getNrm(alfa,beta){
-                var p=getPos(alfa,beta);
-                var v=vec3.create();
-                vec3.normalize(v,p);
-
-                var delta=0.05;
-                var p1=getPos(alfa,beta);
-                var p2=getPos(alfa,beta+delta);
-                var p3=getPos(alfa+delta,beta);
-
-                var v1=vec3.fromValues(p2[0]-p1[0],p2[1]-p1[1],p2[2]-p1[2]);
-                var v2=vec3.fromValues(p3[0]-p1[0],p3[1]-p1[1],p3[2]-p1[2]);
-
-                vec3.normalize(v1,v1);
-                vec3.normalize(v2,v2);
-                
-                var n=vec3.create();
-                vec3.cross(n,v1,v2);
-                vec3.scale(n,n,-1);
-                return n;
-            }
-
-
-            function getVertexBuffer(rows,cols)
+            function getVertexBuffer(superficie, rows,cols)
             {
                 var pos=[];
                 var uv = [];
                 var normal=[];
-                //var r=2;
 
                 for (var i=0;i<rows;i++){
                     for (var j=0;j<cols;j++){
 
-                        var alfa=j/(cols-1)*Math.PI*2;
-                        var beta=(0.1+i/(rows-1)*0.8)*Math.PI;
+                        var u=i/(rows-1); //esto capaz se tenga que cambiar despues (creo que los nombres u y v no son representativos)
+                        var v=j/(cols-1); //Ademas en mi tp de grillas esto lo tenia un poco distinto, no se si va a estar del todo bien
 
-                        var p=getPos(alfa,beta);
+                        var p=superficie.getPosicion(u,v);
 
                         pos.push(p[0]);
                         pos.push(p[1]);
                         pos.push(p[2]);
-
-                        uv.push(i/(rows-1))
-                        uv.push(j/(cols-1))
-
-                        var n=getNrm(alfa,beta);
+                        
+                        var n=superficie.getNormal(u,v);
 
                         normal.push(n[0]);
                         normal.push(n[1]);
                         normal.push(n[2]);
+
+                        var uvs=superficie.getCoordenadasTextura(u,v);
+
+                        uv.push(uvs[0])
+                        uv.push(uvs[1])
                     }
 
                 }
@@ -326,11 +374,6 @@
 
                 objeto.dibujar(matPadre);
             }
-
- 
-
-
-
             
             
             function tick(){
@@ -339,7 +382,7 @@
                 requestAnimationFrame(tick);
                 droneCam.update();
                 drawScene();
-                objeto.animate();
+                //objeto.animate();
             }
 
             window.onload=initWebGL;
