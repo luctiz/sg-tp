@@ -48,6 +48,7 @@
 
         <script id="shader-fs" type="x-shader/x-fragment">
             precision highp float;
+            uniform vec3 difuseColor;
             varying vec3 vNormal;
             varying vec3 vPosWorld;
 
@@ -55,7 +56,7 @@
 
                 vec3 lightVec=normalize(vec3(0.0,3.0,5.0)-vPosWorld);
                 vec3 diffColor=mix(vec3(0.7,0.7,0.7),vNormal,0.4);
-                vec3 color=dot(lightVec,vNormal)*diffColor+vec3(0.2,0.2,0.2);
+                vec3 color= dot(lightVec, vNormal) * difuseColor ;
 
                gl_FragColor = vec4(color,1.0);
             }
@@ -195,16 +196,30 @@
 
                     setupWebGL();
                     initShaders();
-                    esferaRara = new EsferaRara(2);
+                    esferaRara = new EsferaRara(4);
                     objeto = new Objeto3D()
-                    var rows=128;
-                    var cols=256;
-                    vertexBuffer = getVertexBuffer(esferaRara, rows, cols);
-                    indexBuffer = getIndexBuffer(rows, cols);
-                    objeto.setGeometria(vertexBuffer, indexBuffer)
+                    var rows=200;
+                    var cols=200;
+                    esferaRvertexBuffer = getVertexBuffer(esferaRara, rows, cols);
+                    esferaRindexBuffer = getIndexBuffer(rows, cols);
+                    objeto.setGeometria(esferaRvertexBuffer, esferaRindexBuffer)
                     objeto.setPosicion(0,0,0);
                     objeto.setRotacion(Math.PI/2,0,0);
                     objeto.setEscala(1,1,1);
+                    objeto.setColor(0,1,0);
+
+
+                    esfera = new Esfera(1);
+                    objetoEsfera = new Objeto3D();
+                    esferaVertexBuffer = getVertexBuffer(esfera, 15, 15);
+                    esferaIndexBuffer = getIndexBuffer(15,15);
+                    objetoEsfera.setGeometria(esferaVertexBuffer, esferaIndexBuffer)
+                    objetoEsfera.setPosicion(3,3,3);
+                    objetoEsfera.setRotacion(1,1,1);
+                    objetoEsfera.setEscala(1,1,1);
+                    objetoEsfera.setColor(0,0,1);
+                    objeto.agregarHijo(objetoEsfera);
+
 
                     
                     setupVertexShaderMatrix();
@@ -325,7 +340,6 @@
                 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normal), gl.STATIC_DRAW);
                 webgl_normal_buffer.itemSize = 3;
                 webgl_normal_buffer.numItems = normal.length / 3;
-
                 
                 return {
                     webgl_position_buffer,
@@ -357,12 +371,10 @@
             }
 
             function setupVertexShaderMatrix(){
-                var modelMatrixUniform = gl.getUniformLocation(glProgram, "modelMatrix");
                 var viewMatrixUniform  = gl.getUniformLocation(glProgram, "viewMatrix");
                 var projMatrixUniform  = gl.getUniformLocation(glProgram, "projMatrix");
                 var normalMatrixUniform  = gl.getUniformLocation(glProgram, "normalMatrix");
 
-                gl.uniformMatrix4fv(modelMatrixUniform, false, modelMatrix);
                 gl.uniformMatrix4fv(viewMatrixUniform, false, viewMatrix);
                 gl.uniformMatrix4fv(projMatrixUniform, false, projMatrix);
                 gl.uniformMatrix4fv(normalMatrixUniform, false, normalMatrix);

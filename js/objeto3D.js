@@ -7,6 +7,7 @@ function Objeto3D (){
     var posicion = vec3.create(); //a partir de estos atributos se calcula la matriz respectiva
     var rotacion = vec3.create();
     var escala = vec3.create();
+    var color = vec3.fromValues(1,1,1);
     var hijos=[];
 
     // metodo privado, usa posicion, rotacion y escala. Se actualiza cada vez que se dibuja el objeto
@@ -52,6 +53,9 @@ function Objeto3D (){
             
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
 
+            difuseColorUniform = gl.getUniformLocation(glProgram, "difuseColor")
+            gl.uniform3f(difuseColorUniform, color[0],color[1], color[2])
+            
             gl.drawElements( gl.TRIANGLE_STRIP, indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 
 
@@ -66,7 +70,9 @@ function Objeto3D (){
             }*/
         }
 
-        for (var i = 0; i < hijos.length; i++) hijos[i].dibujar(m)
+        for (var i = 0; i < hijos.length; i++) {
+            hijos[i].dibujar(m)
+        }
     }
 
     this.setGeometria = function(newVertexBuffer, newIndexBuffer) {
@@ -92,6 +98,10 @@ function Objeto3D (){
     }
     this.setEscala = function (x,y,z) {
         escala = vec3.fromValues(x,y,z)
+    }
+
+    this.setColor = function (r,g,b) {
+        color = vec3.fromValues(r,g,b)
     }
 
     this.animate = function() {
