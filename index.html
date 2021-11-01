@@ -275,8 +275,8 @@
                     esferaRvertexBuffer = getVertexBuffer(esferaRara, rows, cols);
                     esferaRindexBuffer = getIndexBuffer(rows, cols);
                     objeto.setGeometria(esferaRvertexBuffer, esferaRindexBuffer)
-                    objeto.setPosicion(10,0,0);
-                    objeto.setRotacion(Math.PI/2,0,0);
+                    objeto.setPosicion(0,10,0);
+                    objeto.setRotacion(0,0,0);
                     objeto.setEscala(1,1,1);
                     objeto.setColor(0,1,0);
 
@@ -291,7 +291,7 @@
                     objetoEsfera.setRotacion(1,1,1);
                     objetoEsfera.setEscala(1,1,1);
                     objetoEsfera.setColor(0,0,1);
-                    objeto.agregarHijo(objetoEsfera);
+                    //objeto.agregarHijo(objetoEsfera);
 
 
                     poligono_control=[vec3.fromValues(3,0,0), vec3.fromValues(0,3,0), vec3.fromValues(-3,0,0), vec3.fromValues(0,-3,0)]
@@ -313,14 +313,14 @@
                     curve_index.push(cant_puntos-1)
 
                     curve_position_buffer = gl.createBuffer();
-                    curve_position_buffer.itemSize = cant_puntos;
+                    curve_position_buffer.itemSize = 3;
                     gl.bindBuffer(gl.ARRAY_BUFFER, curve_position_buffer);
                     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(curva_secuencia), gl.STATIC_DRAW);
 
                     curve_normal_buffer = gl.createBuffer();
                     gl.bindBuffer(gl.ARRAY_BUFFER, curve_normal_buffer);
                     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normal_secuencia), gl.STATIC_DRAW);
-                    curve_normal_buffer.itemSize = cant_puntos;
+                    curve_normal_buffer.itemSize = 3;
 
                     curve_index_buffer = gl.createBuffer();
                     curve_index_buffer.itemSize = 1;
@@ -328,8 +328,18 @@
                     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, curve_index_buffer);
                     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(curve_index), gl.STATIC_DRAW); 
 
+                    curva3D = new ObjetoCurva3D();
                     webgl_position_buffer = curve_position_buffer
                     webgl_normal_buffer = curve_normal_buffer
+
+                    vertexBuffer = {webgl_position_buffer, webgl_normal_buffer}
+
+                    curva3D.setGeometria(vertexBuffer, curve_index_buffer)
+                    curva3D.setColor(1,0,0)
+                    curva3D.setPosicion(0,-10,0)
+
+                    objeto.agregarHijo(curva3D)
+
                     
                     setupVertexShaderMatrix();
                     tick();   
@@ -491,30 +501,7 @@
                 setupVertexShaderMatrix();
                 matPadre= mat4.create() // matriz identidad para objeto principal
 
-                objeto.dibujar(matPadre);
-
-
-                var m = mat4.create();
-
-                var modelMatrixUniform = gl.getUniformLocation(glProgram, "modelMatrix");
-                gl.uniformMatrix4fv(modelMatrixUniform, false, m);
-
-                vertexPositionAttribute = gl.getAttribLocation(glProgram, "aVertexPosition");
-                gl.enableVertexAttribArray(vertexPositionAttribute);
-                gl.bindBuffer(gl.ARRAY_BUFFER, curve_position_buffer);
-                gl.vertexAttribPointer(vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
-
-                vertexNormalAttribute = gl.getAttribLocation(glProgram, "aVertexNormal");
-                gl.enableVertexAttribArray(vertexNormalAttribute);
-                gl.bindBuffer(gl.ARRAY_BUFFER, curve_normal_buffer);
-                gl.vertexAttribPointer(vertexNormalAttribute, 3, gl.FLOAT, false, 0, 0);
-                
-                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, curve_index_buffer);
-
-                difuseColorUniform = gl.getUniformLocation(glProgram, "difuseColor")
-                gl.uniform3f(difuseColorUniform, 1.0,0.0, 0.0)
-                
-                gl.drawElements( gl.LINES, curve_index_buffer.numItems, gl.UNSIGNED_SHORT, 0);
+                objeto.dibujar(matPadre);                
             }
             
             
