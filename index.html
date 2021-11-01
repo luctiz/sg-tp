@@ -4,7 +4,7 @@
         <title></title>        
         <style>
             body{ background-color: grey; }
-            canvas{ background-color: white; }
+            canvas{ background-color: darkslategrey; }
 			textarea{ background-color: black; foreground-color: white;}
         </style>
     </head>
@@ -155,6 +155,79 @@
                 }
             }
 
+            function CurvaBezier(poligono_control){
+                function fact(num)
+                {
+                    var rval=1;
+                    for (var i = 2; i <= num; i++)
+                        rval = rval * i;
+                    return rval;
+                }
+
+                function combinations(n,k) {
+
+                    return (fact(n) / ((fact(k)) * fact(n - k)))
+                }
+
+                function B(i,n,t) {
+                    /*if ((i == 0) &(t==0)){
+                        return (combinations(n,i)*((1-t)**(n-i)) *1)
+                    } else if (t==1){
+                        return (combinations(n,i)*(1) *(t**i))
+                    }*/
+                    return (combinations(n,i)*((1-t)**(n-i)) *(t**i))
+                }
+
+                this.evaluarPunto= function(t){
+                    resultado = vec3.fromValues(0,0,0);
+                    n = poligono_control.length;
+                    for (i = 0; i< n; i++){
+                        console.log(`B(${i},${n-1},${t}) = ${B(i,n-1,t)}`)
+                        var auxvec = vec3.create();
+                        vec3.scale(auxvec,poligono_control[i],B(i,n-1,t));
+
+                        vec3.add(resultado,resultado, auxvec);
+                    }
+                    console.log(resultado);
+                    return resultado;
+                }
+
+            }
+
+            
+
+            function obtenerDiscretizacionCurva(curva, cantidad_puntos_a_discretizar){
+                position_list = []
+                normal_list = []
+                
+                let auxn = (cantidad_puntos_a_discretizar -1)
+                for (let i = 0; i <= auxn; i++){
+                    punto = curva.evaluarPunto(i/auxn)
+                    position_list.push(punto[0])
+                    position_list.push(punto[1])
+                    position_list.push(punto[2])
+
+                    if (i == 0){
+                        p0 = punto;
+                    } else {
+                        p0 = curva.evaluarPunto(i-0.01/auxn);
+                    }
+                    if (i == 1){
+                        p1 = punto
+                    } else {
+                        p1 = curva.evaluarPunto(i+0.01/auxn)
+                    }
+                    tang_vec = vec3.create() // el vector tangente creo que está mal
+                    vec3.sub(tang_vec,p0,p1)  
+                    vec3.normalize(tang_vec,tang_vec)
+                    normal_list.push(tang_vec[0])
+                    normal_list.push(tang_vec[1])
+                    normal_list.push(tang_vec[2])
+                }
+
+                return {position_list, normal_list}
+            }
+
             var mat4=glMatrix.mat4;
             var vec3=glMatrix.vec3;
 
@@ -176,7 +249,6 @@
             var projMatrix = mat4.create();
             var normalMatrix = mat4.create();
             var rotate_angle = -1.57078;
-
             
             let droneCam=new DroneCameraControl([0,0,10]);
 
@@ -198,12 +270,12 @@
                     initShaders();
                     esferaRara = new EsferaRara(4);
                     objeto = new Objeto3D()
-                    var rows=200;
-                    var cols=200;
+                    var rows=100;
+                    var cols=100;
                     esferaRvertexBuffer = getVertexBuffer(esferaRara, rows, cols);
                     esferaRindexBuffer = getIndexBuffer(rows, cols);
                     objeto.setGeometria(esferaRvertexBuffer, esferaRindexBuffer)
-                    objeto.setPosicion(0,0,0);
+                    objeto.setPosicion(10,0,0);
                     objeto.setRotacion(Math.PI/2,0,0);
                     objeto.setEscala(1,1,1);
                     objeto.setColor(0,1,0);
@@ -211,9 +283,10 @@
 
                     esfera = new Esfera(1);
                     objetoEsfera = new Objeto3D();
-                    esferaVertexBuffer = getVertexBuffer(esfera, 15, 15);
-                    esferaIndexBuffer = getIndexBuffer(15,15);
+                    esferaVertexBuffer = getVertexBuffer(esfera, 20, 20);
+                    esferaIndexBuffer = getIndexBuffer(20,20);
                     objetoEsfera.setGeometria(esferaVertexBuffer, esferaIndexBuffer)
+
                     objetoEsfera.setPosicion(3,3,3);
                     objetoEsfera.setRotacion(1,1,1);
                     objetoEsfera.setEscala(1,1,1);
@@ -221,6 +294,42 @@
                     objeto.agregarHijo(objetoEsfera);
 
 
+                    poligono_control=[vec3.fromValues(3,0,0), vec3.fromValues(0,3,0), vec3.fromValues(-3,0,0), vec3.fromValues(0,-3,0)]
+                    curva = new CurvaBezier(poligono_control);
+
+                    var cant_puntos = 20;
+                    discretizacion = obtenerDiscretizacionCurva(curva,cant_puntos)
+
+                    curva_secuencia = discretizacion.position_list
+                    normal_secuencia = discretizacion.normal_list
+
+                    curve_index=[]
+
+                    curve_index.push(0)
+                    for (i = 1; i < cant_puntos -1; i++){
+                        curve_index.push(i)
+                        curve_index.push(i)
+                    }
+                    curve_index.push(cant_puntos-1)
+
+                    curve_position_buffer = gl.createBuffer();
+                    curve_position_buffer.itemSize = cant_puntos;
+                    gl.bindBuffer(gl.ARRAY_BUFFER, curve_position_buffer);
+                    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(curva_secuencia), gl.STATIC_DRAW);
+
+                    curve_normal_buffer = gl.createBuffer();
+                    gl.bindBuffer(gl.ARRAY_BUFFER, curve_normal_buffer);
+                    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normal_secuencia), gl.STATIC_DRAW);
+                    curve_normal_buffer.itemSize = cant_puntos;
+
+                    curve_index_buffer = gl.createBuffer();
+                    curve_index_buffer.itemSize = 1;
+                    curve_index_buffer.numItems = curve_index.length;
+                    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, curve_index_buffer);
+                    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(curve_index), gl.STATIC_DRAW); 
+
+                    webgl_position_buffer = curve_position_buffer
+                    webgl_normal_buffer = curve_normal_buffer
                     
                     setupVertexShaderMatrix();
                     tick();   
@@ -321,7 +430,6 @@
                     }
 
                 }
-      
                 webgl_position_buffer = gl.createBuffer();
                 gl.bindBuffer(gl.ARRAY_BUFFER, webgl_position_buffer);
                 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(pos), gl.STATIC_DRAW);
@@ -366,7 +474,6 @@
                     webgl_index_buffer.numItems = index.length;
                     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, webgl_index_buffer);
                     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(index), gl.STATIC_DRAW);  
-
                     return webgl_index_buffer;
             }
 
@@ -385,6 +492,29 @@
                 matPadre= mat4.create() // matriz identidad para objeto principal
 
                 objeto.dibujar(matPadre);
+
+
+                var m = mat4.create();
+
+                var modelMatrixUniform = gl.getUniformLocation(glProgram, "modelMatrix");
+                gl.uniformMatrix4fv(modelMatrixUniform, false, m);
+
+                vertexPositionAttribute = gl.getAttribLocation(glProgram, "aVertexPosition");
+                gl.enableVertexAttribArray(vertexPositionAttribute);
+                gl.bindBuffer(gl.ARRAY_BUFFER, curve_position_buffer);
+                gl.vertexAttribPointer(vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
+
+                vertexNormalAttribute = gl.getAttribLocation(glProgram, "aVertexNormal");
+                gl.enableVertexAttribArray(vertexNormalAttribute);
+                gl.bindBuffer(gl.ARRAY_BUFFER, curve_normal_buffer);
+                gl.vertexAttribPointer(vertexNormalAttribute, 3, gl.FLOAT, false, 0, 0);
+                
+                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, curve_index_buffer);
+
+                difuseColorUniform = gl.getUniformLocation(glProgram, "difuseColor")
+                gl.uniform3f(difuseColorUniform, 1.0,0.0, 0.0)
+                
+                gl.drawElements( gl.LINES, curve_index_buffer.numItems, gl.UNSIGNED_SHORT, 0);
             }
             
             

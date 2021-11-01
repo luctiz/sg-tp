@@ -41,7 +41,7 @@ function Objeto3D (){
             vertexPositionAttribute = gl.getAttribLocation(glProgram, "aVertexPosition");
             gl.enableVertexAttribArray(vertexPositionAttribute);
             gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer.webgl_position_buffer);
-            gl.vertexAttribPointer(vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
+            gl.vertexAttribPointer(vertexPositionAttribute, vertexBuffer.webgl_position_buffer.itemSize, gl.FLOAT, false, 0, 0);
 
             //gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer.webgl_uvs_buffer);
             //gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, vertexBuffer.webgl_uvs_buffer.itemSize, gl.FLOAT, false, 0, 0);
@@ -49,7 +49,7 @@ function Objeto3D (){
             vertexNormalAttribute = gl.getAttribLocation(glProgram, "aVertexNormal");
             gl.enableVertexAttribArray(vertexNormalAttribute);
             gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer.webgl_normal_buffer);
-            gl.vertexAttribPointer(vertexNormalAttribute, 3, gl.FLOAT, false, 0, 0);
+            gl.vertexAttribPointer(vertexNormalAttribute, vertexBuffer.webgl_normal_buffer.itemSize, gl.FLOAT, false, 0, 0);
             
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
 
