@@ -18,6 +18,7 @@
 
         <script type="text/javascript" src="js/gl-matrix.js"></script>
         <script type="text/javascript" src="js/objeto3D.js"></script>
+        <script type="text/javascript" src="js/moduloGeometria.js"></script>
         <script type="text/javascript" src="droneCamera.js"></script>
 
         
@@ -182,13 +183,11 @@
                     resultado = vec3.fromValues(0,0,0);
                     n = poligono_control.length;
                     for (i = 0; i< n; i++){
-                        console.log(`B(${i},${n-1},${t}) = ${B(i,n-1,t)}`)
                         var auxvec = vec3.create();
                         vec3.scale(auxvec,poligono_control[i],B(i,n-1,t));
 
                         vec3.add(resultado,resultado, auxvec);
                     }
-                    console.log(resultado);
                     return resultado;
                 }
 
@@ -270,74 +269,30 @@
                     initShaders();
                     esferaRara = new EsferaRara(4);
                     objeto = new Objeto3D()
-                    var rows=100;
-                    var cols=100;
-                    esferaRvertexBuffer = getVertexBuffer(esferaRara, rows, cols);
-                    esferaRindexBuffer = getIndexBuffer(rows, cols);
-                    objeto.setGeometria(esferaRvertexBuffer, esferaRindexBuffer)
-                    objeto.setPosicion(0,10,0);
-                    objeto.setRotacion(0,0,0);
-                    objeto.setEscala(1,1,1);
-                    objeto.setColor(0,1,0);
 
+                    geometria = ModuloGeometria.obtenerGeometriaObjeto3D(esferaRara,100,100)
+                    objeto.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
+                    console.log(geometria.indexBuffer)
+                    objeto.setPosicion(0,10,0);
+                    objeto.setColor(0,1,0);
 
                     esfera = new Esfera(1);
                     objetoEsfera = new Objeto3D();
-                    esferaVertexBuffer = getVertexBuffer(esfera, 20, 20);
-                    esferaIndexBuffer = getIndexBuffer(20,20);
-                    objetoEsfera.setGeometria(esferaVertexBuffer, esferaIndexBuffer)
-
+                    geometria = ModuloGeometria.obtenerGeometriaObjeto3D(esfera,20,20)
+                    objetoEsfera.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
                     objetoEsfera.setPosicion(3,3,3);
-                    objetoEsfera.setRotacion(1,1,1);
-                    objetoEsfera.setEscala(1,1,1);
                     objetoEsfera.setColor(0,0,1);
-                    //objeto.agregarHijo(objetoEsfera);
+                    objeto.agregarHijo(objetoEsfera);
 
 
                     poligono_control=[vec3.fromValues(3,0,0), vec3.fromValues(0,3,0), vec3.fromValues(-3,0,0), vec3.fromValues(0,-3,0)]
                     curva = new CurvaBezier(poligono_control);
 
-                    var cant_puntos = 20;
-                    discretizacion = obtenerDiscretizacionCurva(curva,cant_puntos)
-
-                    curva_secuencia = discretizacion.position_list
-                    normal_secuencia = discretizacion.normal_list
-
-                    curve_index=[]
-
-                    curve_index.push(0)
-                    for (i = 1; i < cant_puntos -1; i++){
-                        curve_index.push(i)
-                        curve_index.push(i)
-                    }
-                    curve_index.push(cant_puntos-1)
-
-                    curve_position_buffer = gl.createBuffer();
-                    curve_position_buffer.itemSize = 3;
-                    gl.bindBuffer(gl.ARRAY_BUFFER, curve_position_buffer);
-                    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(curva_secuencia), gl.STATIC_DRAW);
-
-                    curve_normal_buffer = gl.createBuffer();
-                    gl.bindBuffer(gl.ARRAY_BUFFER, curve_normal_buffer);
-                    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normal_secuencia), gl.STATIC_DRAW);
-                    curve_normal_buffer.itemSize = 3;
-
-                    curve_index_buffer = gl.createBuffer();
-                    curve_index_buffer.itemSize = 1;
-                    curve_index_buffer.numItems = curve_index.length;
-                    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, curve_index_buffer);
-                    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(curve_index), gl.STATIC_DRAW); 
-
                     curva3D = new ObjetoCurva3D();
-                    webgl_position_buffer = curve_position_buffer
-                    webgl_normal_buffer = curve_normal_buffer
-
-                    vertexBuffer = {webgl_position_buffer, webgl_normal_buffer}
-
-                    curva3D.setGeometria(vertexBuffer, curve_index_buffer)
+                    geometria = ModuloGeometria.obtenerGeometriaCurva3D(curva, 20)
+                    curva3D.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
                     curva3D.setColor(1,0,0)
                     curva3D.setPosicion(0,-10,0)
-
                     objeto.agregarHijo(curva3D)
 
                     
@@ -409,84 +364,6 @@
             }
 
 
-            function getVertexBuffer(superficie, rows,cols)
-            {
-                var pos=[];
-                var uv = [];
-                var normal=[];
-
-                for (var i=0;i<rows;i++){
-                    for (var j=0;j<cols;j++){
-
-                        var u=i/(rows-1); //esto capaz se tenga que cambiar despues (creo que los nombres u y v no son representativos)
-                        var v=j/(cols-1); //Ademas en mi tp de grillas esto lo tenia un poco distinto, no se si va a estar del todo bien
-
-                        var p=superficie.getPosicion(u,v);
-
-                        pos.push(p[0]);
-                        pos.push(p[1]);
-                        pos.push(p[2]);
-                        
-                        var n=superficie.getNormal(u,v);
-
-                        normal.push(n[0]);
-                        normal.push(n[1]);
-                        normal.push(n[2]);
-
-                        var uvs=superficie.getCoordenadasTextura(u,v);
-
-                        uv.push(uvs[0])
-                        uv.push(uvs[1])
-                    }
-
-                }
-                webgl_position_buffer = gl.createBuffer();
-                gl.bindBuffer(gl.ARRAY_BUFFER, webgl_position_buffer);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(pos), gl.STATIC_DRAW);
-                webgl_position_buffer.itemSize = 3;
-                webgl_position_buffer.numItems = pos.length / 3;
-
-                webgl_uvs_buffer = gl.createBuffer();
-                gl.bindBuffer(gl.ARRAY_BUFFER, webgl_uvs_buffer);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(uv), gl.STATIC_DRAW);
-                webgl_uvs_buffer.itemSize = 2;
-                webgl_uvs_buffer.numItems = uv.length / 2;
-            
-
-                webgl_normal_buffer = gl.createBuffer();
-                gl.bindBuffer(gl.ARRAY_BUFFER, webgl_normal_buffer);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normal), gl.STATIC_DRAW);
-                webgl_normal_buffer.itemSize = 3;
-                webgl_normal_buffer.numItems = normal.length / 3;
-                
-                return {
-                    webgl_position_buffer,
-                    webgl_normal_buffer,
-                    webgl_uvs_buffer
-                }
-            }
-            function getIndexBuffer(rows,cols){
-                var index=[];
-
-                    for (var i=0;i<rows-1;i++){
-                        index.push(i*cols);
-                        for (var j=0;j<cols-1;j++){
-                            index.push(i*cols+j);
-                            index.push((i+1)*cols+j);
-                            index.push(i*cols+j+1);
-                            index.push((i+1)*cols+j+1);
-                        }
-                        index.push((i+1)*cols+cols-1);
-                    }
-                    
-                    webgl_index_buffer = gl.createBuffer();
-                    webgl_index_buffer.itemSize = 1;
-                    webgl_index_buffer.numItems = index.length;
-                    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, webgl_index_buffer);
-                    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(index), gl.STATIC_DRAW);  
-                    return webgl_index_buffer;
-            }
-
             function setupVertexShaderMatrix(){
                 var viewMatrixUniform  = gl.getUniformLocation(glProgram, "viewMatrix");
                 var projMatrixUniform  = gl.getUniformLocation(glProgram, "projMatrix");
@@ -495,7 +372,7 @@
                 gl.uniformMatrix4fv(viewMatrixUniform, false, viewMatrix);
                 gl.uniformMatrix4fv(projMatrixUniform, false, projMatrix);
                 gl.uniformMatrix4fv(normalMatrixUniform, false, normalMatrix);
-            }                  
+            }      
             
             function drawScene(){
                 setupVertexShaderMatrix();
@@ -511,7 +388,7 @@
                 requestAnimationFrame(tick);
                 droneCam.update();
                 drawScene();
-                //objeto.animate();
+                objeto.animate();
             }
 
             window.onload=initWebGL;
