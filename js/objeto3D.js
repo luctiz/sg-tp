@@ -21,10 +21,8 @@ class Objeto3D {
 
         mat4.translate(m,m, this.posicion);
         mat4.rotate(m,m,Math.PI/2,this.rotacion);
-        //console.log(rotacion)
         mat4.scale(m,m, this.escala);
         this.matModelado = m;
-        //console.log(matModelado)
     } 
 
     // metodos publicos
@@ -117,10 +115,10 @@ class Objeto3D {
         this.setRotacion(Math.cos(rotate_angle), 0, Math.sin(rotate_angle))
 
 
-        mat4.identity(normalMatrix);
-        mat4.multiply(normalMatrix,viewMatrix,matModelado);
-        mat4.invert(normalMatrix,normalMatrix);
-        mat4.transpose(normalMatrix,normalMatrix);
+        //mat4.identity(normalMatrix);
+        //mat4.multiply(normalMatrix,viewMatrix,matModelado);
+        //mat4.invert(normalMatrix,normalMatrix);
+        //mat4.transpose(normalMatrix,normalMatrix);
 
     }
 }

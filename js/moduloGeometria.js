@@ -1,4 +1,3 @@
-var modo = "smooth"
 class ModuloGeometria {
     static obtenerGeometriaObjeto3D(superficie, filas, columnas){
         var vertexBuffer = this._getVertexBufferSuperficie(superficie,filas,columnas);
@@ -12,6 +11,19 @@ class ModuloGeometria {
         var vertexBuffer = this._getVertexBufferCurva(curva,cant_puntos);
         var indexBuffer = this._getIndexBufferCurva(cant_puntos)
 
+        return {vertexBuffer, indexBuffer}
+    }
+
+
+    static obtenerGeometriaTangentesCurva3D(curva_discretizada){
+        var vertexBuffer = this._getVertexBufferTangentes(curva_discretizada);
+        var indexBuffer = this._getIndexBufferTangentes(curva_discretizada.position_list.length * 2 / 3)
+        return {vertexBuffer, indexBuffer}
+    }
+
+    static obtenerGeometriaSuperficieBarrido(forma_discretizada, recorrido_discretizado){
+        var vertexBuffer = this._getVertexBufferSuperficieBarrido(forma_discretizada,recorrido_discretizado);
+        var indexBuffer = this._getIndexBufferSuperficie(forma_discretizada.position_list.length / 3, recorrido_discretizado.position_list.length / 3)
         return {vertexBuffer, indexBuffer}
     }
 
@@ -100,7 +112,7 @@ class ModuloGeometria {
             var discretizacion = obtenerDiscretizacionCurva(curva,cant_puntos)
 
             var curva_secuencia = discretizacion.position_list
-            var normal_secuencia = discretizacion.normal_list
+            var tangs_secuencia = discretizacion.tang_list
 
 
             var curve_position_buffer = gl.createBuffer();
@@ -108,19 +120,77 @@ class ModuloGeometria {
             gl.bindBuffer(gl.ARRAY_BUFFER, curve_position_buffer);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(curva_secuencia), gl.STATIC_DRAW);
 
-            var curve_normal_buffer = gl.createBuffer();
-            gl.bindBuffer(gl.ARRAY_BUFFER, curve_normal_buffer);
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normal_secuencia), gl.STATIC_DRAW);
-            curve_normal_buffer.itemSize = 3;
+            var curve_tangs_buffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, curve_tangs_buffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(tangs_secuencia), gl.STATIC_DRAW);
+            curve_tangs_buffer.itemSize = 3;
             
             var webgl_position_buffer = curve_position_buffer
-            var webgl_normal_buffer = curve_normal_buffer
+            var webgl_normal_buffer = curve_tangs_buffer
 
             return {
                 webgl_position_buffer,
                 webgl_normal_buffer,
             }
         }
+
+        static _getVertexBufferTangentes(curva_discretizada)
+        {
+            var new_position_list = []
+            var normal_list = []
+            for (var i = 0; i < (curva_discretizada.position_list.length / 3); i++){
+                var index = i*3
+                new_position_list.push(curva_discretizada.position_list[index])
+                new_position_list.push(curva_discretizada.position_list[index+1])
+                new_position_list.push(curva_discretizada.position_list[index+2])
+
+                new_position_list.push(curva_discretizada.position_list[index] +  curva_discretizada.tang_list[index])
+                new_position_list.push(curva_discretizada.position_list[index+1] + curva_discretizada.tang_list[index+1])
+                new_position_list.push(curva_discretizada.position_list[index+2] + curva_discretizada.tang_list[index+2])
+
+                normal_list.push(1) // normales irrelevantes en este caso
+                normal_list.push(1)
+                normal_list.push(1)
+                normal_list.push(1)
+                normal_list.push(1)
+                normal_list.push(1)
+
+            }
+
+            var webgl_position_buffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, webgl_position_buffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(new_position_list), gl.STATIC_DRAW);
+            webgl_position_buffer.itemSize = 3;
+
+
+            var webgl_normal_buffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, webgl_normal_buffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normal_list), gl.STATIC_DRAW);
+            webgl_normal_buffer.itemSize = 3;
+
+            return {
+                webgl_position_buffer,
+                webgl_normal_buffer,
+            }
+        }
+
+        static _getIndexBufferTangentes(position_buffer_length){
+            var curve_index=[]
+
+            for (i = 0; i < position_buffer_length; i++){
+                curve_index.push(i)
+            }
+
+
+            var curve_index_buffer = gl.createBuffer();
+            curve_index_buffer.itemSize = 1;
+            curve_index_buffer.numItems = curve_index.length;
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, curve_index_buffer);
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(curve_index), gl.STATIC_DRAW); 
+
+            return curve_index_buffer
+        }
+
         static _getIndexBufferCurva(cant_puntos){
             var curve_index=[]
 
@@ -138,6 +208,63 @@ class ModuloGeometria {
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(curve_index), gl.STATIC_DRAW); 
 
             return curve_index_buffer
+        }
+
+
+
+        static _getVertexBufferSuperficieBarrido(forma_discretizada,recorrido_discretizado){
+
+            var pos_buffer = []
+            var normal_buffer = []
+
+            for (var j = 0; j<(recorrido_discretizado.position_list.length/3); j++){
+                var punto_recorrido = vec3.fromValues(recorrido_discretizado.position_list[j],position_list[j+1],position_list[j+2])
+                for (var i = 0; i<(forma_discretizada.position_list.length/3); i++){
+                    var index = i*3;
+                    var position = vec3.fromValues(forma_discretizada.position_list[index],forma_discretizada.position_list[index+1],forma_discretizada.position_list[index+2])
+                    var aux1 = vec3.fromValues(0,0,1) //normal
+                    vec3.scale(aux1, aux1,position[0])
+
+                    var tg = vec3.fromValues(forma_discretizada.tang_list[index],forma_discretizada.tang_list[index+1],forma_discretizada.tang_list[index+2])
+                    var aux2 = vec3.create() 
+                    vec3.cross(aux2, tg, vec3.fromValues(0,0,1)) //producto vectorial entre tangente y normal
+                    vec3.scale(aux2, aux2,position[1])
+
+                    var aux3 = vec3.create();
+                    vec3.scale(aux3, tg, position[2])
+
+                    var new_position = vec3.fromValues(punto_recorrido[0], punto_recorrido[1], punto_recorrido[2])
+                    vec3.add(new_position, new_position, aux1)
+                    vec3.add(new_position, new_position, aux2)
+                    vec3.add(new_position, new_position, aux3)
+
+                    pos_buffer.push(new_position[0])
+                    pos_buffer.push(new_position[1])
+                    pos_buffer.push(new_position[2])
+
+
+                    pos_buffer.push(0)
+                    pos_buffer.push(1)
+                    pos_buffer.push(2)
+
+                }
+            }
+
+            var webgl_position_buffer = gl.createBuffer();
+            webgl_position_buffer.itemSize = 3;
+            gl.bindBuffer(gl.ARRAY_BUFFER, webgl_position_buffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(pos_buffer), gl.STATIC_DRAW);
+
+            
+            var webgl_normal_buffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, webgl_normal_buffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normal_buffer), gl.STATIC_DRAW);
+            webgl_normal_buffer.itemSize = 3;
+
+            return {
+                webgl_position_buffer,
+                webgl_normal_buffer,
+            }
         }
 
                         
