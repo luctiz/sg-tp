@@ -4,7 +4,7 @@
         <title></title>        
         <style>
             body{ background-color: grey; }
-            canvas{ background-color: darkslategrey; }
+            canvas{ background-color: rgb(100,100,100); }
 			textarea{ background-color: black; foreground-color: white;}
         </style>
     </head>
@@ -80,9 +80,6 @@
                     var p0=this.getPosicion(u,v);
                     var p1=this.getPosicion(u,v+delta); // tener cuidado si u o v son mayores que 1. En esfera no pasa nada
                     var p2=this.getPosicion(u+delta,v);
-                    
-                    //var normal = crossProduct(vectorSubstract(p1,p0),vectorSubstract(p2,p0));
-                    //var normal_normalizada = Math.sqrt(normal[0]**2 + normal[1]**2 + normal[2]**2)
 
                     
                     var v1=vec3.fromValues(p1[0]-p0[0],p1[1]-p0[1],p1[2]-p0[2]);
@@ -95,9 +92,7 @@
                     vec3.cross(n,v1,v2);
                     vec3.scale(n,n,-1);
                     
-                    return n
-                    //return normal_normalizada;
-                }
+                    return n                }
 
                 this.getCoordenadasTextura=function(u,v){
                     return [u,v];
@@ -129,10 +124,6 @@
                 }
 
                 this.getNormal=function(u,v){
-                    //var p=this.getPosicion(u,v);
-                    //var vec=vec3.create();
-                    //vec3.normalize(vec,p);
-
                     var delta=0.016;
                     var p1=this.getPosicion(u,v);
                     var p2=this.getPosicion(u,v+delta);
@@ -146,8 +137,7 @@
                     
                     var n=vec3.create();
                     vec3.cross(n,v1,v2);
-                    //vec3.normalize(n,n)
-                    //vec3.scale(n,n,-1);
+                    vec3.normalize(n,n)
                     return n;
                 }
 
@@ -269,7 +259,7 @@
 
                     setupWebGL();
                     initShaders();
-                    esferaRara = new EsferaRara(4);
+                    esferaRara = new Esfera(4);
                     objeto = new Objeto3D()
 
                     geometria = ModuloGeometria.obtenerGeometriaObjeto3D(esferaRara,100,100)
@@ -277,20 +267,20 @@
                     objeto.setPosicion(0,10,0);
                     objeto.setColor(0,1,0);
 
-                    esfera = new Esfera(1);
+                    /*esfera = new Esfera(1);
                     objetoEsfera = new Objeto3D();
                     geometria = ModuloGeometria.obtenerGeometriaObjeto3D(esfera,20,20)
                     objetoEsfera.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
                     objetoEsfera.setPosicion(3,3,3);
                     objetoEsfera.setColor(0,0,1);
-                    objeto.agregarHijo(objetoEsfera);
+                    objeto.agregarHijo(objetoEsfera);*/
 
 
-                    poligono_control=[vec3.fromValues(3,0,0), vec3.fromValues(0,3,0), vec3.fromValues(-3,0,0), vec3.fromValues(0,-3,0)]
+                    poligono_control=[vec3.fromValues(1,0,0), vec3.fromValues(0,1,0), vec3.fromValues(-1,0,0), vec3.fromValues(0,-1,0)]
                     curva1 = new CurvaBezier(poligono_control);
 
                     curva3D = new ObjetoCurva3D();
-                    geometria = ModuloGeometria.obtenerGeometriaCurva3D(curva1, 10)
+                    geometria = ModuloGeometria.obtenerGeometriaCurva3D(curva1, 15)
                     curva3D.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
                     curva3D.setColor(1,0,0)
                     curva3D.setPosicion(0,-10,0)
@@ -298,18 +288,18 @@
 
 
 
-                    poligono_control=[vec3.fromValues(0,0,3), vec3.fromValues(0,0,-3)]
+                    poligono_control=[vec3.fromValues(0,0,6),vec3.fromValues(0,3,0),vec3.fromValues(0,0,-6)]
                     curva2 = new CurvaBezier(poligono_control);
 
                     curva3D = new ObjetoCurva3D();
-                    geometria = ModuloGeometria.obtenerGeometriaCurva3D(curva2, 2)
+                    geometria = ModuloGeometria.obtenerGeometriaCurva3D(curva2, 8)
                     curva3D.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
                     curva3D.setColor(0,1,0)
                     curva3D.setPosicion(0,-8,0)
                     objeto.agregarHijo(curva3D)
 
                     tangentesCurva3D = new ObjetoCurva3D();
-                    disc_curva1 = obtenerDiscretizacionCurva(curva1, 10)
+                    disc_curva1 = obtenerDiscretizacionCurva(curva1, 15)
                     geometria = ModuloGeometria.obtenerGeometriaTangentesCurva3D(disc_curva1);
                     console.log(geometria)
                     tangentesCurva3D.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
@@ -318,8 +308,9 @@
                     objeto.agregarHijo(tangentesCurva3D)
 
 
-                    discretizacion_forma = obtenerDiscretizacionCurva(curva1, 20)
-                    discretizacion_recorrido = obtenerDiscretizacionCurva(curva2, 2)
+
+                    discretizacion_forma = obtenerDiscretizacionCurva(curva1, 15)
+                    discretizacion_recorrido = obtenerDiscretizacionCurva(curva2, 8)
 
 
                     superficie_barrido = new Objeto3D()
