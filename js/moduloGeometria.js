@@ -115,18 +115,15 @@ class ModuloGeometria {
         var tangs_secuencia = discretizacion.tang_list
 
 
-        var curve_position_buffer = gl.createBuffer();
-        curve_position_buffer.itemSize = 3;
-        gl.bindBuffer(gl.ARRAY_BUFFER, curve_position_buffer);
+        var webgl_position_buffer = gl.createBuffer();
+        webgl_position_buffer.itemSize = 3;
+        gl.bindBuffer(gl.ARRAY_BUFFER, webgl_position_buffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(curva_secuencia), gl.STATIC_DRAW);
 
-        var curve_tangs_buffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, curve_tangs_buffer);
+        var webgl_normal_buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, webgl_normal_buffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(tangs_secuencia), gl.STATIC_DRAW);
-        curve_tangs_buffer.itemSize = 3;
-        
-        var webgl_position_buffer = curve_position_buffer
-        var webgl_normal_buffer = curve_tangs_buffer
+        webgl_normal_buffer.itemSize = 3;
 
         return {
             webgl_position_buffer,
@@ -138,23 +135,6 @@ class ModuloGeometria {
     {
         var new_position_list = []
         var normal_list = []
-        /*
-        var centro_x = 0
-        var centro_y = 0
-        var centro_z = 0
-        var i = 0
-        for(i = 0; i < (curva_discretizada.position_list.length / 3); i++){
-            var index = i*3
-            centro_x += curva_discretizada.position_list[index]
-            centro_y += curva_discretizada.position_list[index+1]
-            centro_z += curva_discretizada.position_list[index+2]
-
-        }
-
-        centro_x /= i
-        centro_y /= i 
-        centro_z /= i 
-        */
 
         for (var i = 0; i < (curva_discretizada.position_list.length / 3); i++){
             var index = i*3
@@ -162,15 +142,6 @@ class ModuloGeometria {
             new_position_list.push(curva_discretizada.position_list[index])
             new_position_list.push(curva_discretizada.position_list[index+1])
             new_position_list.push(curva_discretizada.position_list[index+2])
-            //
-
-            /*var aux_vec = (vec3.fromValues(curva_discretizada.position_list[index] +  curva_discretizada.tang_list[index],curva_discretizada.position_list[index+1] + curva_discretizada.tang_list[index+1],curva_discretizada.position_list[index+2] + curva_discretizada.tang_list[index+2]))
-            vec3.cross(aux_vec,aux_vec,vec3.fromValues(centro_x - curva_discretizada.position_list[index], centro_y - curva_discretizada.position_list[index +1], centro_z - curva_discretizada.position_list[index+2]))
-            vec3.normalize(aux_vec,aux_vec)
-
-            new_position_list.push(aux_vec[0])
-            new_position_list.push(aux_vec[1])
-            new_position_list.push(aux_vec[2])*/
             
             new_position_list.push(curva_discretizada.position_list[index] +  curva_discretizada.tang_list[index])
             new_position_list.push(curva_discretizada.position_list[index+1] + curva_discretizada.tang_list[index+1])
@@ -209,7 +180,6 @@ class ModuloGeometria {
             curve_index.push(i)
         }
 
-
         var curve_index_buffer = gl.createBuffer();
         curve_index_buffer.itemSize = 1;
         curve_index_buffer.numItems = curve_index.length;
@@ -223,7 +193,7 @@ class ModuloGeometria {
         var curve_index=[]
 
         curve_index.push(0)
-        for (i = 1; i < cant_puntos -1; i++){
+        for (var i = 1; i < cant_puntos -1; i++){
             curve_index.push(i)
             curve_index.push(i)
         }
@@ -258,12 +228,13 @@ class ModuloGeometria {
 
         for (var j = 0; j<(recorrido_discretizado.position_list.length); j+=3){
             var punto_recorrido = vec3.fromValues(recorrido_discretizado.position_list[j],position_list[j+1],position_list[j+2])
+            var tg = vec3.fromValues(recorrido_discretizado.tang_list[j],recorrido_discretizado.tang_list[j+1],recorrido_discretizado.tang_list[j+2])
             for (var i = 0; i<(forma_discretizada.position_list.length); i+=3){
                 var position = vec3.fromValues(forma_discretizada.position_list[i],forma_discretizada.position_list[i+1],forma_discretizada.position_list[i+2])
+                
                 var aux1 = vec3.create() 
                 vec3.scale(aux1, nm, position[0]) 
 
-                var tg = vec3.fromValues(recorrido_discretizado.tang_list[i],recorrido_discretizado.tang_list[i+1],recorrido_discretizado.tang_list[i+2])
 
                 var aux2 = vec3.create() 
                 vec3.cross(aux2, tg, nm) //producto vectorial entre tangente y normal
@@ -279,8 +250,6 @@ class ModuloGeometria {
 
                 var new_position = vec3.fromValues(0,0,0);
                 vec3.add(new_position, new_position, punto_recorrido)
-                //vec3.fromValues(punto_recorrido[0], punto_recorrido[1], punto_recorrido[2])
-                //vec3.add(new_position,new_position, position)
                 vec3.add(new_position, new_position, aux1)
                 vec3.add(new_position, new_position, aux2)
                 vec3.add(new_position, new_position, aux3)
@@ -288,12 +257,10 @@ class ModuloGeometria {
                 pos_buffer.push(new_position[0])
                 pos_buffer.push(new_position[1])
                 pos_buffer.push(new_position[2])
-
-
-                
-
             }
         }
+        console.log(pos_buffer)
+        console.log(pos_buffer.length / (recorrido_discretizado.position_list.length)) 
 
         var webgl_position_buffer = gl.createBuffer();
         webgl_position_buffer.itemSize = 3;

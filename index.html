@@ -184,6 +184,22 @@
             }
 
             
+            // crea una circunferencia con normal segun el vec_normal
+            function CurvaCircunferencia(radio, vec_normal){
+                this.evaluarPunto= function(t){
+                    normal = vec3.fromValues(vec_normal[0],vec_normal[1],vec_normal[2])
+                    vec3.normalize(normal,normal)
+
+                    position = vec3.fromValues(Math.PI*2* Math.cos(t),Math.PI*2*Math.sin(t),0)
+
+                    vec3.cross(position, position, normal)
+
+                    return position;
+
+                }
+            }
+
+            
 
             function obtenerDiscretizacionCurva(curva, cantidad_puntos_a_discretizar){
                 position_list = []
@@ -267,46 +283,37 @@
                     objeto.setPosicion(0,10,0);
                     objeto.setColor(0,1,0);
 
-                    /*esfera = new Esfera(1);
-                    objetoEsfera = new Objeto3D();
-                    geometria = ModuloGeometria.obtenerGeometriaObjeto3D(esfera,20,20)
-                    objetoEsfera.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
-                    objetoEsfera.setPosicion(3,3,3);
-                    objetoEsfera.setColor(0,0,1);
-                    objeto.agregarHijo(objetoEsfera);*/
 
-
-                    poligono_control=[vec3.fromValues(1,0,0), vec3.fromValues(0,1,0), vec3.fromValues(-1,0,0), vec3.fromValues(0,-1,0)]
-                    curva1 = new CurvaBezier(poligono_control);
+                    poligono_control=[vec3.fromValues(1,0,0), vec3.fromValues(0,3,0), vec3.fromValues(-1,0,0)]
+                    curva1 = new CurvaBezier(poligono_control)//new CurvaCircunferencia(1,[0,0,1]);
 
                     curva3D = new ObjetoCurva3D();
                     geometria = ModuloGeometria.obtenerGeometriaCurva3D(curva1, 15)
                     curva3D.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
                     curva3D.setColor(1,0,0)
                     curva3D.setPosicion(0,-10,0)
-                    objeto.agregarHijo(curva3D)
 
-
-
-                    poligono_control=[vec3.fromValues(0,0,6),vec3.fromValues(0,3,0),vec3.fromValues(0,0,-6)]
-                    curva2 = new CurvaBezier(poligono_control);
-
-                    curva3D = new ObjetoCurva3D();
-                    geometria = ModuloGeometria.obtenerGeometriaCurva3D(curva2, 8)
-                    curva3D.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
-                    curva3D.setColor(0,1,0)
-                    curva3D.setPosicion(0,-8,0)
-                    objeto.agregarHijo(curva3D)
-
-                    tangentesCurva3D = new ObjetoCurva3D();
+                    /*tangentesCurva3D = new ObjetoCurva3D();
                     disc_curva1 = obtenerDiscretizacionCurva(curva1, 15)
                     geometria = ModuloGeometria.obtenerGeometriaTangentesCurva3D(disc_curva1);
                     console.log(geometria)
                     tangentesCurva3D.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
                     tangentesCurva3D.setColor(1,0,0)
-                    tangentesCurva3D.setPosicion(0,-10,0)
-                    objeto.agregarHijo(tangentesCurva3D)
+                    curva3D.agregarHijo(tangentesCurva3D)*/
 
+
+
+                    poligono_control=[vec3.fromValues(0,0,8),vec3.fromValues(0,8,0),vec3.fromValues(0,0,-8)]
+                    curva2 = new CurvaBezier(poligono_control);
+
+
+                    curva23D = new ObjetoCurva3D();
+                    geometria = ModuloGeometria.obtenerGeometriaCurva3D(curva2, 8)
+                    curva23D.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
+                    curva23D.setColor(0,1,0)
+                    curva3D.agregarHijo(curva23D)
+
+                    objeto.agregarHijo(curva3D)
 
 
                     discretizacion_forma = obtenerDiscretizacionCurva(curva1, 15)
@@ -317,7 +324,7 @@
                     geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(discretizacion_forma, discretizacion_recorrido)
                     superficie_barrido.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
                     superficie_barrido.setColor(0,1,1)
-                    superficie_barrido.setPosicion(-5,-10,0)
+                    superficie_barrido.setPosicion(0,-10,0)
                     objeto.agregarHijo(superficie_barrido)
 
                     

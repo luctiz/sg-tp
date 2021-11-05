@@ -13,7 +13,6 @@ class Objeto3D {
         this.hijos=[];
 
     }
-    
 
     // metodo privado, usa posicion, rotacion y escala. Se actualiza cada vez que se dibuja el objeto
     _actualizarMatrizModelado() {
@@ -86,6 +85,11 @@ class Objeto3D {
     agregarHijo = function(h) {
         this.hijos.push(h);
     }
+
+    hijos = function(){
+        return this.hijos
+    }
+
     quitarHijo = function(h) {
         index = this.hijos.indexOf(h);
         if (index > -1) {
@@ -158,6 +162,10 @@ class ObjetoCurva3D extends Objeto3D{
             gl.uniform3f(difuseColorUniform, this.color[0],this.color[1], this.color[2])
             
             gl.drawElements( gl.LINES, this.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+        }
+
+        for (var i = 0; i < this.hijos.length; i++) {
+            this.hijos[i].dibujar(m)
         }
     }
 
