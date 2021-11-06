@@ -15,7 +15,10 @@
         let position=vec3.fromValues(initialPos[0],initialPos[1],initialPos[2]);
         let rotation=vec3.create();
 
-        let rotationMatrix=mat4.create();		
+        let rotationMatrix=mat4.create();	
+        //
+        mat4.rotate(rotationMatrix,rotationMatrix,Math.PI/2,vec3.fromValues(0,1,0));                
+        //
 
         let worldMatrix=mat4.create();
 
@@ -142,7 +145,6 @@
         
 
         this.update=function(){
-            
             camState.xVel+=(camState.xVelTarget-camState.xVel)*FACTOR_INERCIA;
             camState.yVel+=(camState.yVelTarget-camState.yVel)*FACTOR_INERCIA;
             camState.zVel+=(camState.zVelTarget-camState.zVel)*FACTOR_INERCIA;

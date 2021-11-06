@@ -35,7 +35,7 @@ class Objeto3D {
         var modelMatrixUniform = gl.getUniformLocation(glProgram, "modelMatrix");
         gl.uniformMatrix4fv(modelMatrixUniform, false, m);
 
-        if (this.vertexBuffer && this.indexBuffer) {
+        if ((this.vertexBuffer !=null) & (this.indexBuffer!= null)) {
             // Dibujamos la malla de triangulos con WebGL
             // si el objeto tiene geometria asociada.
             // Se configuran los buffers que alimentaron el pipeline

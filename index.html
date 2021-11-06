@@ -20,6 +20,7 @@
         <script type="text/javascript" src="js/objeto3D.js"></script>
         <script type="text/javascript" src="js/moduloGeometria.js"></script>
         <script type="text/javascript" src="droneCamera.js"></script>
+        <script type="text/javascript" src="js/scenes.js"></script>
 
         
         <script id="shader-vs" type="x-shader/x-vertex">
@@ -220,7 +221,7 @@
             var normalMatrix = mat4.create();
             var rotate_angle = -1.57078;
             
-            let droneCam=new DroneCameraControl([0,0,10]);
+            let droneCam=new DroneCameraControl([25,1,0]);
 
          
             function initWebGL(){
@@ -238,72 +239,7 @@
 
                     setupWebGL();
                     initShaders();
-                    esferaRara = new Esfera(4);
-                    objeto = new Objeto3D()
-
-                    geometria = ModuloGeometria.obtenerGeometriaObjeto3D(esferaRara,100,100)
-                    objeto.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
-                    objeto.setPosicion(0,10,0);
-                    objeto.setColor(0,1,0);
-
-                    poligono_control=[vec3.fromValues(1,0,0), vec3.fromValues(0,3,0), vec3.fromValues(-1,0,0)]
-                    curva_forma = new CurvaCircunferencia(1,[0,0,1.57])//new CurvaBezier(poligono_control);
-
-
-                    poligono_control=[vec3.fromValues(0,0,8),vec3.fromValues(0,0,-8)]
-                    curva_recorrido = new CurvaBezier(poligono_control);//new CurvaCircunferencia(3,[0,0,0])//////
-
-                    discretizacion_forma = obtenerDiscretizacionCurva(curva_forma, 10)
-                    discretizacion_recorrido = obtenerDiscretizacionCurva(curva_recorrido, 2)
-
-                    
-                    objeto_forma = new ObjetoCurva3D();
-                    geometria = ModuloGeometria.obtenerGeometriaCurva3D(curva_forma, 15)
-                    objeto_forma.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
-                    objeto_forma.setColor(1,0,0)
-                    objeto_forma.setPosicion(0,-10,0)
-
-                    //
-                    objeto_tangentes_forma = new ObjetoCurva3D();
-                    geometria = ModuloGeometria.obtenerGeometriaTangentesCurva3D(discretizacion_forma);
-                    objeto_tangentes_forma.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
-                    objeto_tangentes_forma.setColor(1,0,0)
-                    objeto_forma.agregarHijo(objeto_tangentes_forma)
-                    //
-                    
-
-                    objeto_recorrido = new ObjetoCurva3D();
-                    geometria = ModuloGeometria.obtenerGeometriaCurva3D(curva_recorrido, 20)
-                    objeto_recorrido.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
-                    objeto_recorrido.setColor(0,1,0)
-
-
-                    //
-                    objeto_tangentes_recorrido = new ObjetoCurva3D();
-                    geometria = ModuloGeometria.obtenerGeometriaTangentesCurva3D(discretizacion_recorrido);
-                    objeto_tangentes_recorrido.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
-                    objeto_tangentes_recorrido.setColor(0.5,1,0.5)
-                    objeto_recorrido.agregarHijo(objeto_tangentes_recorrido)
-                    //
-
-                    objeto_forma.agregarHijo(objeto_recorrido)
-
-                    objeto.agregarHijo(objeto_forma)
-                    
-
-                    superficie_barrido = new Objeto3D()
-                    geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(discretizacion_forma, discretizacion_recorrido)
-                    superficie_barrido.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
-                    superficie_barrido.setColor(0,1,1)
-                    superficie_barrido.setPosicion(0,-10,0)
-
-
-                    normales_sup_barrido = new ObjetoCurva3D()
-                    normales_sup_barrido.setGeometria(geometria.normalVertexBuffer, geometria.normalIndexBuffer)
-                    normales_sup_barrido.setColor(1,1,1)
-                    superficie_barrido.agregarHijo(normales_sup_barrido)
-                    objeto.agregarHijo(superficie_barrido)
-
+                    objeto_principal = mainScene()
                     
                     setupVertexShaderMatrix();
                     tick();   
@@ -385,9 +321,9 @@
             
             function drawScene(){
                 setupVertexShaderMatrix();
-                matPadre= mat4.create() // matriz identidad para objeto principal
+                matPadre= mat4.create() // matriz identidad para nodo principal
 
-                objeto.dibujar(matPadre);                
+                objeto_principal.dibujar(matPadre);                
             }
             
             

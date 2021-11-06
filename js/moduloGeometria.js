@@ -33,7 +33,6 @@ class ModuloGeometria {
 
         var normalVertexBuffer = {webgl_position_buffer, webgl_normal_buffer}
 
-        console.log(normalIndexBuffer, normalVertexBuffer)
         return {vertexBuffer, indexBuffer, normalVertexBuffer, normalIndexBuffer}
     }
 
