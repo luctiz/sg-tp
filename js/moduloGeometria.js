@@ -26,7 +26,15 @@ class ModuloGeometria {
         var columnas = forma_discretizada.position_list.length / 3
         var filas = recorrido_discretizado.position_list.length / 3
         var indexBuffer = this._getIndexBufferSuperficie(filas, columnas)
-        return {vertexBuffer, indexBuffer}
+
+        var webgl_position_buffer = vertexBuffer.webgl_normallinesposition_buffer
+        var webgl_normal_buffer = vertexBuffer.webgl_normallinesnormals_buffer
+        var normalIndexBuffer = this._getIndexBufferTangentes(forma_discretizada.position_list.length * recorrido_discretizado.position_list.length)
+
+        var normalVertexBuffer = {webgl_position_buffer, webgl_normal_buffer}
+
+        console.log(normalIndexBuffer, normalVertexBuffer)
+        return {vertexBuffer, indexBuffer, normalVertexBuffer, normalIndexBuffer}
     }
 
 
@@ -176,7 +184,7 @@ class ModuloGeometria {
     static _getIndexBufferTangentes(position_buffer_length){
         var curve_index=[]
 
-        for (i = 0; i < position_buffer_length; i++){
+        for (var i = 0; i < position_buffer_length; i++){
             curve_index.push(i)
         }
 
@@ -213,6 +221,10 @@ class ModuloGeometria {
         var pos_buffer = []
         var normal_buffer = []
 
+        //
+        var normallines_pos_buffer = []
+        var normallines_normal_buffer = []//
+
         var p0 = vec3.fromValues(recorrido_discretizado.position_list[0],position_list[0+1],position_list[0+2])
         var p1 = vec3.fromValues(recorrido_discretizado.position_list[0+3],position_list[0+4],position_list[0+5])
         var p2 = vec3.fromValues(recorrido_discretizado.position_list[0+6],position_list[0+7],position_list[0+8])
@@ -220,47 +232,88 @@ class ModuloGeometria {
         var v0 =vec3.create()
         var v1 = vec3.create()
         var nm = vec3.create()
+        // asumiendo que la normal es constante (los puntos de la curva recorrido estan contenidos en un plano)
 
         vec3.sub(v0,p1,p0)
         vec3.sub(v1,p2,p0)
         vec3.cross(nm,v0,v1)
         vec3.normalize(nm,nm)
 
+
         for (var j = 0; j<(recorrido_discretizado.position_list.length); j+=3){
             var punto_recorrido = vec3.fromValues(recorrido_discretizado.position_list[j],position_list[j+1],position_list[j+2])
             var tg = vec3.fromValues(recorrido_discretizado.tang_list[j],recorrido_discretizado.tang_list[j+1],recorrido_discretizado.tang_list[j+2])
+            var binormal = vec3.create()
+            vec3.cross(binormal, tg, nm) //producto vectorial entre tangente y normal
+
             for (var i = 0; i<(forma_discretizada.position_list.length); i+=3){
-                var position = vec3.fromValues(forma_discretizada.position_list[i],forma_discretizada.position_list[i+1],forma_discretizada.position_list[i+2])
+                var forma_pos = vec3.fromValues(forma_discretizada.position_list[i],forma_discretizada.position_list[i+1],forma_discretizada.position_list[i+2])
                 
                 var aux1 = vec3.create() 
-                vec3.scale(aux1, nm, position[0]) 
-
-
                 var aux2 = vec3.create() 
-                vec3.cross(aux2, tg, nm) //producto vectorial entre tangente y normal
-                
-                normal_buffer.push(aux2[0])
-                normal_buffer.push(aux2[1])
-                normal_buffer.push(aux2[2])
-                
-                vec3.scale(aux2, aux2,position[1])
-
                 var aux3 = vec3.create();
-                vec3.scale(aux3, tg, position[2])
 
-                var new_position = vec3.fromValues(0,0,0);
-                vec3.add(new_position, new_position, punto_recorrido)
-                vec3.add(new_position, new_position, aux1)
-                vec3.add(new_position, new_position, aux2)
-                vec3.add(new_position, new_position, aux3)
+                vec3.scale(aux1, nm, forma_pos[0]) 
+                vec3.scale(aux2, binormal,forma_pos[1])
+                vec3.scale(aux3, tg, forma_pos[2])
 
-                pos_buffer.push(new_position[0])
-                pos_buffer.push(new_position[1])
-                pos_buffer.push(new_position[2])
+                var new_forma_pos = vec3.create()
+                vec3.add(new_forma_pos, new_forma_pos, punto_recorrido)
+                vec3.add(new_forma_pos, new_forma_pos, aux1)
+                vec3.add(new_forma_pos, new_forma_pos, aux2)
+                vec3.add(new_forma_pos, new_forma_pos, aux3)
+
+                pos_buffer.push(new_forma_pos[0])
+                pos_buffer.push(new_forma_pos[1])
+                pos_buffer.push(new_forma_pos[2])
+
+
+
+                var forma_tg = vec3.fromValues(forma_discretizada.tang_list[i],forma_discretizada.tang_list[i+1],forma_discretizada.tang_list[i+2])
+
+                vec3.scale(aux1, nm, forma_tg[0]) 
+                vec3.scale(aux2, binormal,forma_tg[1])
+                vec3.scale(aux3, tg, forma_tg[2])
+
+                var new_forma_tg = vec3.create()
+
+                vec3.add(new_forma_tg, new_forma_tg, aux1)
+                vec3.add(new_forma_tg, new_forma_tg, aux2)
+                vec3.add(new_forma_tg, new_forma_tg, aux3)
+
+                var sup_normal = vec3.create()
+                vec3.cross(sup_normal, new_forma_tg, tg)
+
+
+                vec3.normalize(sup_normal,sup_normal)
+
+                normal_buffer.push(sup_normal[0])
+                normal_buffer.push(sup_normal[1])
+                normal_buffer.push(sup_normal[2])
+
+
+
+                //
+                normallines_pos_buffer.push(pos_buffer.at(-3))
+                normallines_pos_buffer.push(pos_buffer.at(-2))
+                normallines_pos_buffer.push(pos_buffer.at(-1))
+
+                normallines_pos_buffer.push(pos_buffer.at(-3) + normal_buffer.at(-3))
+                normallines_pos_buffer.push(pos_buffer.at(-2) + normal_buffer.at(-2))
+                normallines_pos_buffer.push(pos_buffer.at(-1) + normal_buffer.at(-1))
+
+                normallines_normal_buffer.push(1)
+                normallines_normal_buffer.push(1)
+                normallines_normal_buffer.push(1)
+                normallines_normal_buffer.push(1)
+                normallines_normal_buffer.push(1)
+                normallines_normal_buffer.push(1)
+                //
+
+
+
             }
         }
-        console.log(pos_buffer)
-        console.log(pos_buffer.length / (recorrido_discretizado.position_list.length)) 
 
         var webgl_position_buffer = gl.createBuffer();
         webgl_position_buffer.itemSize = 3;
@@ -273,9 +326,24 @@ class ModuloGeometria {
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normal_buffer), gl.STATIC_DRAW);
         webgl_normal_buffer.itemSize = 3;
 
+        //
+        var webgl_normallinesposition_buffer = gl.createBuffer();
+        webgl_normallinesposition_buffer.itemSize = 3;
+        gl.bindBuffer(gl.ARRAY_BUFFER, webgl_normallinesposition_buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normallines_pos_buffer), gl.STATIC_DRAW);
+
+        
+        var webgl_normallinesnormals_buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, webgl_normallinesnormals_buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normallines_normal_buffer), gl.STATIC_DRAW);
+        webgl_normallinesnormals_buffer.itemSize = 3;
+        //
+
         return {
             webgl_position_buffer,
             webgl_normal_buffer,
+            webgl_normallinesposition_buffer,
+            webgl_normallinesnormals_buffer,
         }
     }
 

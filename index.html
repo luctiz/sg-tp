@@ -184,18 +184,17 @@
             }
 
             
-            // crea una circunferencia con normal segun el vec_normal
-            function CurvaCircunferencia(radio, vec_normal){
+            // crea una circunferencia en el plano xy rotada segun vec_rot
+            function CurvaCircunferencia(radio, vec_rot){
                 this.evaluarPunto= function(t){
-                    normal = vec3.fromValues(vec_normal[0],vec_normal[1],vec_normal[2])
-                    vec3.normalize(normal,normal)
 
-                    position = vec3.fromValues(Math.PI*2* Math.cos(t),Math.PI*2*Math.sin(t),0)
-
-                    vec3.cross(position, position, normal)
+                    position = vec3.fromValues(Math.cos(Math.PI*2*t),Math.sin(Math.PI*2*t),0)
+                    vec3.scale(position, position, radio)
+                    vec3.rotateX(position, position, vec3.fromValues(0,0,0), vec_rot[0])
+                    vec3.rotateY(position, position, vec3.fromValues(0,0,0), vec_rot[1])
+                    vec3.rotateZ(position, position, vec3.fromValues(0,0,0), vec_rot[2])
 
                     return position;
-
                 }
             }
 
@@ -222,7 +221,7 @@
                     } else {
                         p1 = curva.evaluarPunto((i+0.01)/auxn)
                     }
-                    tang_vec = vec3.create() // esto quedó bien
+                    tang_vec = vec3.create()
                     vec3.sub(tang_vec,p1,p0)  
                     vec3.normalize(tang_vec,tang_vec)
                     tang_list.push(tang_vec[0])
@@ -257,7 +256,7 @@
             var normalMatrix = mat4.create();
             var rotate_angle = -1.57078;
             
-            let droneCam=new DroneCameraControl([0,0,10]);
+            let droneCam=new DroneCameraControl([0,0,6]);
 
          
             function initWebGL(){
@@ -283,41 +282,50 @@
                     objeto.setPosicion(0,10,0);
                     objeto.setColor(0,1,0);
 
-
                     poligono_control=[vec3.fromValues(1,0,0), vec3.fromValues(0,3,0), vec3.fromValues(-1,0,0)]
-                    curva1 = new CurvaBezier(poligono_control)//new CurvaCircunferencia(1,[0,0,1]);
-
-                    curva3D = new ObjetoCurva3D();
-                    geometria = ModuloGeometria.obtenerGeometriaCurva3D(curva1, 15)
-                    curva3D.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
-                    curva3D.setColor(1,0,0)
-                    curva3D.setPosicion(0,-10,0)
-
-                    /*tangentesCurva3D = new ObjetoCurva3D();
-                    disc_curva1 = obtenerDiscretizacionCurva(curva1, 15)
-                    geometria = ModuloGeometria.obtenerGeometriaTangentesCurva3D(disc_curva1);
-                    console.log(geometria)
-                    tangentesCurva3D.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
-                    tangentesCurva3D.setColor(1,0,0)
-                    curva3D.agregarHijo(tangentesCurva3D)*/
-
+                    curva_forma = new CurvaCircunferencia(1,[0,0,1.57]);
 
 
                     poligono_control=[vec3.fromValues(0,0,8),vec3.fromValues(0,8,0),vec3.fromValues(0,0,-8)]
-                    curva2 = new CurvaBezier(poligono_control);
+                    curva_recorrido = new CurvaCircunferencia(5,[0,0,0])//new CurvaBezier(poligono_control);//
+
+                    discretizacion_forma = obtenerDiscretizacionCurva(curva_forma, 15)
+                    discretizacion_recorrido = obtenerDiscretizacionCurva(curva_recorrido, 15)
+
+                    
+//new CurvaBezier(poligono_control)//
+                    objeto_forma = new ObjetoCurva3D();
+                    geometria = ModuloGeometria.obtenerGeometriaCurva3D(curva_forma, 15)
+                    objeto_forma.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
+                    objeto_forma.setColor(1,0,0)
+                    objeto_forma.setPosicion(0,-10,0)
+
+                    //
+                    objeto_tangentes_forma = new ObjetoCurva3D();
+                    geometria = ModuloGeometria.obtenerGeometriaTangentesCurva3D(discretizacion_forma);
+                    objeto_tangentes_forma.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
+                    objeto_tangentes_forma.setColor(1,0,0)
+                    objeto_forma.agregarHijo(objeto_tangentes_forma)
+                    //
+                    
+
+                    objeto_recorrido = new ObjetoCurva3D();
+                    geometria = ModuloGeometria.obtenerGeometriaCurva3D(curva_recorrido, 15)
+                    objeto_recorrido.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
+                    objeto_recorrido.setColor(0,1,0)
 
 
-                    curva23D = new ObjetoCurva3D();
-                    geometria = ModuloGeometria.obtenerGeometriaCurva3D(curva2, 8)
-                    curva23D.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
-                    curva23D.setColor(0,1,0)
-                    curva3D.agregarHijo(curva23D)
+                    //
+                    objeto_tangentes_recorrido = new ObjetoCurva3D();
+                    geometria = ModuloGeometria.obtenerGeometriaTangentesCurva3D(discretizacion_recorrido);
+                    objeto_tangentes_recorrido.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
+                    objeto_tangentes_recorrido.setColor(0.5,1,0.5)
+                    objeto_recorrido.agregarHijo(objeto_tangentes_recorrido)
+                    //
 
-                    objeto.agregarHijo(curva3D)
+                    objeto_forma.agregarHijo(objeto_recorrido)
 
-
-                    discretizacion_forma = obtenerDiscretizacionCurva(curva1, 15)
-                    discretizacion_recorrido = obtenerDiscretizacionCurva(curva2, 8)
+                    objeto.agregarHijo(objeto_forma)
 
 
                     superficie_barrido = new Objeto3D()
@@ -325,6 +333,12 @@
                     superficie_barrido.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
                     superficie_barrido.setColor(0,1,1)
                     superficie_barrido.setPosicion(0,-10,0)
+
+
+                    normales_sup_barrido = new ObjetoCurva3D()
+                    normales_sup_barrido.setGeometria(geometria.normalVertexBuffer, geometria.normalIndexBuffer)
+                    normales_sup_barrido.setColor(1,1,1)
+                    superficie_barrido.agregarHijo(normales_sup_barrido)
                     objeto.agregarHijo(superficie_barrido)
 
                     
