@@ -221,27 +221,42 @@ class ModuloGeometria {
         var pos_buffer = []
         var normal_buffer = []
 
-        //
+        // codigo solamente por si se quiere dibujar normales
         var normallines_pos_buffer = []
-        var normallines_normal_buffer = []//
+        var normallines_normal_buffer = []
+        //
 
-        var p0 = vec3.fromValues(recorrido_discretizado.position_list[0],position_list[0+1],position_list[0+2])
-        var p1 = vec3.fromValues(recorrido_discretizado.position_list[0+3],position_list[0+4],position_list[0+5])
-        var p2 = vec3.fromValues(recorrido_discretizado.position_list[0+6],position_list[0+7],position_list[0+8])
+        var p0 = vec3.fromValues(recorrido_discretizado.position_list[0],recorrido_discretizado.position_list[0+1],recorrido_discretizado.position_list[0+2])
+        var p1 = vec3.fromValues(recorrido_discretizado.position_list[0+3],recorrido_discretizado.position_list[0+4],recorrido_discretizado.position_list[0+5])
+        var p2 = vec3.fromValues(recorrido_discretizado.position_list[0+6],recorrido_discretizado.position_list[0+7],recorrido_discretizado.position_list[0+8])
+        if (Number.isNaN(p2[0])){
+            p2 = p1;
+        }
 
         var v0 =vec3.create()
         var v1 = vec3.create()
         var nm = vec3.create()
-        // asumiendo que la normal es constante (los puntos de la curva recorrido estan contenidos en un plano)
+        // asumo que la normal es constante (los puntos de la curva recorrido estan contenidos en un plano)
 
         vec3.sub(v0,p1,p0)
         vec3.sub(v1,p2,p0)
         vec3.cross(nm,v0,v1)
+        if ((nm[0] == 0) & (nm[1] == 0) & (nm[2] == 0)){ // en este caso me quedo con un vector normal cualquiera a la recta
+            if (v0[0] != 0) {
+                nm = vec3.fromValues((-v0[1]*2 - v0[2]*2)/v0[0], 2, 2)
+            } else if (v0[1] != 0){
+                nm=  vec3.fromValues(2,(-v0[0]*2 - v0[2]*2)/v0[1],2)
+            } else {
+                nm=  vec3.fromValues(2,2,(-v0[0]*2 - v0[1]*2)/v0[2])
+            }
+            
+
+        }
         vec3.normalize(nm,nm)
 
 
         for (var j = 0; j<(recorrido_discretizado.position_list.length); j+=3){
-            var punto_recorrido = vec3.fromValues(recorrido_discretizado.position_list[j],position_list[j+1],position_list[j+2])
+            var punto_recorrido = vec3.fromValues(recorrido_discretizado.position_list[j], recorrido_discretizado.position_list[j+1], recorrido_discretizado.position_list[j+2])
             var tg = vec3.fromValues(recorrido_discretizado.tang_list[j],recorrido_discretizado.tang_list[j+1],recorrido_discretizado.tang_list[j+2])
             var binormal = vec3.create()
             vec3.cross(binormal, tg, nm) //producto vectorial entre tangente y normal
@@ -270,34 +285,24 @@ class ModuloGeometria {
 
 
                 var forma_tg = vec3.fromValues(forma_discretizada.tang_list[i],forma_discretizada.tang_list[i+1],forma_discretizada.tang_list[i+2])
-
                 vec3.scale(aux1, nm, forma_tg[0]) 
                 vec3.scale(aux2, binormal,forma_tg[1])
                 vec3.scale(aux3, tg, forma_tg[2])
-
                 var new_forma_tg = vec3.create()
-
                 vec3.add(new_forma_tg, new_forma_tg, aux1)
                 vec3.add(new_forma_tg, new_forma_tg, aux2)
                 vec3.add(new_forma_tg, new_forma_tg, aux3)
-
                 var sup_normal = vec3.create()
                 vec3.cross(sup_normal, new_forma_tg, tg)
-
-
                 vec3.normalize(sup_normal,sup_normal)
-
                 normal_buffer.push(sup_normal[0])
                 normal_buffer.push(sup_normal[1])
                 normal_buffer.push(sup_normal[2])
 
-
-
-                //
+                // codigo solamente por si se quiere dibujar normales
                 normallines_pos_buffer.push(pos_buffer.at(-3))
                 normallines_pos_buffer.push(pos_buffer.at(-2))
                 normallines_pos_buffer.push(pos_buffer.at(-1))
-
                 normallines_pos_buffer.push(pos_buffer.at(-3) + normal_buffer.at(-3))
                 normallines_pos_buffer.push(pos_buffer.at(-2) + normal_buffer.at(-2))
                 normallines_pos_buffer.push(pos_buffer.at(-1) + normal_buffer.at(-1))
@@ -309,8 +314,6 @@ class ModuloGeometria {
                 normallines_normal_buffer.push(1)
                 normallines_normal_buffer.push(1)
                 //
-
-
 
             }
         }
@@ -348,4 +351,37 @@ class ModuloGeometria {
     }
 
                         
+}
+
+
+function obtenerDiscretizacionCurva(curva, cantidad_puntos_a_discretizar){
+    var position_list = []
+    var tang_list = []
+    
+    let auxn = (cantidad_puntos_a_discretizar -1)
+    for (let i = 0; i <= auxn; i++){
+        punto = curva.evaluarPunto(i/auxn)
+        position_list.push(punto[0])
+        position_list.push(punto[1])
+        position_list.push(punto[2])
+
+        if (i == 0){
+            p0 = punto;
+        } else {
+            p0 = curva.evaluarPunto((i-0.01)/auxn);
+        }
+        if (i == 1){
+            p1 = punto
+        } else {
+            p1 = curva.evaluarPunto((i+0.01)/auxn)
+        }
+        tang_vec = vec3.create()
+        vec3.sub(tang_vec,p1,p0)  
+        vec3.normalize(tang_vec,tang_vec)
+        tang_list.push(tang_vec[0])
+        tang_list.push(tang_vec[1])
+        tang_list.push(tang_vec[2])
+    }
+
+    return {position_list, tang_list}
 }

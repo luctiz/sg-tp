@@ -197,42 +197,6 @@
                     return position;
                 }
             }
-
-            
-
-            function obtenerDiscretizacionCurva(curva, cantidad_puntos_a_discretizar){
-                position_list = []
-                tang_list = []
-                
-                let auxn = (cantidad_puntos_a_discretizar -1)
-                for (let i = 0; i <= auxn; i++){
-                    punto = curva.evaluarPunto(i/auxn)
-                    position_list.push(punto[0])
-                    position_list.push(punto[1])
-                    position_list.push(punto[2])
-
-                    if (i == 0){
-                        p0 = punto;
-                    } else {
-                        p0 = curva.evaluarPunto((i-0.01)/auxn);
-                    }
-                    if (i == 1){
-                        p1 = punto
-                    } else {
-                        p1 = curva.evaluarPunto((i+0.01)/auxn)
-                    }
-                    tang_vec = vec3.create()
-                    vec3.sub(tang_vec,p1,p0)  
-                    vec3.normalize(tang_vec,tang_vec)
-                    tang_list.push(tang_vec[0])
-                    tang_list.push(tang_vec[1])
-                    tang_list.push(tang_vec[2])
-                }
-
-                return {position_list, tang_list}
-            }
-
-
             
             var mat4=glMatrix.mat4;
             var vec3=glMatrix.vec3;
@@ -256,7 +220,7 @@
             var normalMatrix = mat4.create();
             var rotate_angle = -1.57078;
             
-            let droneCam=new DroneCameraControl([0,0,6]);
+            let droneCam=new DroneCameraControl([0,0,10]);
 
          
             function initWebGL(){
@@ -283,17 +247,16 @@
                     objeto.setColor(0,1,0);
 
                     poligono_control=[vec3.fromValues(1,0,0), vec3.fromValues(0,3,0), vec3.fromValues(-1,0,0)]
-                    curva_forma = new CurvaCircunferencia(1,[0,0,1.57]);
+                    curva_forma = new CurvaCircunferencia(1,[0,0,1.57])//new CurvaBezier(poligono_control);
 
 
-                    poligono_control=[vec3.fromValues(0,0,8),vec3.fromValues(0,8,0),vec3.fromValues(0,0,-8)]
-                    curva_recorrido = new CurvaCircunferencia(5,[0,0,0])//new CurvaBezier(poligono_control);//
+                    poligono_control=[vec3.fromValues(0,0,8),vec3.fromValues(0,0,-8)]
+                    curva_recorrido = new CurvaBezier(poligono_control);//new CurvaCircunferencia(3,[0,0,0])//////
 
-                    discretizacion_forma = obtenerDiscretizacionCurva(curva_forma, 15)
-                    discretizacion_recorrido = obtenerDiscretizacionCurva(curva_recorrido, 15)
+                    discretizacion_forma = obtenerDiscretizacionCurva(curva_forma, 10)
+                    discretizacion_recorrido = obtenerDiscretizacionCurva(curva_recorrido, 2)
 
                     
-//new CurvaBezier(poligono_control)//
                     objeto_forma = new ObjetoCurva3D();
                     geometria = ModuloGeometria.obtenerGeometriaCurva3D(curva_forma, 15)
                     objeto_forma.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
@@ -310,7 +273,7 @@
                     
 
                     objeto_recorrido = new ObjetoCurva3D();
-                    geometria = ModuloGeometria.obtenerGeometriaCurva3D(curva_recorrido, 15)
+                    geometria = ModuloGeometria.obtenerGeometriaCurva3D(curva_recorrido, 20)
                     objeto_recorrido.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
                     objeto_recorrido.setColor(0,1,0)
 
@@ -326,7 +289,7 @@
                     objeto_forma.agregarHijo(objeto_recorrido)
 
                     objeto.agregarHijo(objeto_forma)
-
+                    
 
                     superficie_barrido = new Objeto3D()
                     geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(discretizacion_forma, discretizacion_recorrido)
