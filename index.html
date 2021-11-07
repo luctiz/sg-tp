@@ -20,6 +20,7 @@
         <script type="text/javascript" src="js/objeto3D.js"></script>
         <script type="text/javascript" src="js/moduloGeometria.js"></script>
         <script type="text/javascript" src="droneCamera.js"></script>
+        <script src="js/dat.gui.js"></script>
         <script type="text/javascript" src="js/scenes.js"></script>
 
         
@@ -65,11 +66,11 @@
         </script>
         
         <script>
-            function Esfera(radio){
+            function Esfera(radio, porcion_fi=Math.PI*2){
 
                 this.getPosicion=function(u,v){
                     var tita = v*Math.PI;
-                    var fi = u*Math.PI*2
+                    var fi = u*porcion_fi
                     var x = radio*Math.sin(tita)*Math.cos(fi)
                     var y = radio*Math.sin(tita)*Math.sin(fi)
                     var z = radio*Math.cos(tita)
@@ -186,10 +187,10 @@
 
             
             // crea una circunferencia en el plano xy rotada segun vec_rot
-            function CurvaCircunferencia(radio, vec_rot){
+            function CurvaCircunferencia(radio, vec_rot, parametrizacion = Math.PI*2){
                 this.evaluarPunto= function(t){
 
-                    position = vec3.fromValues(Math.cos(Math.PI*2*t),Math.sin(Math.PI*2*t),0)
+                    position = vec3.fromValues(Math.cos(parametrizacion*t),Math.sin(parametrizacion*t),0)
                     vec3.scale(position, position, radio)
                     vec3.rotateX(position, position, vec3.fromValues(0,0,0), vec_rot[0])
                     vec3.rotateY(position, position, vec3.fromValues(0,0,0), vec_rot[1])
@@ -221,9 +222,16 @@
             var normalMatrix = mat4.create();
             var rotate_angle = -1.57078;
             
-            let droneCam=new DroneCameraControl([25,1,0]);
+            var global_t = 0;
+            let droneCam=new DroneCameraControl([30,0,-14]);
 
-         
+            
+            var cantidad_filas_paneles = 4;
+            var angulo_paneles = 330;
+            var velocidad_rotacion_anillo = 0; // vueltas por segundo
+            var cantidad_modulos_anillo = 4;
+
+
             function initWebGL(){
 
                 canvas = document.getElementById("my-canvas");  
@@ -242,7 +250,10 @@
                     objeto_principal = mainScene()
                     
                     setupVertexShaderMatrix();
+                    initMenu();
+
                     tick();   
+                    
 
                 }else{    
                     alert(  "Error: Your browser does not appear to support WebGL.");
@@ -333,9 +344,28 @@
                 requestAnimationFrame(tick);
                 droneCam.update();
                 drawScene();
+                global_t+=0.1
                 //objeto.animate();
             }
 
+
+            function initMenu(){
+                var gui = new dat.GUI();
+                
+                // Codigo mio:
+                const reconstruirFolder = gui.addFolder('Para reconstruir forma:')
+                reconstruirFolder.add(window, "cantidad_filas_paneles",1,10).step(1);
+                reconstruirFolder.add(window, "angulo_paneles",0,360).step(5);
+                reconstruirFolder.add(window, "velocidad_rotacion_anillo",0,1).step(0.05);
+                reconstruirFolder.add(window, "cantidad_modulos_anillo",2,8).step(1);
+
+                var obj = { reconstruir:function(){ objeto_principal = mainScene(); }};
+
+                reconstruirFolder.add(obj,'reconstruir');
+                reconstruirFolder.open()
+                //
+                
+            }
             window.onload=initWebGL;
 
         </script>

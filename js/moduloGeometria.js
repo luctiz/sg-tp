@@ -21,19 +21,25 @@ class ModuloGeometria {
         return {vertexBuffer, indexBuffer}
     }
 
-    static obtenerGeometriaSuperficieBarrido(forma_discretizada, recorrido_discretizado){
+    static obtenerGeometriaSuperficieBarrido(forma_discretizada, recorrido_discretizado, tapas=-1){
         var vertexBuffer = this._getVertexBufferSuperficieBarrido(forma_discretizada,recorrido_discretizado);
         var columnas = forma_discretizada.position_list.length / 3
         var filas = recorrido_discretizado.position_list.length / 3
-        var indexBuffer = this._getIndexBufferSuperficie(filas, columnas)
+        var indexBuffer ;
+        if (tapas == -1){
+            indexBuffer = this._getIndexBufferSuperficie(filas, columnas)
+        } else{
+            indexBuffer = this._getIndexBufferSuperficieAgregandoTapas(filas, columnas, tapas)
+        }
 
+        /* Tendria que adaptar esto para el agregado de tapas
         var webgl_position_buffer = vertexBuffer.webgl_normallinesposition_buffer
         var webgl_normal_buffer = vertexBuffer.webgl_normallinesnormals_buffer
         var normalIndexBuffer = this._getIndexBufferTangentes(forma_discretizada.position_list.length * recorrido_discretizado.position_list.length)
 
-        var normalVertexBuffer = {webgl_position_buffer, webgl_normal_buffer}
+        var normalVertexBuffer = {webgl_position_buffer, webgl_normal_buffer}*/
 
-        return {vertexBuffer, indexBuffer, normalVertexBuffer, normalIndexBuffer}
+        return {vertexBuffer, indexBuffer }//, normalVertexBuffer, normalIndexBuffer}
     }
 
 
@@ -106,6 +112,58 @@ class ModuloGeometria {
                 }
                 index.push((i+1)*cols+cols-1);
             }
+            var webgl_index_buffer = gl.createBuffer();
+            webgl_index_buffer.itemSize = 1;
+            webgl_index_buffer.numItems = index.length;
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, webgl_index_buffer);
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(index), gl.STATIC_DRAW);  
+            return webgl_index_buffer;
+    }
+
+    static _getIndexBufferSuperficieAgregandoTapas(rows,cols, tipo){
+        var index=[];
+
+        if (tipo==1){
+            for (var j=2; j<rows-1;j++){
+                index.push(0);
+                index.push((cols)*(j-1));
+                index.push((cols)*j);
+            }
+        } else {
+
+            for (var j=2; j<cols-1;j++){
+                index.push(0);
+                index.push(j-1);
+                index.push(j);
+            }
+        }
+
+            for (var i=0;i<rows-1;i++){
+                index.push(i*cols);
+                for (var j=0;j<cols-1;j++){
+                    index.push(i*cols+j);
+                    index.push((i+1)*cols+j);
+                    index.push(i*cols+j+1);
+                    index.push((i+1)*cols+j+1);
+                }
+                index.push((i+1)*cols+cols-1);
+            }
+
+        if (tipo==1){
+            for (var j=2; j<rows-1;j++){
+                index.push(cols-1+0);
+                index.push(cols-1+(cols)*(j-1));
+                index.push(cols-1+(cols)*j);
+            }
+        } else {
+
+            for (var j=2; j<cols-1;j++){
+                index.push(((rows-1)*cols)+0);
+                index.push(((rows-1)*cols) +j-1);
+                index.push(((rows-1)*cols)+j);
+            }
+        }
+
             var webgl_index_buffer = gl.createBuffer();
             webgl_index_buffer.itemSize = 1;
             webgl_index_buffer.numItems = index.length;

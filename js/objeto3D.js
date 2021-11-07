@@ -1,26 +1,76 @@
+
+class Transformacion{
+    constructor(){};
+    transform(m){
+    }
+}
+
+
+class Rotacion extends Transformacion{
+    constructor(radianes, eje){
+        super()
+        this.radianes = radianes;
+        this.eje = eje
+    }
+    transform(m){
+        mat4.rotate(m,m,this.radianes,this.eje)
+    }
+}
+
+class RotacionSegunTiempo extends Rotacion{
+    constructor(radianes, eje){
+        super(radianes,eje)
+    }
+    transform(m){
+        mat4.rotate(m,m,this.radianes * global_t,this.eje)
+    }
+}
+
+class Traslacion extends Transformacion{
+    constructor(posicion){
+        super()
+        this.posicion = posicion;
+    }
+    transform(m){
+        mat4.translate(m,m, this.posicion);
+    }
+}
+
+class Escalado extends Transformacion{
+    constructor(escala){
+        super()
+        this.escala = escala;
+    }
+    transform(m){
+        mat4.scale(m,m, this.escala);
+    }
+}
+
+
 var modo = "smooth"
 class Objeto3D {
     // atributos privados
     constructor(){
-
         this.vertexBuffer = null; // position, normal & uvs
         this.indexBuffer = null;
         this.matModelado = mat4.create(); // transformacion respecto de su padre
-        this.posicion = vec3.fromValues(0,0,0); //a partir de estos atributos se calcula la matriz respectiva
-        this.rotacion = vec3.fromValues(0,0,0);
-        this.escala = vec3.fromValues(1,1,1);
+        //this.posicion = vec3.fromValues(0,0,0); //a partir de estos atributos se calcula la matriz respectiva
+        //this.rotacion = vec3.fromValues(0,0,0);
+        //this.rotaciones = [];
+        this.transformaciones = []
+        //this.escala = vec3.fromValues(1,1,1);
         this.color = vec3.fromValues(1,1,1);
         this.hijos=[];
-
     }
 
     // metodo privado, usa posicion, rotacion y escala. Se actualiza cada vez que se dibuja el objeto
     _actualizarMatrizModelado() {
         let m = mat4.create(); // crear una matriz identidad
-
-        mat4.translate(m,m, this.posicion);
-        mat4.rotate(m,m,Math.PI/2,this.rotacion);
-        mat4.scale(m,m, this.escala);
+        //mat4.translate(m,m, this.posicion);
+        for (var i = 0; i < this.transformaciones.length; i++) {
+            this.transformaciones[i].transform(m)
+        }
+        //mat4.scale(m,m, this.escala);
         this.matModelado = m;
     } 
 
@@ -83,7 +133,9 @@ class Objeto3D {
     }
 
     agregarHijo = function(h) {
-        this.hijos.push(h);
+        var hijo = new Objeto3D;
+        Object.assign(hijo,h)
+        this.hijos.push(hijo);
     }
 
     hijos = function(){
@@ -98,13 +150,30 @@ class Objeto3D {
     }
 
     setPosicion = function (x,y,z) {
-        this.posicion = vec3.fromValues(x,y,z)
+        //this.posicion = vec3.fromValues(x,y,z)
     }
-    setRotacion = function(x,y,z) {
-        this.rotacion = vec3.fromValues(x,y,z)
+
+    addTraslacion = function (x,y,z) {
+        this.transformaciones.push(new Traslacion(vec3.fromValues(x,y,z)));
     }
+
+    addEscalado = function (x,y,z) {
+        this.transformaciones.push(new Escalado(vec3.fromValues(x,y,z)));
+    }
+
+    addRotacion = function(radianes, x,y,z) {
+        //this.rotacion = vec3.fromValues(x,y,z)
+        var eje = vec3.fromValues(x,y,z)
+        this.transformaciones.push(new Rotacion(radianes,eje));
+    }
+
+    addRotacionSegunTiempo = function(radianes, x,y,z) {
+        var eje = vec3.fromValues(x,y,z)
+        this.transformaciones.push(new RotacionSegunTiempo(radianes,eje));
+    }
+
     setEscala = function (x,y,z) {
-        this.escala = vec3.fromValues(x,y,z)
+        //this.escala = vec3.fromValues(x,y,z)
     }
 
     setColor = function (r,g,b) {
@@ -116,7 +185,8 @@ class Objeto3D {
         rotate_angle += 0.01;
         //mat4.identity(matModelado);
         //mat4.rotate(matModelado,matModelado, rotate_angle, [1.0, 0.0, 1.0]);
-        this.setRotacion(Math.cos(rotate_angle), 0, Math.sin(rotate_angle))
+        
+        //cuidado: this.setRotacion(Math.cos(rotate_angle), 0, Math.sin(rotate_angle))
 
 
         //mat4.identity(normalMatrix);
