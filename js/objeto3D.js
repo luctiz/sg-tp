@@ -138,19 +138,11 @@ class Objeto3D {
         this.hijos.push(hijo);
     }
 
-    hijos = function(){
-        return this.hijos
-    }
-
     quitarHijo = function(h) {
         index = this.hijos.indexOf(h);
         if (index > -1) {
             this.hijos.splice(index, 1);
         }
-    }
-
-    setPosicion = function (x,y,z) {
-        //this.posicion = vec3.fromValues(x,y,z)
     }
 
     addTraslacion = function (x,y,z) {
@@ -172,29 +164,10 @@ class Objeto3D {
         this.transformaciones.push(new RotacionSegunTiempo(radianes,eje));
     }
 
-    setEscala = function (x,y,z) {
-        //this.escala = vec3.fromValues(x,y,z)
-    }
-
     setColor = function (r,g,b) {
         this.color = vec3.fromValues(r,g,b)
     }
 
-    animate = function() {
-                
-        rotate_angle += 0.01;
-        //mat4.identity(matModelado);
-        //mat4.rotate(matModelado,matModelado, rotate_angle, [1.0, 0.0, 1.0]);
-        
-        //cuidado: this.setRotacion(Math.cos(rotate_angle), 0, Math.sin(rotate_angle))
-
-
-        //mat4.identity(normalMatrix);
-        //mat4.multiply(normalMatrix,viewMatrix,matModelado);
-        //mat4.invert(normalMatrix,normalMatrix);
-        //mat4.transpose(normalMatrix,normalMatrix);
-
-    }
 }
 
 

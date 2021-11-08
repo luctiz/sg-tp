@@ -17,7 +17,7 @@
 
         let rotationMatrix=mat4.create();	
         //
-        mat4.rotate(rotationMatrix,rotationMatrix,Math.PI/2,vec3.fromValues(0,1,0));                
+        mat4.rotate(rotationMatrix,rotationMatrix,-Math.PI/10,vec3.fromValues(1,0,0));                
         //
 
         let worldMatrix=mat4.create();
@@ -136,8 +136,7 @@
                 case "q": 
                     camState.zRotVelTarget=0;break; 
                 case "e":
-                    camState.zRotVelTarget=0;break;                           
-                    
+                    camState.zRotVelTarget=0;break;                                
           
             }                 
             

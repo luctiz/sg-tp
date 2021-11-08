@@ -374,6 +374,50 @@ function geometriaPanel(){
     return ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido, 0)
 }
 
+function geometriaCuerpoCapsula(){
+    p_control = [[-1.8,0,0],[0,0,0],[1.8,-1,0]]
+    curva_forma = new CurvaBezier(p_control)
+    disc_curva_forma = obtenerDiscretizacionCurva(curva_forma,8)
+    
+    curva_recorrido = new CurvaCircunferencia(2.5,[0,0,0])
+    disc_curva_recorrido = obtenerDiscretizacionCurva(curva_recorrido,20)
+
+    return ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido,1)
+}
+
+function geometriaCabezaCapsula(){
+    p_control = [[1.8,0,0],[2.4,-0.2,0]]
+    curva_forma = new CurvaBezier(p_control)
+    disc_curva_forma = obtenerDiscretizacionCurva(curva_forma,2)
+    
+    curva_recorrido = new CurvaCircunferencia(1.3,[0,0,0])
+    disc_curva_recorrido = obtenerDiscretizacionCurva(curva_recorrido,20)
+
+    return ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido,1)
+}
+
+function geometriaParedTraseraCapsula(){
+    p_control = [[-1.8,1.5,0],[-2.2,1.3,0],[-2.2,1,0]]
+    curva_forma = new CurvaBezier(p_control)
+    disc_curva_forma = obtenerDiscretizacionCurva(curva_forma,4)
+    
+    curva_recorrido = new CurvaCircunferencia(1,[0,0,0])
+    disc_curva_recorrido = obtenerDiscretizacionCurva(curva_recorrido,20)
+
+    return ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido,1)
+}
+
+function geometriaPropulsorCapsula(){
+    p_control = [[-2.2,0,0],[-2.2,0.3,0],[-4,0.8,0]]
+    curva_forma = new CurvaBezier(p_control)
+    disc_curva_forma = obtenerDiscretizacionCurva(curva_forma,10)
+    
+    curva_recorrido = new CurvaCircunferencia(0.3,[0,0,0])
+    disc_curva_recorrido = obtenerDiscretizacionCurva(curva_recorrido,20)
+
+    return ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido)
+}
+
 function mainScene(){
 
     nodo_principal = new Objeto3D()
@@ -518,14 +562,44 @@ function mainScene(){
 
     var planeta = new Objeto3D()
     var sup_planeta = new Esfera(5,Math.PI)
-    geometria = ModuloGeometria.obtenerGeometriaObjeto3D(sup_planeta,10,10)
+    geometria = ModuloGeometria.obtenerGeometriaObjeto3D(sup_planeta,20,20)
     planeta.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
     planeta.setColor(0.50,0.50,1)
-    planeta.addTraslacion(0,-50, 0)
+    planeta.addTraslacion(0,-5000, 0)
 
-    planeta.addEscalado(10,4,10)
-
+    planeta.addEscalado(1800,50,1800)
     nodo_principal.agregarHijo(planeta)
+
+
+    // capsula
+    var capsula = new Objeto3D()
+    capsula.addTraslacion(10,10,10);
+
+    var cuerpoCapsula = new Objeto3D()
+    geometria = geometriaCuerpoCapsula()
+    cuerpoCapsula.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
+    cuerpoCapsula.setColor(0.83,0.63,0.33)
+    capsula.agregarHijo(cuerpoCapsula)
+
+    var cabezaCapsula = new Objeto3D()
+    geometria = geometriaCabezaCapsula()
+    cabezaCapsula.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
+    cabezaCapsula.setColor(0.83,0.63,0.33)
+    capsula.agregarHijo(cabezaCapsula)
+
+    var paredTraseraCapsula = new Objeto3D()
+    geometria = geometriaParedTraseraCapsula()
+    paredTraseraCapsula.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
+    paredTraseraCapsula.setColor(0.83,0.63,0.33)
+    capsula.agregarHijo(paredTraseraCapsula)
+
+    var propulsorCapsula = new Objeto3D()
+    geometria = geometriaPropulsorCapsula()
+    propulsorCapsula.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
+    propulsorCapsula.setColor(0.40,0.40,0.40)
+    capsula.agregarHijo(propulsorCapsula)
+
+    nodo_principal.agregarHijo(capsula)
 
 
 

@@ -21,6 +21,7 @@
         <script type="text/javascript" src="js/moduloGeometria.js"></script>
         <script type="text/javascript" src="droneCamera.js"></script>
         <script src="js/dat.gui.js"></script>
+        <script src="js/jquery.min.js"></script>
         <script type="text/javascript" src="js/scenes.js"></script>
 
         
@@ -57,7 +58,7 @@
 
             void main(void) {
 
-                vec3 lightVec=normalize(vec3(0.0,3.0,5.0)-vPosWorld);
+                vec3 lightVec=normalize(vec3(0.0,3.0,5.0))-normalize(vPosWorld);
                 vec3 diffColor=mix(vec3(0.7,0.7,0.7),vNormal,0.4);
                 vec3 color= dot(lightVec, vNormal) * difuseColor ;
 
@@ -221,17 +222,57 @@
             var projMatrix = mat4.create();
             var normalMatrix = mat4.create();
             var rotate_angle = -1.57078;
-            
+
+
+            const MAX_DISTANCIA_VISTA = 15000;
+            var factor_fov = 1.0
+
+            var camera = 3;
             var global_t = 0;
-            let droneCam=new DroneCameraControl([30,0,-14]);
+            let droneCam=new DroneCameraControl([-10,7,25]);
 
             
             var cantidad_filas_paneles = 4;
             var angulo_paneles = 330;
-            var velocidad_rotacion_anillo = 0; // vueltas por segundo
+            var velocidad_rotacion_anillo = 0.1; // vueltas por segundo
             var cantidad_modulos_anillo = 4;
 
 
+            $('body').on("keydown",function(event){
+                switch (event.keyCode) {
+
+                case 0x31:
+                    camera = 1; 
+                    viewMatrix = obtenerViewMatrixOrbital();
+                    break;
+
+                case 0x32:
+                    camera = 2; break;
+                case 0x33:
+                    camera = 3; break;
+                }
+                    
+            });
+            
+            $('body').on("wheel",function(event, delta){
+
+                switch (event.originalEvent.wheelDelta >= 0) {
+
+                case true:
+                    if (factor_fov >= 0.98){
+                        factor_fov-=0.001; 
+                        updateProjMatrix();
+                    }
+                    break;
+                case false:
+                    if (factor_fov <= 1.02){
+                        factor_fov+=0.001; 
+                        updateProjMatrix();
+                        break;
+                    }
+                }
+                    
+            });  
             function initWebGL(){
 
                 canvas = document.getElementById("my-canvas");  
@@ -271,8 +312,7 @@
                 gl.viewport(0, 0, canvas.width, canvas.height);
 
                 // Matrix de Proyeccion Perspectiva
-
-                mat4.perspective(projMatrix,45, canvas.width / canvas.height, 0.1, 100.0);
+                updateProjMatrix()
                 
                 mat4.identity(modelMatrix);
                 mat4.rotate(modelMatrix,modelMatrix, -1.57078, [1.0, 0.0, 0.0]);
@@ -281,6 +321,10 @@
                 mat4.translate(viewMatrix,viewMatrix, [0.0, 0.0, -5.0]);
             }
                     
+            function updateProjMatrix(){
+                mat4.perspective(projMatrix,factor_fov*45, canvas.width / canvas.height, 0.1, MAX_DISTANCIA_VISTA);
+
+            }
                     
             function initShaders() {
                 //get shader source
@@ -332,6 +376,7 @@
             
             function drawScene(){
                 setupVertexShaderMatrix();
+
                 matPadre= mat4.create() // matriz identidad para nodo principal
 
                 objeto_principal.dibujar(matPadre);                
@@ -339,20 +384,91 @@
             
             
             function tick(){
-                viewMatrix=droneCam.getViewMatrix();
 
                 requestAnimationFrame(tick);
-                droneCam.update();
-                drawScene();
-                global_t+=0.1
-                //objeto.animate();
-            }
+                if (camera == 1) {
+                    if(isMouseDown) {
+                        viewMatrix = obtenerViewMatrixOrbital();
+                    };
+                }
+                else if (camera == 2) {
+                    mat4.lookAt(viewMatrix, vec3.fromValues(-20,40,0), vec3.fromValues(2,-10,-20), vec3.fromValues(0,1,0)) 
+                }
+                else if (camera == 3) {
+                    viewMatrix=droneCam.getViewMatrix();
+                }
 
+
+
+                droneCam.update();
+                //mat4.scale(projMatrix,projMatrix,vec3.fromValues(zoom,zoom,zoom))
+
+                drawScene();
+
+                global_t+=0.1
+            }
+            // orbital
+
+
+            // manejo de mouse y teclado
+
+            var previousClientX = 0;
+            var previousClientY = 0;
+            var radio = 5;
+            var alfa = 0;
+            var beta = Math.PI/2;
+            var factorVelocidad = 0.01;
+
+            var isMouseDown = false;
+            var actualEvent;
+
+            var mouse = {x: 0, y: 0};
+
+            $("body").mousemove(function(e){ 
+                mouse.x = e.clientX || e.pageX; 
+                mouse.y = e.clientY || e.pageY 
+            });
+            
+            $('body').mousedown(function(event){		
+                isMouseDown = true;        
+            });
+
+            $('body').mouseup(function(event){
+                isMouseDown = false;		
+            });
+
+            function obtenerViewMatrixOrbital()
+            {
+                var deltaX=0;
+                var deltaY=0;
+
+
+                if (previousClientX) deltaX = previousClientX - mouse.x;
+                if (previousClientY) deltaY = mouse.y - previousClientY;
+
+                previousClientX = mouse.x;
+                previousClientY = mouse.y;
+
+                alfa = alfa + deltaX * factorVelocidad;
+                beta = beta + deltaY * factorVelocidad;
+
+                if (beta<0) beta=0;
+                if (beta>Math.PI) beta=Math.PI;
+
+                vec_position = vec3.fromValues(5,3,10)//-20,-40,0)
+                vec_direccion = vec3.fromValues(radio * Math.cos(alfa) * Math.sin(beta) ,radio * Math.sin(alfa) * Math.sin(beta), radio * Math.cos(beta));	
+                //mat_transf = mat4.create()
+                //mat4.translate(mat_transf,mat_transf,vec_position)
+                vec3.add(vec_direccion,vec_position,vec_direccion)
+                result = mat4.lookAt(viewMatrix, vec_position, vec_direccion, vec3.fromValues(0,0,1))
+                return  result
+
+            }
+    //
 
             function initMenu(){
                 var gui = new dat.GUI();
                 
-                // Codigo mio:
                 const reconstruirFolder = gui.addFolder('Para reconstruir forma:')
                 reconstruirFolder.add(window, "cantidad_filas_paneles",1,10).step(1);
                 reconstruirFolder.add(window, "angulo_paneles",0,360).step(5);
@@ -363,7 +479,6 @@
 
                 reconstruirFolder.add(obj,'reconstruir');
                 reconstruirFolder.open()
-                //
                 
             }
             window.onload=initWebGL;
