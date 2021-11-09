@@ -1,4 +1,3 @@
-
 class Transformacion{
     constructor(){};
     transform(m){
@@ -54,6 +53,7 @@ class Objeto3D {
         this.vertexBuffer = null; // position, normal & uvs
         this.indexBuffer = null;
         this.matModelado = mat4.create(); // transformacion respecto de su padre
+        this.matTransformations = mat4.create();
         //this.posicion = vec3.fromValues(0,0,0); //a partir de estos atributos se calcula la matriz respectiva
         //this.rotacion = vec3.fromValues(0,0,0);
         //this.rotaciones = [];
@@ -81,7 +81,9 @@ class Objeto3D {
 
         // concatenamos las transformaciones padre/hijo
         mat4.multiply(m, matPadre, this.matModelado);
-
+        // para mantener la concatenacion en objetos que actuan como camara
+        this.matTransformations = m;
+        //
         var modelMatrixUniform = gl.getUniformLocation(glProgram, "modelMatrix");
         gl.uniformMatrix4fv(modelMatrixUniform, false, m);
 
@@ -110,11 +112,7 @@ class Objeto3D {
             
             gl.drawElements( gl.TRIANGLE_STRIP, this.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 
-
-            /*if (modo!="wireframe"){
-                //gl.uniform1i(shaderProgram.useLightingUniform,(lighting=="true"));                    
-                gl.drawElements(gl.TRIANGLE_STRIP, indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
-            }
+            /*
             
             if (modo!="smooth") {
                 //gl.uniform1i(shaderProgram.useLightingUniform,false);
@@ -132,10 +130,12 @@ class Objeto3D {
         this.indexBuffer = newIndexBuffer;
     }
 
+    getMatTransformations(){
+        return this.matTransformations;
+    }
+
     agregarHijo = function(h) {
-        var hijo = new Objeto3D;
-        Object.assign(hijo,h)
-        this.hijos.push(hijo);
+        this.hijos.push(h);
     }
 
     quitarHijo = function(h) {
@@ -188,7 +188,9 @@ class ObjetoCurva3D extends Objeto3D{
 
         if (this.vertexBuffer && this.indexBuffer) {
             // Dibuja cada segmento de linea con WEBGL
-
+            //console.log(this.indexBuffer)
+            //console.log(this.vertexBuffer.webgl_position_buffer)
+            //console.log(this.vertexBuffer.webgl_normal_buffer)
             vertexPositionAttribute = gl.getAttribLocation(glProgram, "aVertexPosition");
             gl.enableVertexAttribArray(vertexPositionAttribute);
             gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer.webgl_position_buffer);

@@ -18,8 +18,9 @@
 
         <script type="text/javascript" src="js/gl-matrix.js"></script>
         <script type="text/javascript" src="js/objeto3D.js"></script>
+        <script type="text/javascript" src="js/objeto3DControlable.js"></script>
+
         <script type="text/javascript" src="js/moduloGeometria.js"></script>
-        <script type="text/javascript" src="droneCamera.js"></script>
         <script src="js/dat.gui.js"></script>
         <script src="js/jquery.min.js"></script>
         <script type="text/javascript" src="js/scenes.js"></script>
@@ -229,35 +230,38 @@
 
             var camera = 3;
             var global_t = 0;
-            let droneCam=new DroneCameraControl([-10,7,25]);
+            //let droneCam=new DroneCameraControl([-10,7,25]);
 
-            
             var cantidad_filas_paneles = 4;
             var angulo_paneles = 330;
             var velocidad_rotacion_anillo = 0.1; // vueltas por segundo
             var cantidad_modulos_anillo = 4;
 
+            /*var curva_vista = new ObjetoCurva3D()
+            curva_vista.setColor(0,0.5,1);*/
+
 
             $('body').on("keydown",function(event){
                 switch (event.keyCode) {
-
                 case 0x31:
                     camera = 1; 
-                    viewMatrix = obtenerViewMatrixOrbital();
+                    viewMatrix = obtenerViewMatrixOrbital(camera1,true);
                     break;
-
                 case 0x32:
-                    camera = 2; break;
+                    camera = 2; 
+                    viewMatrix = obtenerViewMatrixOrbital(camera2,true);
+                    break;
                 case 0x33:
-                    camera = 3; break;
+                    camera = 3; 
+                    viewMatrix = obtenerViewMatrix(camera3);
+
+                    break;
                 }
                     
             });
             
             $('body').on("wheel",function(event, delta){
-
                 switch (event.originalEvent.wheelDelta >= 0) {
-
                 case true:
                     if (factor_fov >= 0.98){
                         factor_fov-=0.001; 
@@ -276,6 +280,20 @@
             function initWebGL(){
 
                 canvas = document.getElementById("my-canvas");  
+                //init orbital mouse control
+                $(canvas).mousemove(function(e){ 
+                    mouse.x = e.clientX || e.pageX; 
+                    mouse.y = e.clientY || e.pageY 
+                });
+                
+                $(canvas).mousedown(function(event){		
+                    isMouseDown = true;        
+                });
+
+                $(canvas).mouseup(function(event){
+                    isMouseDown = false;		
+                });
+                //
 
                 try{
                     gl = canvas.getContext("webgl");      
@@ -289,6 +307,7 @@
                     setupWebGL();
                     initShaders();
                     objeto_principal = mainScene()
+                    //objeto_principal.agregarHijo(curva_vista)
                     
                     setupVertexShaderMatrix();
                     initMenu();
@@ -323,7 +342,6 @@
                     
             function updateProjMatrix(){
                 mat4.perspective(projMatrix,factor_fov*45, canvas.width / canvas.height, 0.1, MAX_DISTANCIA_VISTA);
-
             }
                     
             function initShaders() {
@@ -384,24 +402,20 @@
             
             
             function tick(){
-
                 requestAnimationFrame(tick);
                 if (camera == 1) {
-                    if(isMouseDown) {
-                        viewMatrix = obtenerViewMatrixOrbital();
-                    };
+                    cameraactual = camera1;
+                    viewMatrix = obtenerViewMatrixOrbital(cameraactual,isMouseDown);
                 }
                 else if (camera == 2) {
-                    mat4.lookAt(viewMatrix, vec3.fromValues(-20,40,0), vec3.fromValues(2,-10,-20), vec3.fromValues(0,1,0)) 
+                    cameraactual = camera2;
+                    viewMatrix = obtenerViewMatrixOrbital(cameraactual,isMouseDown);
                 }
                 else if (camera == 3) {
-                    viewMatrix=droneCam.getViewMatrix();
+                    cameraactual = camera3;
+                    viewMatrix = obtenerViewMatrix(cameraactual);
+                    //viewMatrix=droneCam.getViewMatrix();
                 }
-
-
-
-                droneCam.update();
-                //mat4.scale(projMatrix,projMatrix,vec3.fromValues(zoom,zoom,zoom))
 
                 drawScene();
 
@@ -411,7 +425,6 @@
 
 
             // manejo de mouse y teclado
-
             var previousClientX = 0;
             var previousClientY = 0;
             var radio = 5;
@@ -424,45 +437,84 @@
 
             var mouse = {x: 0, y: 0};
 
-            $("body").mousemove(function(e){ 
-                mouse.x = e.clientX || e.pageX; 
-                mouse.y = e.clientY || e.pageY 
-            });
-            
-            $('body').mousedown(function(event){		
-                isMouseDown = true;        
-            });
+            function obtenerViewMatrixOrbital(o_camara, updateAngle)
+            {   
+                if (updateAngle == true){
+                    var deltaX=0;
+                    var deltaY=0;
+                    if (previousClientX) deltaX = previousClientX - mouse.x;
+                    if (previousClientY) deltaY = mouse.y - previousClientY;
 
-            $('body').mouseup(function(event){
-                isMouseDown = false;		
-            });
+                    previousClientX = mouse.x;
+                    previousClientY = mouse.y;
 
-            function obtenerViewMatrixOrbital()
-            {
-                var deltaX=0;
-                var deltaY=0;
+                    alfa = alfa + deltaX * factorVelocidad;
+                    beta = beta + deltaY * factorVelocidad;
 
+                    if (beta<0) beta=0;
+                    if (beta>Math.PI) beta=Math.PI;
+                }
 
-                if (previousClientX) deltaX = previousClientX - mouse.x;
-                if (previousClientY) deltaY = mouse.y - previousClientY;
+                var mat = o_camara.getMatTransformations();
+                var vec_position = vec3.create();
+                mat4.getTranslation(vec_position,mat);
 
-                previousClientX = mouse.x;
-                previousClientY = mouse.y;
+                var vec_direccion = vec3.fromValues(radio * Math.cos(alfa) * Math.sin(beta) ,radio * Math.sin(alfa) * Math.sin(beta), radio * Math.cos(beta));	
+                vec3.transformMat4(vec_direccion, vec_direccion, mat)
 
-                alfa = alfa + deltaX * factorVelocidad;
-                beta = beta + deltaY * factorVelocidad;
+                var vec3upvector = vec3.fromValues(0,0,1)
+                vec3.transformMat4(vec3upvector, vec3upvector, mat)
+                vec3.sub(vec3upvector,vec3upvector,vec_position)
+                //
 
-                if (beta<0) beta=0;
-                if (beta>Math.PI) beta=Math.PI;
+                var result = mat4.create()
+                mat4.lookAt(result, vec_position, vec_direccion, vec3upvector)
 
-                vec_position = vec3.fromValues(5,3,10)//-20,-40,0)
-                vec_direccion = vec3.fromValues(radio * Math.cos(alfa) * Math.sin(beta) ,radio * Math.sin(alfa) * Math.sin(beta), radio * Math.cos(beta));	
-                //mat_transf = mat4.create()
-                //mat4.translate(mat_transf,mat_transf,vec_position)
-                vec3.add(vec_direccion,vec_position,vec_direccion)
-                result = mat4.lookAt(viewMatrix, vec_position, vec_direccion, vec3.fromValues(0,0,1))
-                return  result
+                //setear curva vista:
+                /*vec3.add(vec3upvector,vec3upvector,vec_position)
 
+                vista_pos_buffer = [vec_position[0],vec_position[1],vec_position[2],vec_direccion[0],vec_direccion[1],vec_direccion[2],vec_position[0],vec_position[1],vec_position[2],vec3upvector[0],vec3upvector[1],vec3upvector[2]]
+                console.log(vista_pos_buffer)
+                var webgl_position_buffer = gl.createBuffer();
+                webgl_position_buffer.itemSize = 3;
+                gl.bindBuffer(gl.ARRAY_BUFFER, webgl_position_buffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vista_pos_buffer), gl.STATIC_DRAW);
+
+                vista_nm_buffer = [1,1,1,1,1,1,1,1,1,1,1,1]
+                var webgl_normal_buffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, webgl_normal_buffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vista_nm_buffer), gl.STATIC_DRAW);
+                webgl_normal_buffer.itemSize = 3;
+
+                vista_idx_buffer = [0,1,2,3]
+                var vidxbuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, vidxbuffer);
+                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(vista_idx_buffer), gl.STATIC_DRAW);
+                vidxbuffer.itemSize = 1;
+                vidxbuffer.numItems = 4;
+
+                curva_vista.setGeometria({webgl_position_buffer,webgl_normal_buffer}, vidxbuffer)
+                //*/
+                return result
+            }
+
+            function obtenerViewMatrix(o_camara)
+            {   
+                var mat = o_camara.getMatTransformations();
+                var vec_position = vec3.create();
+                mat4.getTranslation(vec_position,mat);
+
+                var vec_direccion = vec3.fromValues(0,0,10);	
+                vec3.transformMat4(vec_direccion, vec_direccion, mat)
+
+                var vec3upvector = vec3.fromValues(0,-1,0)
+                vec3.transformMat4(vec3upvector, vec3upvector, mat)
+                vec3.sub(vec3upvector,vec3upvector,vec_position)
+                //
+
+                var result = mat4.create()
+                mat4.lookAt(result, vec_position, vec_direccion, vec3upvector)
+                return result
             }
     //
 

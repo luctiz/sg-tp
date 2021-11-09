@@ -418,6 +418,10 @@ function geometriaPropulsorCapsula(){
     return ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido)
 }
 
+var camera1;
+var camera2;
+var camera3;
+
 function mainScene(){
 
     nodo_principal = new Objeto3D()
@@ -466,6 +470,13 @@ function mainScene(){
     geometria = geometriaBaseAnillo()
     base_anillo.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
     base_anillo.addRotacionSegunTiempo(velocidad_rotacion_anillo*Math.PI/5,0,0,1)
+
+    //camara 1
+    camara_centro = new Objeto3D()
+    camara_centro.addTraslacion(5,0,5)
+    base_anillo.agregarHijo(camara_centro)
+    camera1 = camara_centro;
+    //
 
     base_anillo.setColor(0.58,0.83,0.26)
 
@@ -527,11 +538,11 @@ function mainScene(){
     tubo_soporte_paneles.addTraslacion(0,0,-2.0)
     modulo_cuerpo2.agregarHijo(tubo_soporte_paneles)
 
-    
+    var tubo_paneles;
 
     for (var i = 0; i < cantidad_filas_paneles; i++){
 
-        var tubo_paneles = new Objeto3D()
+        tubo_paneles = new Objeto3D()
         geometria = geometriaTuboFilaPaneles()
         tubo_paneles.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
         tubo_paneles.setColor(0.83,0.63,0.33)
@@ -552,9 +563,17 @@ function mainScene(){
         panel.addTraslacion(-6.5,0.15, 0.15)
         tubo_paneles.agregarHijo(panel)
 
-        tubo_paneles.addRotacion((angulo_paneles-45) * Math.PI / 180,1,0,0)
+        tubo_paneles.addRotacion((angulo_paneles-45) * Math.PI / 360,1,0,0)
     }
 
+    var camara_paneles = new Objeto3D()
+
+    camara_paneles.addTraslacion(3,0.5,0.5)
+    camara_paneles.addRotacion(7*Math.PI/4,1,0,0)
+
+    tubo_paneles.agregarHijo(camara_paneles) // agrego camara en el ultimo tubo de paneles
+
+    camera2 = camara_paneles
     nodo_principal.agregarHijo(nucleo)
 
 
@@ -572,37 +591,51 @@ function mainScene(){
 
 
     // capsula
-    var capsula = new Objeto3D()
-    capsula.addTraslacion(10,10,10);
+    var capsula = new Objeto3DControlable()
+    capsula.addTraslacion(0,0,10)
 
+    var modelo_capsula = new Objeto3D()
     var cuerpoCapsula = new Objeto3D()
     geometria = geometriaCuerpoCapsula()
     cuerpoCapsula.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
     cuerpoCapsula.setColor(0.83,0.63,0.33)
-    capsula.agregarHijo(cuerpoCapsula)
+    modelo_capsula.agregarHijo(cuerpoCapsula)
 
     var cabezaCapsula = new Objeto3D()
     geometria = geometriaCabezaCapsula()
     cabezaCapsula.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
     cabezaCapsula.setColor(0.83,0.63,0.33)
-    capsula.agregarHijo(cabezaCapsula)
+    modelo_capsula.agregarHijo(cabezaCapsula)
 
     var paredTraseraCapsula = new Objeto3D()
     geometria = geometriaParedTraseraCapsula()
     paredTraseraCapsula.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
     paredTraseraCapsula.setColor(0.83,0.63,0.33)
-    capsula.agregarHijo(paredTraseraCapsula)
+    modelo_capsula.agregarHijo(paredTraseraCapsula)
 
     var propulsorCapsula = new Objeto3D()
     geometria = geometriaPropulsorCapsula()
     propulsorCapsula.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
     propulsorCapsula.setColor(0.40,0.40,0.40)
-    capsula.agregarHijo(propulsorCapsula)
+    modelo_capsula.agregarHijo(propulsorCapsula)
 
+    capsula.agregarHijo(modelo_capsula)
+
+    modelo_capsula.addRotacion(Math.PI,0,1,0)
+    //capsula.addRotacion(Math.PI,0,1,0)
+    //capsula.addRotacion(-Math.PI/2,0,0,1)
+
+    var camera_capsula = new Objeto3D()
+    camera_capsula.addRotacion(-Math.PI,0,1,0)
+    camera_capsula.addRotacion(Math.PI/6,1,0,0)
+    camera_capsula.addRotacion(Math.PI,0,0,1)
+
+    camera_capsula.addTraslacion(0,0,-13)
+    capsula.agregarHijo(camera_capsula)
     nodo_principal.agregarHijo(capsula)
 
-
-
+    camera3= camera_capsula;
+    
     return nodo_principal;
 
 }
