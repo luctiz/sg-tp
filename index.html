@@ -451,8 +451,8 @@
                     alfa = alfa + deltaX * factorVelocidad;
                     beta = beta + deltaY * factorVelocidad;
 
-                    if (beta<0) beta=0;
-                    if (beta>Math.PI) beta=Math.PI;
+                    if (beta<=0) beta=0.001;
+                    if (beta>=Math.PI) beta=Math.PI*0.999;
                 }
 
                 var mat = o_camara.getMatTransformations();
