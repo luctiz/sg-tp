@@ -32,14 +32,14 @@ class ModuloGeometria {
             indexBuffer = this._getIndexBufferSuperficieAgregandoTapas(filas, columnas, tapas)
         }
 
-        /* Tendria que adaptar esto para el agregado de tapas
+        /* Tendria que adaptar esto para el agregado de tapas*/
         var webgl_position_buffer = vertexBuffer.webgl_normallinesposition_buffer
         var webgl_normal_buffer = vertexBuffer.webgl_normallinesnormals_buffer
         var normalIndexBuffer = this._getIndexBufferTangentes(forma_discretizada.position_list.length * recorrido_discretizado.position_list.length)
 
-        var normalVertexBuffer = {webgl_position_buffer, webgl_normal_buffer}*/
+        var normalVertexBuffer = {webgl_position_buffer, webgl_normal_buffer}
 
-        return {vertexBuffer, indexBuffer }//, normalVertexBuffer, normalIndexBuffer}
+        return {vertexBuffer, indexBuffer ,normalVertexBuffer, normalIndexBuffer}
     }
 
 
@@ -306,8 +306,6 @@ class ModuloGeometria {
             } else {
                 nm=  vec3.fromValues(2,2,(-v0[0]*2 - v0[1]*2)/v0[2])
             }
-            
-
         }
         vec3.normalize(nm,nm)
 
@@ -340,7 +338,6 @@ class ModuloGeometria {
                 pos_buffer.push(new_forma_pos[2])
 
 
-
                 var forma_tg = vec3.fromValues(forma_discretizada.tang_list[i],forma_discretizada.tang_list[i+1],forma_discretizada.tang_list[i+2])
                 vec3.scale(aux1, nm, forma_tg[0]) 
                 vec3.scale(aux2, binormal,forma_tg[1])
@@ -355,25 +352,57 @@ class ModuloGeometria {
                 normal_buffer.push(sup_normal[0])
                 normal_buffer.push(sup_normal[1])
                 normal_buffer.push(sup_normal[2])
-
-                // codigo solamente por si se quiere dibujar normales
-                normallines_pos_buffer.push(pos_buffer.at(-3))
-                normallines_pos_buffer.push(pos_buffer.at(-2))
-                normallines_pos_buffer.push(pos_buffer.at(-1))
-                normallines_pos_buffer.push(pos_buffer.at(-3) + normal_buffer.at(-3))
-                normallines_pos_buffer.push(pos_buffer.at(-2) + normal_buffer.at(-2))
-                normallines_pos_buffer.push(pos_buffer.at(-1) + normal_buffer.at(-1))
-
-                normallines_normal_buffer.push(1)
-                normallines_normal_buffer.push(1)
-                normallines_normal_buffer.push(1)
-                normallines_normal_buffer.push(1)
-                normallines_normal_buffer.push(1)
-                normallines_normal_buffer.push(1)
-                //
-
             }
         }
+
+        // codigo para corregir normales si quedan apuntando hacia adentro
+        // calculo centro de masa
+        var centro = [0,0,0];
+        var i;
+        for (i = 0; i<(pos_buffer.length); i+=3){
+            centro[0]+=pos_buffer[i]
+            centro[1]+=pos_buffer[i+1]
+            centro[2]+=pos_buffer[i+2]
+        }
+        centro[0]/=(pos_buffer.length / 3)
+        centro[1]/=(pos_buffer.length / 3)
+        centro[2]/=(pos_buffer.length / 3)
+
+        //veo si la normal del primer punto apunta hacia ese centro. Si apunta para el lado contrario entonces invierto todas las normales
+        var aux_normal = vec3.fromValues(normal_buffer[0],normal_buffer[1],normal_buffer[2])
+        vec3.normalize(aux_normal,aux_normal)
+
+        var aux_vecdir_to_center = vec3.fromValues(centro[0]-pos_buffer[0],centro[1]-pos_buffer[1],centro[2]-pos_buffer[2])
+        vec3.normalize(aux_vecdir_to_center,aux_vecdir_to_center)
+
+
+        // The scalar product is positive if the two vectors point in the same direction with respect to the side (the angle between them is less than 90 degree). It is negative, if they point in opposite directions (angle is bigger than 90 degree)
+        var x = vec3.dot(aux_normal, aux_vecdir_to_center)
+        if (x > 0) {
+            console.log(normal_buffer)
+            for (var i = 0; i<((forma_discretizada.position_list.length)*(recorrido_discretizado.position_list.length)); i+=1){
+                normal_buffer[i] = -normal_buffer[i]
+            }
+        }
+        //
+
+        // codigo solamente por si se quiere dibujar normales
+        for (var i = 3; i<=((forma_discretizada.position_list.length)*(recorrido_discretizado.position_list.length)); i+=3){
+            normallines_pos_buffer.push(pos_buffer.at(i-3))
+            normallines_pos_buffer.push(pos_buffer.at(i-2))
+            normallines_pos_buffer.push(pos_buffer.at(i-1))
+            normallines_pos_buffer.push(pos_buffer.at(i-3) + normal_buffer.at(i-3))
+            normallines_pos_buffer.push(pos_buffer.at(i-2) + normal_buffer.at(i-2))
+            normallines_pos_buffer.push(pos_buffer.at(i-1) + normal_buffer.at(i-1))
+
+            normallines_normal_buffer.push(1)
+            normallines_normal_buffer.push(1)
+            normallines_normal_buffer.push(1)
+            normallines_normal_buffer.push(1)
+            normallines_normal_buffer.push(1)
+            normallines_normal_buffer.push(1)
+        }
+        //
 
         var webgl_position_buffer = gl.createBuffer();
         webgl_position_buffer.itemSize = 3;

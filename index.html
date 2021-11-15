@@ -27,27 +27,74 @@
 
         
         <script id="shader-vs" type="x-shader/x-vertex">
-
             precision highp float;
 
             attribute vec3 aVertexPosition;
             attribute vec3 aVertexNormal;
+            uniform float uTime;
 
             uniform mat4 modelMatrix;            
             uniform mat4 viewMatrix;
             uniform mat4 projMatrix;
 
-            uniform mat4 normalMatrix;
-
             varying vec3 vNormal;    
-            varying vec3 vPosWorld;  
+            varying vec3 vPosWorld;
+            varying float time;
+
+
+            mat3 transpose(mat3 matrix) {
+                vec3 row0 = matrix[0];
+                vec3 row1 = matrix[1];
+                vec3 row2 = matrix[2];
+            
+                return mat3(
+                    vec3(row0.x, row1.x, row2.x),
+                    vec3(row0.y, row1.y, row2.y),
+                    vec3(row0.z, row1.z, row2.z));
+            }
+            
+            float det(mat2 matrix) {
+                return matrix[0].x * matrix[1].y - matrix[0].y * matrix[1].x;
+            }
+            
+            mat3 inverse(mat3 matrix) {
+                vec3 row0 = matrix[0];
+                vec3 row1 = matrix[1];
+                vec3 row2 = matrix[2];
+            
+                vec3 minors0 = vec3(
+                    det(mat2(row1.y, row1.z, row2.y, row2.z)),
+                    det(mat2(row1.z, row1.x, row2.z, row2.x)),
+                    det(mat2(row1.x, row1.y, row2.x, row2.y))
+                );
+                vec3 minors1 = vec3(
+                    det(mat2(row2.y, row2.z, row0.y, row0.z)),
+                    det(mat2(row2.z, row2.x, row0.z, row0.x)),
+                    det(mat2(row2.x, row2.y, row0.x, row0.y))
+                );
+                vec3 minors2 = vec3(
+                    det(mat2(row0.y, row0.z, row1.y, row1.z)),
+                    det(mat2(row0.z, row0.x, row1.z, row1.x)),
+                    det(mat2(row0.x, row0.y, row1.x, row1.y))
+                );
+            
+                mat3 adj = transpose(mat3(minors0, minors1, minors2));
+            
+                return (1.0 / dot(row0, minors0)) * adj;
+            }
 
             void main(void) {
-                gl_Position = projMatrix * viewMatrix * modelMatrix * vec4(aVertexPosition, 1.0);
+                mat4 mvp = projMatrix * viewMatrix * modelMatrix;
+                gl_Position =  mvp * vec4(aVertexPosition, 1.0);
 
-                vPosWorld=(modelMatrix*vec4(aVertexPosition,1.0)).xyz;    //la posicion en coordenadas de mundo
-                vNormal=(normalMatrix*vec4(aVertexNormal,1.0)).xyz;       //la normal en coordenadas de mundo                
+                vPosWorld = (mvp * vec4(aVertexPosition, 1.0)).xyz;    //la posicion en coordenadas de mundo
                 
+                mat3 normalMatrix = mat3(modelMatrix);
+
+                normalMatrix = inverse(normalMatrix);
+                normalMatrix = transpose(normalMatrix);
+                vNormal = normalize(normalMatrix * aVertexNormal).xyz;//(normalMatrix*vec4(aVertexNormal,1.0)).xyz;       //la normal en coordenadas de mundo                
+                time = uTime;
             }
         </script>
 
@@ -57,11 +104,12 @@
             varying vec3 vNormal;
             varying vec3 vPosWorld;
 
-            void main(void) {
+            varying float time;
 
-                vec3 lightVec=normalize(vec3(0.0,3.0,5.0))-normalize(vPosWorld);
-                vec3 diffColor=mix(vec3(0.7,0.7,0.7),vNormal,0.4);
-                vec3 color= dot(lightVec, vNormal) * difuseColor ;
+            void main(void) {
+                vec3 light = vec3(100000.0*cos(time * 0.1),100000.0*sin(time * 0.1),0.0);
+                vec3 lightVec=normalize(light - vPosWorld);
+                vec3 color= max(dot(vNormal,lightVec), 0.0) * difuseColor ;
 
                gl_FragColor = vec4(color,1.0);
             }
@@ -94,7 +142,7 @@
                     
                     var n=vec3.create();
                     vec3.cross(n,v1,v2);
-                    vec3.scale(n,n,-1);
+                    //vec3.scale(n,n,-1);
                     
                     return n                }
 

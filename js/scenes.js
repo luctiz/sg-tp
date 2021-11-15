@@ -65,6 +65,37 @@ function testScene() {
     superficie_barrido.agregarHijo(normales_sup_barrido)
     objeto_principal.agregarHijo(superficie_barrido)
 
+
+
+
+    p_control = [[-1.8,0,0],[0,1,0],[1.8,0,0]]
+    curva_forma = new CurvaBezier(p_control)
+    disc_curva_forma = obtenerDiscretizacionCurva(curva_forma,15)
+
+    
+    curva_recorrido = new CurvaCircunferencia(2.0,[0,0,0])
+    disc_curva_recorrido = obtenerDiscretizacionCurva(curva_recorrido,20)
+
+
+    superficie_barrido = new Objeto3D()
+    geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido)
+    superficie_barrido.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
+    superficie_barrido.setColor(0,1,1)
+    superficie_barrido.addTraslacion(0,-10,0)
+    
+
+    normales_sup_barrido = new ObjetoCurva3D()
+    normales_sup_barrido.setGeometria(geometria.normalVertexBuffer, geometria.normalIndexBuffer)
+    normales_sup_barrido.setColor(1,1,1)
+    superficie_barrido.agregarHijo(normales_sup_barrido)
+    objeto_principal.agregarHijo(superficie_barrido)
+
+    var capsula = new Objeto3DControlable()
+
+    camera3 = capsula
+    objeto_principal.agregarHijo(capsula)
+
+
     return objeto_principal
 }
 
@@ -464,12 +495,15 @@ function mainScene(){
     modulo_cabeza.setColor(0.83,0.63,0.33)
     modulo_cabeza.addTraslacion(0,0,6.3)
     nucleo.agregarHijo(modulo_cabeza)
+
+
     //
     // anillo animado
     base_anillo = new Objeto3D()
     geometria = geometriaBaseAnillo()
     base_anillo.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
     base_anillo.addRotacionSegunTiempo(velocidad_rotacion_anillo*Math.PI/5,0,0,1)
+
 
     //camara 1
     camara_centro = new Objeto3D()
@@ -601,6 +635,13 @@ function mainScene(){
     cuerpoCapsula.setColor(0.83,0.63,0.33)
     modelo_capsula.agregarHijo(cuerpoCapsula)
 
+    //PARA CHEQUEAR NORMALES
+    //normales_sup_barrido = new ObjetoCurva3D()
+    //normales_sup_barrido.setGeometria(geometria.normalVertexBuffer, geometria.normalIndexBuffer)
+    //normales_sup_barrido.setColor(1,1,1)
+    //cuerpoCapsula.agregarHijo(normales_sup_barrido)
+    //
+
     var cabezaCapsula = new Objeto3D()
     geometria = geometriaCabezaCapsula()
     cabezaCapsula.setGeometria(geometria.vertexBuffer, geometria.indexBuffer)
@@ -622,8 +663,6 @@ function mainScene(){
     capsula.agregarHijo(modelo_capsula)
 
     modelo_capsula.addRotacion(Math.PI,0,1,0)
-    //capsula.addRotacion(Math.PI,0,1,0)
-    //capsula.addRotacion(-Math.PI/2,0,0,1)
 
     var camera_capsula = new Objeto3D()
     camera_capsula.addRotacion(-Math.PI,0,1,0)

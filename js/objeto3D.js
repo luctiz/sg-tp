@@ -87,6 +87,15 @@ class Objeto3D {
         var modelMatrixUniform = gl.getUniformLocation(glProgram, "modelMatrix");
         gl.uniformMatrix4fv(modelMatrixUniform, false, m);
 
+
+        var uniformTime = gl.getUniformLocation(glProgram, "uTime");
+        gl.uniform1f(uniformTime, Math.PI*15/8);     
+        //var viewMatrixUniform = gl.getUniformLocation(glProgram, "viewMatrix");
+        //gl.uniformMatrix4fv(viewMatrixUniform, false, viewMatrix);
+
+        //var projMatrixUniform = gl.getUniformLocation(glProgram, "projMatrix");
+        //gl.uniformMatrix4fv(projMatrixUniform, false, projMatrix);
+
         if ((this.vertexBuffer !=null) & (this.indexBuffer!= null)) {
             // Dibujamos la malla de triangulos con WebGL
             // si el objeto tiene geometria asociada.
