@@ -134,9 +134,20 @@ class Objeto3D {
         }
     }
 
-    setGeometria(newVertexBuffer, newIndexBuffer) {
-        this.vertexBuffer = newVertexBuffer;
-        this.indexBuffer = newIndexBuffer;
+    setGeometria(geometria, ver_normales=false) {
+        var binded_geometry = geometria.bind()
+
+        this.vertexBuffer = binded_geometry.vertexBuffer;
+        this.indexBuffer = binded_geometry.indexBuffer;
+
+        if (ver_normales){
+            //PARA CHEQUEAR NORMALES
+            var normals_geometry = geometria.obtenerGeometriaNormales()
+            var normales_sup_barrido = new ObjetoCurva3D()
+            normales_sup_barrido.setGeometria(normals_geometry)
+            normales_sup_barrido.setColor(Math.random(),Math.random(),Math.random())
+            this.agregarHijo(normales_sup_barrido)
+        }
     }
 
     getMatTransformations(){
