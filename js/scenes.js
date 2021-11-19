@@ -420,14 +420,45 @@ function geometriaPanel(){
 }
 
 function geometriaCuerpoCapsula(){
+
+    p_control = [[-2.2,-1,0],[-2.0,-0.2,0],[-1.8,0,0]]
+    curva_forma = new CurvaBezier(p_control)
+    disc_curva_forma = obtenerDiscretizacionCurvaParametrizada(curva_forma,4)
+
     p_control = [[-1.8,0,0],[0,0,0],[1.8,-1,0]]
     curva_forma = new CurvaBezier(p_control)
-    disc_curva_forma = obtenerDiscretizacionCurvaParametrizada(curva_forma,8)
+    disc_curva_forma2 = obtenerDiscretizacionCurvaParametrizada(curva_forma,8)
+
+    //suavizo union de curvas promediando las tangentes en el punto de interseccion de la curva:
+    var aux_l = disc_curva_forma.tang_list.length
+
+    var mean_normal = vec3.fromValues(
+        disc_curva_forma.tang_list[aux_l-3],
+        disc_curva_forma.tang_list[aux_l-2],
+        disc_curva_forma.tang_list[aux_l-1])
+    vec3.add(mean_normal, mean_normal, vec3.fromValues(
+        disc_curva_forma2.tang_list[0],
+        disc_curva_forma2.tang_list[1],
+        disc_curva_forma2.tang_list[2]))
+    vec3.scale(mean_normal,mean_normal,0.5)
+
+    disc_curva_forma.tang_list[aux_l-3] = mean_normal[0]
+    disc_curva_forma.tang_list[aux_l-2] = mean_normal[1]
+    disc_curva_forma.tang_list[aux_l-1] = mean_normal[2]
+    disc_curva_forma2.tang_list[0] = mean_normal[0]
+    disc_curva_forma2.tang_list[1] = mean_normal[1]
+    disc_curva_forma2.tang_list[2] = mean_normal[2]
+
+    disc_curva_forma.position_list.push(...disc_curva_forma2.position_list)
+    disc_curva_forma.tang_list.push(...disc_curva_forma2.tang_list)
     
+
+
     curva_recorrido = new CurvaCircunferencia(2.5,[0,0,0])
     disc_curva_recorrido = obtenerDiscretizacionCurvaParametrizada(curva_recorrido,20)
     var geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido)
     geometria.agregarColumnasTapas()
+
     return geometria
 }
 
@@ -439,18 +470,6 @@ function geometriaCabezaCapsula(){
     curva_recorrido = new CurvaCircunferencia(1.3,[0,0,0])
     disc_curva_recorrido = obtenerDiscretizacionCurvaParametrizada(curva_recorrido,20)
 
-    var geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido)
-    geometria.agregarColumnasTapas()
-    return geometria
-}
-
-function geometriaParedTraseraCapsula(){
-    p_control = [[-1.8,1.5,0],[-2.2,1.3,0],[-2.2,1,0]]
-    curva_forma = new CurvaBezier(p_control)
-    disc_curva_forma = obtenerDiscretizacionCurvaParametrizada(curva_forma,4)
-    
-    curva_recorrido = new CurvaCircunferencia(1,[0,0,0])
-    disc_curva_recorrido = obtenerDiscretizacionCurvaParametrizada(curva_recorrido,20)
     var geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido)
     geometria.agregarColumnasTapas()
     return geometria
@@ -653,24 +672,11 @@ function mainScene(){
     cuerpoCapsula.setColor(0.83,0.63,0.33)
     modelo_capsula.agregarHijo(cuerpoCapsula)
 
-    //PARA CHEQUEAR NORMALES
-    //normales_sup_barrido = new ObjetoCurva3D()
-    //normales_sup_barrido.setGeometria(geometria.normalVertexBuffer, geometria.normalIndexBuffer)
-    //normales_sup_barrido.setColor(1,1,1)
-    //cuerpoCapsula.agregarHijo(normales_sup_barrido)
-    //
-
     var cabezaCapsula = new Objeto3D()
     geometria = geometriaCabezaCapsula()
     cabezaCapsula.setGeometria(geometria)
     cabezaCapsula.setColor(0.83,0.63,0.33)
     modelo_capsula.agregarHijo(cabezaCapsula)
-
-    var paredTraseraCapsula = new Objeto3D()
-    geometria = geometriaParedTraseraCapsula()
-    paredTraseraCapsula.setGeometria(geometria)
-    paredTraseraCapsula.setColor(0.83,0.63,0.33)
-    modelo_capsula.agregarHijo(paredTraseraCapsula)
 
     var propulsorCapsula = new Objeto3D()
     geometria = geometriaPropulsorCapsula()
