@@ -58,7 +58,6 @@ function testScene() {
     superficie_barrido.setColor(0,1,1)
     superficie_barrido.addTraslacion(0,-10,0)
 
-
     normales_sup_barrido = new ObjetoCurva3D()
     normales_sup_barrido.setGeometria(geometria.normalVertexBuffer, geometria.normalIndexBuffer)
     normales_sup_barrido.setColor(1,1,1)
@@ -157,7 +156,7 @@ function geometriaNucleoModuloVioleta(puntos_curvatura){
     disc_curva_recorrido = obtenerDiscretizacionCurvaParametrizada(curva_recorrido,2)
 
     var geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_modulo_violeta, disc_curva_recorrido)
-    geometria.agregarColumnasTapas()
+    geometria.agregarFilasTapas()
     return geometria
 }
 
@@ -364,7 +363,9 @@ function geometriaTuboSoportePaneles(cant_paneles){
     curva_recorrido = new CurvaCircunferencia(0.5,[0,0,0])
     disc_curva_recorrido = obtenerDiscretizacionCurvaParametrizada(curva_recorrido,6)
 
-    return ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido,1)
+    var geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido)
+    geometria.agregarColumnasTapas()
+    return geometria
 }
 
 function geometriaTuboFilaPaneles(){
@@ -564,7 +565,7 @@ function mainScene(){
 
         var agarre_soporte_anillo = new Objeto3D()
         geometria = geometriaAnilloAgarreSoporte(cantidad_modulos_anillo,3)
-        agarre_soporte_anillo.setGeometria(geometria,true)
+        agarre_soporte_anillo.setGeometria(geometria)
         agarre_soporte_anillo.setColor(0.75,1.00,0.98)
         agarre_soporte_anillo.addRotacion( (-Math.PI/(2*cantidad_modulos_anillo)),0,0,1)
         objeto_viga.addRotacion((2*i*Math.PI)/(cantidad_modulos_anillo),0,0,1)
@@ -595,14 +596,14 @@ function mainScene(){
 
         tubo_paneles = new Objeto3D()
         geometria = geometriaTuboFilaPaneles()
-        tubo_paneles.setGeometria(geometria,true)
+        tubo_paneles.setGeometria(geometria)
         tubo_paneles.setColor(0.83,0.63,0.33)
         tubo_paneles.addTraslacion(0,0,-5.0 -5.0 * i)
         tubo_soporte_paneles.agregarHijo(tubo_paneles)
 
         var panel = new Objeto3D()
         geometria = geometriaPanel()
-        panel.setGeometria(geometria,true)
+        panel.setGeometria(geometria)
         panel.setColor(0.83,0.63,0.33)
         panel.addTraslacion(6.5,0.15, 0.15)
         tubo_paneles.agregarHijo(panel)

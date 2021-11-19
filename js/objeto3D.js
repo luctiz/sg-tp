@@ -81,7 +81,7 @@ class Objeto3D {
 
         // concatenamos las transformaciones padre/hijo
         mat4.multiply(m, matPadre, this.matModelado);
-        // para mantener la concatenacion en objetos que actuan como camara
+        // para mantener la concatenacion en objetos que actuan como camara:
         this.matTransformations = m;
         //
         var modelMatrixUniform = gl.getUniformLocation(glProgram, "modelMatrix");
@@ -89,12 +89,7 @@ class Objeto3D {
 
 
         var uniformTime = gl.getUniformLocation(glProgram, "uTime");
-        gl.uniform1f(uniformTime, Math.PI*15/8);     
-        //var viewMatrixUniform = gl.getUniformLocation(glProgram, "viewMatrix");
-        //gl.uniformMatrix4fv(viewMatrixUniform, false, viewMatrix);
-
-        //var projMatrixUniform = gl.getUniformLocation(glProgram, "projMatrix");
-        //gl.uniformMatrix4fv(projMatrixUniform, false, projMatrix);
+        gl.uniform1f(uniformTime, Math.PI*15/8); //global_t    
 
         if ((this.vertexBuffer !=null) & (this.indexBuffer!= null)) {
             // Dibujamos la malla de triangulos con WebGL
@@ -144,7 +139,7 @@ class Objeto3D {
             //PARA CHEQUEAR NORMALES
             var normals_geometry = geometria.obtenerGeometriaNormales()
             var normales_sup_barrido = new ObjetoCurva3D()
-            normales_sup_barrido.setGeometria(normals_geometry)
+            normales_sup_barrido.setGeometria(normals_geometry, false)
             normales_sup_barrido.setColor(Math.random(),Math.random(),Math.random())
             this.agregarHijo(normales_sup_barrido)
         }

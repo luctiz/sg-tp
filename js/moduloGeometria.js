@@ -92,26 +92,14 @@ class Geometria{ //geometria superficie
         var rows = (this.pos.length/3)/this.cant_columnas;
         var cols = this.cant_columnas
 
-        for (var j=2; j<rows-1;j++){
-            this.index.unshift(0);
-            this.index.unshift((cols)*(j-1));
-            this.index.unshift((cols)*j);
+
+        //quedarme con las 2 columnas, primera y ultima
+        var new_col1 = []
+        var new_col2 = []
+        for (var i=0; i<rows; i++){
+            new_col1.push(...[this.pos[i*cols*3], this.pos[i*cols*3 +1], this.pos[i*cols*3 + 2]])
+            new_col2.push(...[this.pos[((i*cols)+cols-1)*3], this.pos[((i*cols)+cols-1)*3 +1], this.pos[((i*cols)+cols-1)*3 + 2]])
         }
-
-        for (var j=2; j<rows-1;j++){
-            this.index.push(cols-1+0);
-            this.index.push(cols-1+(cols)*(j-1));
-            this.index.push(cols-1+(cols)*j);
-        }
-    }
-
-    agregarFilasTapas(suavizar = false){ //creo que el parametro suavizar no es necesario en este caso?
-        var rows = (this.pos.length/3)/this.cant_columnas;
-        var cols = this.cant_columnas
-        
-        var new_row1= this.pos.slice(0,cols*3)
-        var new_row2 = this.pos.slice(cols*3*(rows-1))
-
 
         ////// obtener normal tapas
         // asumo que la superficie tiene al menos 3 puntos por fila, de lo contrario crear una pared como fila no tendria sentido.
@@ -120,9 +108,13 @@ class Geometria{ //geometria superficie
         var nm1 = vec3.create()
         var nm2 = vec3.create()
 
-        var p0 = vec3.fromValues(new_row1[0],new_row1[0+1],new_row1[0+2])
-        var p1 = vec3.fromValues(new_row1[0+3],new_row1[0+4],new_row1[0+5])
-        var p2 = vec3.fromValues(new_row1[0+6],new_row1[0+7],new_row1[0+8])
+        var p0 = vec3.fromValues(new_col1[0],new_col1[0+1],new_col1[0+2])
+        var p1 = vec3.fromValues(new_col1[0+3],new_col1[0+4],new_col1[0+5])
+
+        var p2 = vec3.fromValues(new_col1[0+6],new_col1[0+7],new_col1[0+8]) 
+        if (vec3.equals(p1,p2)){
+            var p2 = vec3.fromValues(new_col1[3+6],new_col1[3+7],new_col1[3+8])
+        }
 
         vec3.sub(v0,p1,p0)
         vec3.sub(v1,p2,p0)
@@ -140,11 +132,14 @@ class Geometria{ //geometria superficie
         if (x > 0) {
             vec3.scale(nm1,nm1,-1)
         }
-
+        
         /// normal segunda tapa:
-        var p0 = vec3.fromValues(new_row2[0],new_row2[0+1],new_row2[0+2])
-        var p1 = vec3.fromValues(new_row2[0+3],new_row2[0+4],new_row2[0+5])
-        var p2 = vec3.fromValues(new_row2[0+6],new_row2[0+7],new_row2[0+8])
+        var p0 = vec3.fromValues(new_col2[0],new_col2[0+1],new_col2[0+2])
+        var p1 = vec3.fromValues(new_col2[0+3],new_col2[0+4],new_col2[0+5])
+        var p2 = vec3.fromValues(new_col2[3+6],new_col2[3+7],new_col2[3+8])
+        if (vec3.equals(p1,p2)){
+            var p2 = vec3.fromValues(new_col2[3+6],new_col2[3+7],new_col2[3+8])
+        }
 
         vec3.sub(v0,p1,p0)
         vec3.sub(v1,p2,p0)
@@ -162,15 +157,115 @@ class Geometria{ //geometria superficie
         if (x > 0) {
             vec3.scale(nm2,nm2,-1)
         }
-        
         /////////
+        for (var i=0;i<rows; i+=1) {
+            this.pos.splice(i*(cols+1)*3,0,...[new_col1[(3*i)],new_col1[(3*i)+1],new_col1[(3*i)+2]])
+            this.normal.splice(i*(cols+1)*3,0,...[nm1[0],nm1[1],nm1[2]])
+        }
+        //  
 
+        cols+=1
+
+        for (var i=0;i<rows; i+=1) {
+            this.pos.splice( (i*(cols+1) + cols) *3 , 0, ...[new_col2[(3*i)],new_col2[(3*i)+1],new_col2[(3*i)+2]])
+            this.normal.splice( (i*(cols+1) + cols) *3 , 0, ...[nm2[0],nm2[1],nm2[2]])
+        }
+
+        //actualizo index
+        cols+=1;
+        var index=[];
+        
+        for (var j=2; j<rows-1;j++){
+            index.push(0);
+            index.push((cols)*(j-1));
+            index.push((cols)*j);
+        }
+
+        for (var i=0;i<rows-1;i++){
+            index.push(i*cols);
+            for (var j=1;j<cols-2;j++){ //salteo primer y ultima columna ya que van a ser tapas.
+                index.push(i*cols+j);
+                index.push((i+1)*cols+j);
+                index.push(i*cols+j+1);
+                index.push((i+1)*cols+j+1);
+            }
+            index.push((i+1)*cols+cols-1);
+        }
+
+        for (var j=2; j<rows-1;j++){
+            index.push(cols-1+0);
+            index.push(cols-1+(cols)*(j-1));
+            index.push(cols-1+(cols)*j);
+        }
+        this.index=index;
+    }
+
+    agregarFilasTapas(suavizar = false){ //creo que el parametro suavizar no es necesario en este caso?
+        var rows = (this.pos.length/3)/this.cant_columnas;
+        var cols = this.cant_columnas
+        
+        var new_row1= this.pos.slice(0,cols*3)
+        var new_row2 = this.pos.slice(cols*3*(rows-1))
+
+        ////// obtener normal tapas
+        // asumo que la superficie tiene al menos 3 puntos por fila, de lo contrario crear una pared como fila no tendria sentido.
+        var v0 =vec3.create()
+        var v1 = vec3.create()
+        var nm1 = vec3.create()
+        var nm2 = vec3.create()
+
+        var p0 = vec3.fromValues(new_row1[0],new_row1[0+1],new_row1[0+2])
+        var p1 = vec3.fromValues(new_row1[0+3],new_row1[0+4],new_row1[0+5])
+
+        var p2 = vec3.fromValues(new_row1[0+6],new_row1[0+7],new_row1[0+8]) 
+        if (vec3.equals(p1,p2)){
+            var p2 = vec3.fromValues(new_row1[3+6],new_row1[3+7],new_row1[3+8]) // para el de los paneles, ya que uno curvas y en la union los puntos se repiten
+        }
+
+        vec3.sub(v0,p1,p0)
+        vec3.sub(v1,p2,p0)
+        vec3.cross(nm1,v0,v1)
+        vec3.normalize(nm1,nm1)
+
+        //chequeo que la normal no haya quedado apuntando hacia dentro:
+        var aux_vecdir_to_center = vec3.fromValues(
+            this.centro[0]-p0[0],
+            this.centro[1]-p0[1],
+            this.centro[2]-p0[2])
+        vec3.normalize(aux_vecdir_to_center,aux_vecdir_to_center)
+
+        var x = vec3.dot(nm1, aux_vecdir_to_center)
+        if (x > 0) {
+            vec3.scale(nm1,nm1,-1)
+        }
+        
+        /// normal segunda tapa:
+        var p0 = vec3.fromValues(new_row2[0],new_row2[0+1],new_row2[0+2])
+        var p1 = vec3.fromValues(new_row2[0+3],new_row2[0+4],new_row2[0+5])
+        var p2 = vec3.fromValues(new_row2[3+6],new_row2[3+7],new_row2[3+8])
+        if (vec3.equals(p1,p2)){
+            var p2 = vec3.fromValues(new_row2[3+6],new_row2[3+7],new_row2[3+8])
+        }
+
+        vec3.sub(v0,p1,p0)
+        vec3.sub(v1,p2,p0)
+        vec3.cross(nm2,v0,v1)
+        vec3.normalize(nm2,nm2)
+
+        //chequeo que la normal no haya quedado apuntando hacia dentro:
+        var aux_vecdir_to_center = vec3.fromValues(
+            this.centro[0]-p0[0],
+            this.centro[1]-p0[1],
+            this.centro[2]-p0[2])
+        vec3.normalize(aux_vecdir_to_center,aux_vecdir_to_center)
+
+        var x = vec3.dot(nm2, aux_vecdir_to_center)
+        if (x > 0) {
+            vec3.scale(nm2,nm2,-1)
+        }
+        /////////
         this.pos.unshift(...new_row1)
         this.pos.push(...new_row2)
-
-        console.log("index comparison:")
-        console.log(`rows:${rows},cols:${cols}`)
-        console.log(this.index)
 
         for (var i= 0; i<cols; i++){
             this.normal.unshift(...[nm1[0],nm1[1],nm1[2]])
@@ -193,7 +288,6 @@ class Geometria{ //geometria superficie
             this.index.push(((rows+1)*(cols)) +j+1);
             this.index.push(((rows+1)*(cols))+j+2);
         } 
-        console.log(this.index)
     }
 
     obtenerGeometriaNormales(){
