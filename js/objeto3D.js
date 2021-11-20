@@ -111,8 +111,8 @@ class Objeto3D {
             
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
 
-            let difuseColorUniform = gl.getUniformLocation(glProgram, "difuseColor")
-            gl.uniform3f(difuseColorUniform, this.color[0],this.color[1], this.color[2])
+            let objectColorUniform = gl.getUniformLocation(glProgram, "objectColor")
+            gl.uniform3f(objectColorUniform, this.color[0],this.color[1], this.color[2])
             
             gl.drawElements( gl.TRIANGLE_STRIP, this.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 
