@@ -361,7 +361,7 @@ function geometriaTuboSoportePaneles(cant_paneles){
     disc_curva_forma = obtenerDiscretizacionCurvaParametrizada(curva_forma,2)
     
     curva_recorrido = new CurvaCircunferencia(0.5,[0,0,0])
-    disc_curva_recorrido = obtenerDiscretizacionCurvaParametrizada(curva_recorrido,6)
+    disc_curva_recorrido = obtenerDiscretizacionCurvaParametrizada(curva_recorrido,9)
 
     var geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido)
     geometria.agregarColumnasTapas()

@@ -86,10 +86,7 @@ class Objeto3D {
         //
         var modelMatrixUniform = gl.getUniformLocation(glProgram, "modelMatrix");
         gl.uniformMatrix4fv(modelMatrixUniform, false, m);
-
-
-        var uniformTime = gl.getUniformLocation(glProgram, "uTime");
-        gl.uniform1f(uniformTime, Math.PI*15/8); //global_t    
+        
 
         if ((this.vertexBuffer !=null) & (this.indexBuffer!= null)) {
             // Dibujamos la malla de triangulos con WebGL

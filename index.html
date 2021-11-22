@@ -31,16 +31,17 @@
 
             attribute vec3 aVertexPosition;
             attribute vec3 aVertexNormal;
-            uniform float uTime;
 
             uniform mat4 modelMatrix;            
             uniform mat4 viewMatrix;
             uniform mat4 projMatrix;
 
             varying vec3 vNormal;    
+            varying vec3 vPVNormal;
             varying vec3 vPosWorld;
             varying float time;
 
+            varying vec3 cameraPosition;
 
             mat3 transpose(mat3 matrix) {
                 vec3 row0 = matrix[0];
@@ -83,39 +84,81 @@
                 return (1.0 / dot(row0, minors0)) * adj;
             }
 
+            
             void main(void) {
                 mat4 mvp = projMatrix * viewMatrix * modelMatrix;
                 gl_Position =  mvp * vec4(aVertexPosition, 1.0);
 
-                vPosWorld = (mvp * vec4(aVertexPosition, 1.0)).xyz;    //la posicion en coordenadas de mundo
+                //vPosWorld = (mvp * vec4(aVertexPosition, 1.0)).xyz;    //la posicion en coordenadas de mundo
+                vPosWorld = (modelMatrix * vec4(aVertexPosition,1.0)).xyz;
                 
+                vPVNormal = (mvp * vec4(aVertexNormal, 1.0)).xyz;
+
                 mat3 normalMatrix = mat3(modelMatrix);
 
                 normalMatrix = inverse(normalMatrix);
                 normalMatrix = transpose(normalMatrix);
                 vNormal = normalize(normalMatrix * aVertexNormal).xyz;//(normalMatrix*vec4(aVertexNormal,1.0)).xyz;       //la normal en coordenadas de mundo                
-                time = uTime;
+                cameraPosition = vec3(viewMatrix[0][3],viewMatrix[1][3],viewMatrix[2][3]);
             }
         </script>
 
         <script id="shader-fs" type="x-shader/x-fragment">
             precision highp float;
             uniform vec3 objectColor;
+            uniform float uTime;
+            uniform vec3 cameraPosition;
+
             varying vec3 vNormal;
+            varying vec3 vPVNormal;
             varying vec3 vPosWorld;
 
-            varying float time;
+            //varying vec3 cameraPosition;
+
 
             void main(void) {
                 float ambientLight = 0.05;
 
-                vec3 light = vec3(10.0*cos(time * 0.1),10.0*sin(time * 0.1),0.0);
+                vec3 light = vec3(0.0,0.0,10.0);//10.0*cos(uTime * 0.01),10.0,10.0*sin(uTime * 0.01));
                 vec3 lightVec=normalize(light);
+
                 vec3 ambient = ambientLight*objectColor;
-
-
                 vec3 difuse = max(dot(vNormal,lightVec), 0.0)*(1.0 - ambientLight) * objectColor;
-                vec3 color = ambient + difuse ;
+
+
+
+
+                //surfaceToLight: vector unitario desde la superficie hasta la luz
+                //  para las que no son direccional se calcula como la posicion de la luz menos la posicion de la superficie
+                //  para la direccional el incidence creo que es lightVec
+                //surfacePos: vec3(modelMatrix * vec4(fragVert,1));
+
+                vec3 materialSpecularColor = vec3(1.0,1.0,1.0);
+                float lightIntensity = 1.0;
+                float materialShininess = 100.0;
+                //
+
+                vec3 incidenceVector = -lightVec; //a unit vector
+                vec3 reflectionVector = reflect(incidenceVector, vNormal); //also a unit vector
+                vec3 surfaceToCamera = normalize(cameraPosition - vPosWorld); //also a unit vector
+                float cosAngle = max(0.0, dot(surfaceToCamera, reflectionVector));
+                float specularCoefficient = pow(cosAngle, materialShininess);
+
+                vec3 specular = specularCoefficient * materialSpecularColor * lightIntensity;
+
+                if (difuse == vec3(0.0,0.0,0.0))
+                {
+                    specular = difuse;
+                }
+
+
+
+
+
+
+
+
+                vec3 color = ambient + difuse + specular;
 
                gl_FragColor = vec4(color,1.0);
             }
@@ -144,11 +187,12 @@
             var projMatrix = mat4.create();
             var normalMatrix = mat4.create();
             var rotate_angle = -1.57078;
-
+            
 
             const MAX_DISTANCIA_VISTA = 15000;
             var factor_fov = 1.0
 
+            var cameraactual;
             var camera = 3;
             var global_t = 0;
             //let droneCam=new DroneCameraControl([-10,7,25]);
@@ -314,6 +358,16 @@
             
             function drawScene(){
                 setupVertexShaderMatrix();
+
+                var uniformTime = gl.getUniformLocation(glProgram, "uTime");
+                gl.uniform1f(uniformTime, Math.PI*15/8);//global_t);//); //   
+
+                var uniformCamPosition = gl.getUniformLocation(glProgram, "cameraPosition");
+
+                var camPos = vec3.create()
+                mat4.getTranslation(camPos,cameraactual.getMatTransformations())
+                //console.log(campos);
+                gl.uniform3fv(uniformCamPosition, camPos);//global_t);//); // 
 
                 matPadre= mat4.create() // matriz identidad para nodo principal
 
