@@ -61,7 +61,6 @@ class Esfera extends SuperficieParametrizada{
         var n=vec3.create();
         vec3.cross(n,v1,v2);
         vec3.normalize(n,n)
-        console.log(n)
         
         return n                
     }

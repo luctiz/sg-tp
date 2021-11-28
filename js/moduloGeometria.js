@@ -351,11 +351,11 @@ class Geometria{ //geometria superficie
         webgl_position_buffer.itemSize = 3;
         webgl_position_buffer.numItems = this.pos.length / 3;
 
-        /*var webgl_uvs_buffer = gl.createBuffer();
+        var webgl_uvs_buffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, webgl_uvs_buffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.uv), gl.STATIC_DRAW);
         webgl_uvs_buffer.itemSize = 2;
-        webgl_uvs_buffer.numItems = this.uv.length / 2;*/
+        webgl_uvs_buffer.numItems = this.uv.length / 2;
 
         var webgl_normal_buffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, webgl_normal_buffer);
@@ -369,25 +369,44 @@ class Geometria{ //geometria superficie
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.index), gl.STATIC_DRAW);  
 
-        var vertexBuffer = {webgl_position_buffer,webgl_normal_buffer}//,webgl_uvs_buffer}
+        var vertexBuffer = {webgl_position_buffer,webgl_normal_buffer,webgl_uvs_buffer}
         return {vertexBuffer, indexBuffer}
     }
 }
+
+// mover a otro archivo?
+class UVMapping {
+    start_u
+    start_v
+    len_u
+    len_v
+    u_repeat
+    v_repeat
+    constructor(start_u = 0, start_v = 0, len_u = 1, len_v = 1, u_repeat = 1, v_repeat = 1){
+        this.start_u = start_u
+        this.start_v = start_v
+        this.len_u = len_u
+        this.len_v = len_v
+        this.u_repeat = u_repeat
+        this.v_repeat = v_repeat
+    }
+}
+//
 
 class ModuloGeometria {
     static obtenerGeometriaSuperficieParametrizada(superficie, filas, columnas){
         var vertex = this._getVertexBufferSuperficieParametrizada(superficie,filas,columnas);
         var index = this._getIndexBuffer(filas,columnas)
-        return new Geometria(vertex.pos,vertex.normal,null,index,columnas)
+        return new Geometria(vertex.pos,vertex.normal,vertex.uv,index,columnas)
     }
 
-    static obtenerGeometriaSuperficieBarrido(forma_discretizada, recorrido_discretizado, tapas=-1){
-        var vertex = this._getVertexBufferSuperficieBarrido(forma_discretizada,recorrido_discretizado)
+    static obtenerGeometriaSuperficieBarrido(forma_discretizada, recorrido_discretizado, uvmapping = new UVMapping()){
+        var vertex = this._getVertexBufferSuperficieBarrido(forma_discretizada,recorrido_discretizado,uvmapping)
         var columnas = forma_discretizada.position_list.length / 3
         var filas = recorrido_discretizado.position_list.length / 3
         var index = this._getIndexBuffer(filas, columnas)
 
-        return new Geometria(vertex.pos,vertex.normal,null,index, columnas)
+        return new Geometria(vertex.pos,vertex.normal,vertex.uvs,index, columnas)
     }
 
     static _getVertexBufferSuperficieParametrizada(superficie, rows,cols)
@@ -438,10 +457,11 @@ class ModuloGeometria {
             return index;
     }
 
-    static _getVertexBufferSuperficieBarrido(forma_discretizada,recorrido_discretizado){
+    static _getVertexBufferSuperficieBarrido(forma_discretizada,recorrido_discretizado, uvmapping){
 
         var pos = []
         var normal = []
+        var uvs = []
 
         var p0 = vec3.fromValues(recorrido_discretizado.position_list[0],recorrido_discretizado.position_list[0+1],recorrido_discretizado.position_list[0+2])
         var p1 = vec3.fromValues(recorrido_discretizado.position_list[0+3],recorrido_discretizado.position_list[0+4],recorrido_discretizado.position_list[0+5])
@@ -469,13 +489,18 @@ class ModuloGeometria {
         }
         vec3.normalize(nm,nm)
 
-        for (var j = 0; j<(recorrido_discretizado.position_list.length); j+=3){
+        let recorrido_length = recorrido_discretizado.position_list.length
+        let forma_length = forma_discretizada.position_list.length
+
+
+        
+        for (var j = 0; j<recorrido_length; j+=3){
             var punto_recorrido = vec3.fromValues(recorrido_discretizado.position_list[j], recorrido_discretizado.position_list[j+1], recorrido_discretizado.position_list[j+2])
             var tg = vec3.fromValues(recorrido_discretizado.tang_list[j],recorrido_discretizado.tang_list[j+1],recorrido_discretizado.tang_list[j+2])
             var binormal = vec3.create()
             vec3.cross(binormal, tg, nm) //producto vectorial entre tangente y normal
 
-            for (var i = 0; i<(forma_discretizada.position_list.length); i+=3){
+            for (var i = 0; i<(forma_length); i+=3){
                 var forma_pos = vec3.fromValues(forma_discretizada.position_list[i],forma_discretizada.position_list[i+1],forma_discretizada.position_list[i+2])
                 
                 var aux1 = vec3.create() 
@@ -511,12 +536,17 @@ class ModuloGeometria {
                 normal.push(sup_normal[0])
                 normal.push(sup_normal[1])
                 normal.push(sup_normal[2])
+
+                uvs.push((uvmapping.start_u + (i/(forma_length/uvmapping.u_repeat))*uvmapping.len_u) ) // si se quiere repetir algo que no empieza en 0 o no termina en 1 creo que esto no da bien
+                uvs.push((uvmapping.start_v + (j/(recorrido_length/uvmapping.v_repeat))*uvmapping.len_u))
             }
         }
 
+        console.log(uvs)
         return {
             pos,
             normal,
+            uvs
         }
     }
 

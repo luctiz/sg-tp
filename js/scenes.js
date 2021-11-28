@@ -241,9 +241,9 @@ function geometriaAnillo(){
     disc_curva_forma = obtenerDiscretizacionCurvaParametrizada(curva_forma,12)
     
     curva_recorrido = new CurvaCircunferencia(16.8,[0,0,0])
-    disc_curva_recorrido = obtenerDiscretizacionCurvaParametrizada(curva_recorrido,30)
+    disc_curva_recorrido = obtenerDiscretizacionCurvaParametrizada(curva_recorrido,36)
 
-    return ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido)
+    return ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido, new UVMapping(0,0,1,1,0.10, 10))
 }
 
 function geometriaVigaSoporteAnillo(){
@@ -523,42 +523,42 @@ var camera3;
 function mainScene(){
 
     nodo_principal = new Objeto3D()
-
+    
     var puntos_curvatura_modulo_violeta = 6
     
     // nucleo
     nucleo = new Objeto3D()
 
     modulo_cuerpo = new Objeto3D()
-    geometria = geometriaNucleoCuerpo()
-    modulo_cuerpo.setGeometria(geometria)
+    //geometria = geometriaNucleoCuerpo()
+    //modulo_cuerpo.setGeometria(geometria)
     modulo_cuerpo.setColor(0.83,0.63,0.33)
     modulo_cuerpo.addTraslacion(0,0,0)
     nucleo.agregarHijo(modulo_cuerpo)
 
     modulo_cuerpo2 = new Objeto3D()
-    modulo_cuerpo2.setGeometria(geometria)
+    //modulo_cuerpo2.setGeometria(geometria)
     modulo_cuerpo2.setColor(0.83,0.63,0.33)
     modulo_cuerpo2.addTraslacion(0,0,-7)
     nucleo.agregarHijo(modulo_cuerpo2)
 
     modulo_violeta = new Objeto3D()
-    geometria = geometriaNucleoModuloVioleta(puntos_curvatura_modulo_violeta)
-    modulo_violeta.setGeometria(geometria)
+    //geometria = geometriaNucleoModuloVioleta(puntos_curvatura_modulo_violeta)
+    //modulo_violeta.setGeometria(geometria)
     modulo_violeta.setColor(0.97,0.08,1.00)
     modulo_violeta.addTraslacion(0,0,3.5)
     nucleo.agregarHijo(modulo_violeta)
 
     modulo_violeta2 = new Objeto3D()
-    modulo_violeta2.setGeometria(geometria)
+    //modulo_violeta2.setGeometria(geometria)
     modulo_violeta2.setColor(0.97,0.08,1.00)
     modulo_violeta2.addTraslacion(0,0,-3.5)
     nucleo.agregarHijo(modulo_violeta2)
     nucleo.agregarHijo(modulo_violeta2)
 
     modulo_cabeza = new Objeto3D()
-    geometria = geometriaNucleoCabeza(15)
-    modulo_cabeza.setGeometria(geometria)
+    //geometria = geometriaNucleoCabeza(15)
+    //modulo_cabeza.setGeometria(geometria)
     modulo_cabeza.setColor(0.83,0.63,0.33)
     modulo_cabeza.addTraslacion(0,0,6.3)
     nucleo.agregarHijo(modulo_cabeza)
@@ -567,8 +567,8 @@ function mainScene(){
     //
     // anillo animado
     base_anillo = new Objeto3D()
-    geometria = geometriaBaseAnillo()
-    base_anillo.setGeometria(geometria)
+    //geometria = geometriaBaseAnillo()
+    //base_anillo.setGeometria(geometria)
     base_anillo.addRotacionSegunVariablePorTiempo(Math.PI/5,0,0,1,velocidad_rotacion_anillo)
 
 
@@ -585,15 +585,15 @@ function mainScene(){
         var objeto_viga = new Objeto3D()
 
         var viga_soporte_anillo = new Objeto3D()
-        geometria = geometriaVigaSoporteAnillo()
-        viga_soporte_anillo.setGeometria(geometria)
+        //geometria = geometriaVigaSoporteAnillo()
+        //viga_soporte_anillo.setGeometria(geometria)
         viga_soporte_anillo.setColor(0.90,0.70,0.40)
         viga_soporte_anillo.addTraslacion(0,0.8,0)
         viga_soporte_anillo.addRotacion(Math.PI*3/4,1,0,0)
         objeto_viga.agregarHijo(viga_soporte_anillo)
 
         var viga_soporte_anillo2 = new Objeto3D()
-        viga_soporte_anillo2.setGeometria(geometria)
+        //viga_soporte_anillo2.setGeometria(geometria)
         viga_soporte_anillo2.setColor(0.90,0.70,0.40)
         viga_soporte_anillo2.addTraslacion(0,-0.8,0)
         viga_soporte_anillo2.addRotacion(Math.PI*3/4,1,0,0)
@@ -603,8 +603,8 @@ function mainScene(){
         //tubos pequeños entre viga
         for (var j = 0; j < 15; j++){
             var tubo_viga = new Objeto3D()
-            geometria = geometriaTuboVigaAnillo()
-            tubo_viga.setGeometria(geometria)
+            //geometria = geometriaTuboVigaAnillo()
+            //tubo_viga.setGeometria(geometria)
             tubo_viga.setColor(0.90,0.70,0.40)
             tubo_viga.addRotacion(Math.PI*((j % 2)),1,0,0)
 
@@ -613,8 +613,8 @@ function mainScene(){
         }
 
         var agarre_soporte_anillo = new Objeto3D()
-        geometria = geometriaAnilloAgarreSoporte(cantidad_modulos_anillo,3)
-        agarre_soporte_anillo.setGeometria(geometria)
+        //geometria = geometriaAnilloAgarreSoporte(cantidad_modulos_anillo,3)
+        //agarre_soporte_anillo.setGeometria(geometria)
         agarre_soporte_anillo.setColor(0.75,1.00,0.98)
         agarre_soporte_anillo.addRotacion( (-Math.PI/(2*cantidad_modulos_anillo)),0,0,1)
         objeto_viga.addRotacion((2*i*Math.PI)/(cantidad_modulos_anillo),0,0,1)
@@ -628,13 +628,14 @@ function mainScene(){
     geometria = geometriaAnillo()
     anillo.setGeometria(geometria)
     anillo.setColor(1,1,0.8)
+    anillo.setTexture(textures.anillo)
     base_anillo.agregarHijo(anillo)
     nucleo.agregarHijo(base_anillo)
 
     // tubo con paneles
     var tubo_soporte_paneles = new Objeto3D()
-    geometria = geometriaTuboSoportePaneles(cantidad_filas_paneles)
-    tubo_soporte_paneles.setGeometria(geometria)
+    //geometria = geometriaTuboSoportePaneles(cantidad_filas_paneles)
+    //tubo_soporte_paneles.setGeometria(geometria)
     tubo_soporte_paneles.setColor(1.0,0.48,1.00)
     tubo_soporte_paneles.addTraslacion(0,0,-2.0)
     modulo_cuerpo2.agregarHijo(tubo_soporte_paneles)
@@ -644,22 +645,22 @@ function mainScene(){
     for (var i = 0; i < cantidad_filas_paneles; i++){
 
         tubo_paneles = new Objeto3D()
-        geometria = geometriaTuboFilaPaneles()
-        tubo_paneles.setGeometria(geometria)
+        //geometria = geometriaTuboFilaPaneles()
+        //tubo_paneles.setGeometria(geometria)
         tubo_paneles.setColor(0.83,0.63,0.33)
         tubo_paneles.addTraslacion(0,0,-5.0 -5.0 * i)
         tubo_soporte_paneles.agregarHijo(tubo_paneles)
 
         var panel = new Objeto3D()
-        geometria = geometriaPanel()
-        panel.setGeometria(geometria)
+        //geometria = geometriaPanel()
+        //panel.setGeometria(geometria)
         panel.setColor(0.83,0.63,0.33)
         panel.addTraslacion(6.5,0.15, 0.15)
         tubo_paneles.agregarHijo(panel)
 
         var panel = new Objeto3D()
-        geometria = geometriaPanel()
-        panel.setGeometria(geometria)
+        //geometria = geometriaPanel()
+        //panel.setGeometria(geometria)
         panel.setColor(0.83,0.63,0.33)
         panel.addTraslacion(-6.5,0.15, 0.15)
         tubo_paneles.agregarHijo(panel)
@@ -687,11 +688,12 @@ function mainScene(){
     var sup_sol = new Plano(10)
     geometria = ModuloGeometria.obtenerGeometriaSuperficieParametrizada(sup_sol, 2, 2)
     sol.setGeometria(geometria)
+    sol.setTexture(textures.sol)
     sol.setColor(1,1,1)
     sol.addRotacionSegunVariable(Math.PI / 180,1,0,0, angulo_sol)
     sol.addTraslacion(posicion_sol[0],posicion_sol[1],posicion_sol[2])
     // deberia agregar rotacion para que siempre mire hacia la tierra
-    sol.addEscalado(1000,0,1000)
+    sol.addEscalado(2000,0,2000)
 
     nodo_principal.agregarHijo(sol)
 
@@ -702,7 +704,7 @@ function mainScene(){
     geometria = ModuloGeometria.obtenerGeometriaSuperficieParametrizada(sup_planeta,40,40)
     planeta.setGeometria(geometria)
     planeta.setColor(0.50,0.50,1)
-
+    planeta.setTexture(textures.tierra)
     planeta.addEscalado(2000,2000,2000)
     planeta.addTraslacion(0,-16, 0)
 
@@ -721,20 +723,20 @@ function mainScene(){
 
     var modelo_capsula = new Objeto3D()
     var cuerpoCapsula = new Objeto3D()
-    geometria = geometriaCuerpoCapsula()
-    cuerpoCapsula.setGeometria(geometria)
+    //geometria = geometriaCuerpoCapsula()
+    //cuerpoCapsula.setGeometria(geometria)
     cuerpoCapsula.setColor(0.83,0.63,0.33)
     modelo_capsula.agregarHijo(cuerpoCapsula)
 
     var cabezaCapsula = new Objeto3D()
-    geometria = geometriaCabezaCapsula()
-    cabezaCapsula.setGeometria(geometria)
+    //geometria = geometriaCabezaCapsula()
+    //cabezaCapsula.setGeometria(geometria)
     cabezaCapsula.setColor(0.83,0.63,0.33)
     modelo_capsula.agregarHijo(cabezaCapsula)
 
     var propulsorCapsula = new Objeto3D()
-    geometria = geometriaPropulsorCapsula()
-    propulsorCapsula.setGeometria(geometria)
+    //geometria = geometriaPropulsorCapsula()
+    //propulsorCapsula.setGeometria(geometria)
     propulsorCapsula.setColor(0.40,0.40,0.40)
     modelo_capsula.agregarHijo(propulsorCapsula)
 

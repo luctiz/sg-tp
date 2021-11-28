@@ -65,14 +65,11 @@ class Objeto3D {
         this.indexBuffer = null;
         this.matModelado = mat4.create(); // transformacion respecto de su padre
         this.matTransformations = mat4.create();
-        //this.posicion = vec3.fromValues(0,0,0); //a partir de estos atributos se calcula la matriz respectiva
-        //this.rotacion = vec3.fromValues(0,0,0);
-        //this.rotaciones = [];
         this.transformaciones = []
-        //this.escala = vec3.fromValues(1,1,1);
         this.color = vec3.fromValues(1,1,1);
         this.hijos=[];
         this.iluminacionSimple=0.0;
+        this.texture = null;
     }
 
     // metodo privado, usa posicion, rotacion y escala. Se actualiza cada vez que se dibuja el objeto
@@ -100,7 +97,7 @@ class Objeto3D {
         gl.uniformMatrix4fv(modelMatrixUniform, false, m);
         
 
-        if ((this.vertexBuffer !=null) & (this.indexBuffer!= null)) {
+        if ((this.vertexBuffer !=null) & (this.indexBuffer!= null)) { //Los binds aca son innecesarios???
             // Dibujamos la malla de triangulos con WebGL
             // si el objeto tiene geometria asociada.
             // Se configuran los buffers que alimentaron el pipeline
@@ -110,8 +107,19 @@ class Objeto3D {
             gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer.webgl_position_buffer);
             gl.vertexAttribPointer(vertexPositionAttribute, this.vertexBuffer.webgl_position_buffer.itemSize, gl.FLOAT, false, 0, 0);
 
-            //gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer.webgl_uvs_buffer);
-            //gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, vertexBuffer.webgl_uvs_buffer.itemSize, gl.FLOAT, false, 0, 0);
+
+
+            let textureCoordAttribute = gl.getAttribLocation(glProgram, 'aTextureCoord');
+            gl.enableVertexAttribArray(textureCoordAttribute);
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer.webgl_uvs_buffer);
+            gl.vertexAttribPointer(textureCoordAttribute, this.vertexBuffer.webgl_uvs_buffer.itemSize, gl.FLOAT, false, 0, 0);
+
+
+            let samplerUniform = gl.getUniformLocation(glProgram, 'uSampler')
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, this.texture);
+            gl.uniform1i(samplerUniform, 0);  
+            
 
             vertexNormalAttribute = gl.getAttribLocation(glProgram, "aVertexNormal");
             gl.enableVertexAttribArray(vertexNormalAttribute);
@@ -201,6 +209,10 @@ class Objeto3D {
 
     setIluminacionSimple(){
         this.iluminacionSimple = 1.0;
+    }
+
+    setTexture(texture){
+        this.texture = texture;
     }
 }
 
