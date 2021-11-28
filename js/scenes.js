@@ -476,9 +476,39 @@ function geometriaCabezaCapsula(){
 }
 
 function geometriaPropulsorCapsula(){
-    p_control = [[-2.2,0,0],[-2.2,0.3,0],[-4,0.8,0]]
+    //p_control = [[-2.2,0,0],[-2.2,0.3,0],[-4,0.8,0]]
+    //curva_forma = new CurvaBezier(p_control)
+    //disc_curva_forma = obtenerDiscretizacionCurvaParametrizada(curva_forma,10)
+
+    p_control = [[-2.2,0.01,0],[-2.2,0.31,0],[-4,0.81,0]]
     curva_forma = new CurvaBezier(p_control)
     disc_curva_forma = obtenerDiscretizacionCurvaParametrizada(curva_forma,10)
+
+
+    p_control = [[-4,0.81,0],[-4.01,0.8,0]]
+    curva_forma = new CurvaBezier(p_control)
+    disc_curva_forma2 = obtenerDiscretizacionCurvaParametrizada(curva_forma,2)
+
+    disc_curva_forma.position_list.push(...disc_curva_forma2.position_list)
+    disc_curva_forma.tang_list.push(...disc_curva_forma2.tang_list)
+
+
+
+    p_control = [[-4.01,0.8,0],[-2.21,0.3,0],[-2.21,0,0]]
+    curva_forma = new CurvaBezier(p_control)
+    disc_curva_forma2 = obtenerDiscretizacionCurvaParametrizada(curva_forma,10)
+
+    disc_curva_forma.position_list.push(...disc_curva_forma2.position_list)
+    disc_curva_forma.tang_list.push(...disc_curva_forma2.tang_list)
+
+    p_control = [[-2.21,0,0],[-2.2,0.01,0]]
+    curva_forma = new CurvaBezier(p_control)
+    disc_curva_forma2 = obtenerDiscretizacionCurvaParametrizada(curva_forma,2)
+
+    disc_curva_forma.position_list.push(...disc_curva_forma2.position_list)
+    disc_curva_forma.tang_list.push(...disc_curva_forma2.tang_list)
+
+
     
     curva_recorrido = new CurvaCircunferencia(0.3,[0,0,0])
     disc_curva_recorrido = obtenerDiscretizacionCurvaParametrizada(curva_recorrido,20)
@@ -539,7 +569,7 @@ function mainScene(){
     base_anillo = new Objeto3D()
     geometria = geometriaBaseAnillo()
     base_anillo.setGeometria(geometria)
-    base_anillo.addRotacionSegunTiempo(velocidad_rotacion_anillo*Math.PI/5,0,0,1)
+    base_anillo.addRotacionSegunVariablePorTiempo(Math.PI/5,0,0,1,velocidad_rotacion_anillo)
 
 
     //camara 1
@@ -634,7 +664,9 @@ function mainScene(){
         panel.addTraslacion(-6.5,0.15, 0.15)
         tubo_paneles.agregarHijo(panel)
 
-        tubo_paneles.addRotacion((angulo_paneles-45) * Math.PI / 360,1,0,0)
+        //angulo_paneles;
+        //velocidad_rotacion_anillo;
+        tubo_paneles.addRotacionSegunVariable(Math.PI / 180,1,0,0, angulo_paneles)
     }
 
     var camara_paneles = new Objeto3D()
@@ -648,16 +680,38 @@ function mainScene(){
     nodo_principal.agregarHijo(nucleo)
 
 
-    // fondo planeta tierra
+    // fondo 
+    // sol
+    var sol = new Objeto3D()
+    sol.setIluminacionSimple()
+    var sup_sol = new Plano(10)
+    geometria = ModuloGeometria.obtenerGeometriaSuperficieParametrizada(sup_sol, 2, 2)
+    sol.setGeometria(geometria)
+    sol.setColor(1,1,1)
+    sol.addRotacionSegunVariable(Math.PI / 180,1,0,0, angulo_sol)
+    sol.addTraslacion(posicion_sol[0],posicion_sol[1],posicion_sol[2])
+    // deberia agregar rotacion para que siempre mire hacia la tierra
+    sol.addEscalado(1000,0,1000)
 
+    nodo_principal.agregarHijo(sol)
+
+
+    // planeta tierra
     var planeta = new Objeto3D()
-    var sup_planeta = new Esfera(5,Math.PI)
-    geometria = ModuloGeometria.obtenerGeometriaSuperficieParametrizada(sup_planeta,20,20)
+    var sup_planeta = new Esfera(15,Math.PI/4)
+    geometria = ModuloGeometria.obtenerGeometriaSuperficieParametrizada(sup_planeta,40,40)
     planeta.setGeometria(geometria)
     planeta.setColor(0.50,0.50,1)
-    planeta.addTraslacion(0,-5000, 0)
 
-    planeta.addEscalado(1800,50,1800)
+    planeta.addEscalado(2000,2000,2000)
+    planeta.addTraslacion(0,-16, 0)
+
+    //planeta.addRotacionSegunVariable(Math.PI / 180,1,0,0, angulo_paneles)//.addRotacion(-Math.PI/2,1,0,0)
+    planeta.addRotacion(Math.PI*3/2,1,0,0)
+
+
+
+
     nodo_principal.agregarHijo(planeta)
 
 

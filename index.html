@@ -16,9 +16,9 @@
     		</canvas>    		
     	</center>
 
-        <script src="js/dat.gui.js"></script>
-        <script src="js/jquery.min.js"></script>
-        <script type="text/javascript" src="js/gl-matrix.js"></script>
+        <script type="text/javascript" src="js/lib/dat.gui.js"></script>
+        <script type="text/javascript" src="js/lib/jquery.min.js"></script>
+        <script type="text/javascript" src="js/lib/gl-matrix.js"></script>
         <script type="text/javascript" src="js/curvasParametrizadas.js"></script>
         <script type="text/javascript" src="js/superficiesParametrizadas.js"></script>
         <script type="text/javascript" src="js/objeto3D.js"></script>
@@ -103,10 +103,14 @@
             }
         </script>
 
-        <script id="shader-fs" type="x-shader/x-fragment">
+        <script id="shader-fs-phong" type="x-shader/x-fragment">
             precision highp float;
             uniform vec3 objectColor;
             uniform float uTime;
+
+            uniform float simpleColor;
+
+            uniform vec3 sunPosition;
             uniform vec3 cameraPosition;
 
             varying vec3 vNormal;
@@ -117,15 +121,17 @@
 
 
             void main(void) {
-                float ambientLight = 0.05;
+                if (simpleColor == 1.0){
+                    gl_FragColor = vec4(objectColor,1.0);
+                    return;
+                }
+                float ambientLight = 0.2; // conviene tenerlo como vec3
 
-                vec3 light = vec3(0.0,0.0,10.0);//10.0*cos(uTime * 0.01),10.0,10.0*sin(uTime * 0.01));
-                vec3 lightVec=normalize(light);
+                //vec3 light = ;//10.0*cos(uTime * 0.01),10.0,10.0*sin(uTime * 0.01));
+                vec3 lightVec= normalize(sunPosition);
 
                 vec3 ambient = ambientLight*objectColor;
                 vec3 difuse = max(dot(vNormal,lightVec), 0.0)*(1.0 - ambientLight) * objectColor;
-
-
 
 
                 //surfaceToLight: vector unitario desde la superficie hasta la luz
@@ -146,17 +152,6 @@
 
                 vec3 specular = specularCoefficient * materialSpecularColor * lightIntensity;
 
-                if (difuse == vec3(0.0,0.0,0.0))
-                {
-                    specular = difuse;
-                }
-
-
-
-
-
-
-
 
                 vec3 color = ambient + difuse + specular;
 
@@ -173,7 +168,8 @@
             canvas = null,
 
             glProgram = null,
-            fragmentShader = null,
+            phongFragmentShader = null,
+            simpleFragmentShader = null,
             vertexShader = null;
                 
             var vertexPositionAttribute = null,
@@ -189,18 +185,29 @@
             var rotate_angle = -1.57078;
             
 
-            const MAX_DISTANCIA_VISTA = 15000;
+            const MAX_DISTANCIA_VISTA = 150000;
             var factor_fov = 1.0
 
             var cameraactual;
             var camera = 3;
             var global_t = 0;
-            //let droneCam=new DroneCameraControl([-10,7,25]);
 
             var cantidad_filas_paneles = 4;
-            var angulo_paneles = 330;
-            var velocidad_rotacion_anillo = 0.1; // vueltas por segundo
             var cantidad_modulos_anillo = 4;
+
+            var angulo_paneles = {
+                variable: 330
+            };
+
+            var velocidad_rotacion_anillo = {
+                variable: 0.1 // vueltas por segundo
+            };
+
+            var posicion_sol = vec3.fromValues(0,80000,0)
+
+            var angulo_sol = {
+                variable: 0 // vueltas por segundo
+            };
 
             /*var curva_vista = new ObjetoCurva3D()
             curva_vista.setColor(0,0.5,1);*/
@@ -272,6 +279,9 @@
                     initShaders();
                     objeto_principal = mainScene()
                     //objeto_principal.agregarHijo(curva_vista)
+
+                    //var uniformSunPosition = gl.getUniformLocation(glProgram, "sunPosition"); // asumiendo posicion del sol fija
+                    //gl.uniform3fv(uniformSunPosition, posicion_sol);
                     
                     setupVertexShaderMatrix();
                     initMenu();
@@ -310,19 +320,19 @@
                     
             function initShaders() {
                 //get shader source
-                var fs_source = document.getElementById('shader-fs').innerHTML,
+                var phong_fs_source = document.getElementById('shader-fs-phong').innerHTML,
                     vs_source = document.getElementById('shader-vs').innerHTML;
 
                 //compile shaders    
                 vertexShader = makeShader(vs_source, gl.VERTEX_SHADER);
-                fragmentShader = makeShader(fs_source, gl.FRAGMENT_SHADER);
+                phongFragmentShader = makeShader(phong_fs_source, gl.FRAGMENT_SHADER);
                 
                 //create program
                 glProgram = gl.createProgram();
                 
                 //attach and link shaders to the program
                 gl.attachShader(glProgram, vertexShader);
-                gl.attachShader(glProgram, fragmentShader);
+                gl.attachShader(glProgram, phongFragmentShader);
                 gl.linkProgram(glProgram);
 
                 if (!gl.getProgramParameter(glProgram, gl.LINK_STATUS)) {
@@ -361,6 +371,14 @@
 
                 var uniformTime = gl.getUniformLocation(glProgram, "uTime");
                 gl.uniform1f(uniformTime, Math.PI*15/8);//global_t);//); //   
+
+                //vario posicion de sol para probar
+                var newpossol = vec3.create()
+                var center = vec3.create()
+                vec3.rotateX(newpossol,posicion_sol,center, angulo_sol.variable*Math.PI/180)
+                var uniformSunPosition = gl.getUniformLocation(glProgram, "sunPosition"); // asumiendo posicion del sol variable (en el final puedo asumir fija)
+                gl.uniform3fv(uniformSunPosition, newpossol);
+                //
 
                 var uniformCamPosition = gl.getUniformLocation(glProgram, "cameraPosition");
 
@@ -494,11 +512,15 @@
 
             function initMenu(){
                 var gui = new dat.GUI();
-                
+                gui.add(angulo_paneles, "variable",0,360).step(2).name("Angulo paneles");
+                gui.add(velocidad_rotacion_anillo, "variable",0,1).step(0.05).name("velocidad rotacion anillo");
+
+                gui.add(angulo_sol, "variable",0,360).step(1).name("angulo sol");
+
+
                 const reconstruirFolder = gui.addFolder('Para reconstruir forma:')
                 reconstruirFolder.add(window, "cantidad_filas_paneles",1,10).step(1);
-                reconstruirFolder.add(window, "angulo_paneles",0,360).step(5);
-                reconstruirFolder.add(window, "velocidad_rotacion_anillo",0,1).step(0.05);
+                
                 reconstruirFolder.add(window, "cantidad_modulos_anillo",2,8).step(1);
 
                 var obj = { reconstruir:function(){ objeto_principal = mainScene(); }};

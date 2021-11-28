@@ -520,7 +520,7 @@ class ModuloGeometria {
         }
     }
 
-
+    
     static _getIndexBufferTangentesCurvaDiscretizada(position_buffer_length){
         var curve_index=[]
 

@@ -6,15 +6,38 @@ class SuperficieParametrizada {
 }
 
 
+class Plano extends SuperficieParametrizada {
+    constructor(ancho,largo=ancho){
+        super()
+        this.ancho = ancho;
+        this.largo = largo;
+    }
+    getPosicion=function(u,v){
+        var x=(u-0.5)*this.ancho;
+        var z=(v-0.5)*this.largo;
+        return [x,0,z];
+    }
+
+    getNormal=function(u,v){
+        return [0,1,0];
+    }
+
+    getCoordenadasTextura=function(u,v){
+        return [u,v];
+    }
+}
+
+
 class Esfera extends SuperficieParametrizada{
-    constructor(radio, porcion_fi=Math.PI*2){
+    constructor(radio, porcion_tita = Math.PI, porcion_fi=Math.PI*2){
         super()
         this.radio = radio;
+        this.porcion_tita = porcion_tita;
         this.porcion_fi = porcion_fi;
 
     }
     getPosicion=function(u,v){
-        var tita = v*Math.PI;
+        var tita = v*this.porcion_tita
         var fi = u*this.porcion_fi
         var x = this.radio*Math.sin(tita)*Math.cos(fi)
         var y = this.radio*Math.sin(tita)*Math.sin(fi)
@@ -23,10 +46,10 @@ class Esfera extends SuperficieParametrizada{
     }
 
     getNormal=function(u,v){
-        var delta=0.01;
+        var delta=0.001;
         var p0=this.getPosicion(u,v);
         var p1=this.getPosicion(u,v+delta); // tener cuidado si u o v son mayores que 1. En esfera no pasa nada
-        var p2=this.getPosicion(u+delta,v);
+        var p2=this.getPosicion(u+delta,v+delta);
 
         
         var v1=vec3.fromValues(p1[0]-p0[0],p1[1]-p0[1],p1[2]-p0[2]);
@@ -38,6 +61,7 @@ class Esfera extends SuperficieParametrizada{
         var n=vec3.create();
         vec3.cross(n,v1,v2);
         vec3.normalize(n,n)
+        console.log(n)
         
         return n                
     }

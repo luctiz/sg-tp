@@ -16,12 +16,23 @@ class Rotacion extends Transformacion{
     }
 }
 
-class RotacionSegunTiempo extends Rotacion{
-    constructor(radianes, eje){
+
+class RotacionSegunVariable extends Rotacion{
+    constructor(radianes, eje, container_ref){
         super(radianes,eje)
+        this.container_ref = container_ref;
     }
     transform(m){
-        mat4.rotate(m,m,this.radianes * global_t,this.eje)
+        mat4.rotate(m,m,this.radianes * this.container_ref.variable,this.eje)
+    }
+}
+
+class RotacionSegunVariablePorTiempo extends RotacionSegunVariable{
+    constructor(radianes, eje, container_ref){
+        super(radianes,eje, container_ref)
+    }
+    transform(m){
+        mat4.rotate(m,m,this.radianes * this.container_ref.variable * global_t,this.eje)
     }
 }
 
@@ -61,6 +72,7 @@ class Objeto3D {
         //this.escala = vec3.fromValues(1,1,1);
         this.color = vec3.fromValues(1,1,1);
         this.hijos=[];
+        this.iluminacionSimple=0.0;
     }
 
     // metodo privado, usa posicion, rotacion y escala. Se actualiza cada vez que se dibuja el objeto
@@ -110,6 +122,9 @@ class Objeto3D {
 
             let objectColorUniform = gl.getUniformLocation(glProgram, "objectColor")
             gl.uniform3f(objectColorUniform, this.color[0],this.color[1], this.color[2])
+
+            let simpleColorUniform = gl.getUniformLocation(glProgram, "simpleColor")
+            gl.uniform1f(simpleColorUniform, this.iluminacionSimple)
             
             gl.drawElements( gl.TRIANGLE_STRIP, this.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 
@@ -166,20 +181,27 @@ class Objeto3D {
     }
 
     addRotacion = function(radianes, x,y,z) {
-        //this.rotacion = vec3.fromValues(x,y,z)
         var eje = vec3.fromValues(x,y,z)
         this.transformaciones.push(new Rotacion(radianes,eje));
     }
 
-    addRotacionSegunTiempo = function(radianes, x,y,z) {
+    addRotacionSegunVariable = function(radianes, x,y,z, variable) {
         var eje = vec3.fromValues(x,y,z)
-        this.transformaciones.push(new RotacionSegunTiempo(radianes,eje));
+        this.transformaciones.push(new RotacionSegunVariable(radianes,eje,variable));
+    }
+
+    addRotacionSegunVariablePorTiempo = function(radianes, x,y,z, variable) {
+        var eje = vec3.fromValues(x,y,z)
+        this.transformaciones.push(new RotacionSegunVariablePorTiempo(radianes,eje, variable));
     }
 
     setColor = function (r,g,b) {
         this.color = vec3.fromValues(r,g,b)
     }
 
+    setIluminacionSimple(){
+        this.iluminacionSimple = 1.0;
+    }
 }
 
 
@@ -200,9 +222,6 @@ class ObjetoCurva3D extends Objeto3D{
 
         if (this.vertexBuffer && this.indexBuffer) {
             // Dibuja cada segmento de linea con WEBGL
-            //console.log(this.indexBuffer)
-            //console.log(this.vertexBuffer.webgl_position_buffer)
-            //console.log(this.vertexBuffer.webgl_normal_buffer)
             vertexPositionAttribute = gl.getAttribLocation(glProgram, "aVertexPosition");
             gl.enableVertexAttribArray(vertexPositionAttribute);
             gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer.webgl_position_buffer);
@@ -215,8 +234,11 @@ class ObjetoCurva3D extends Objeto3D{
             
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
 
-            let difuseColorUniform = gl.getUniformLocation(glProgram, "difuseColor")
+            let difuseColorUniform = gl.getUniformLocation(glProgram, "objectColor")
             gl.uniform3f(difuseColorUniform, this.color[0],this.color[1], this.color[2])
+
+            let simpleColorUniform = gl.getUniformLocation(glProgram, "simpleColor")
+            gl.uniform1f(simpleColorUniform, 1.0)
             
             gl.drawElements( gl.LINES, this.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
         }
