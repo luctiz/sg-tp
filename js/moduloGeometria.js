@@ -171,6 +171,22 @@ class Geometria{ //geometria superficie
             this.normal.splice( (i*(cols+1) + cols) *3 , 0, ...[nm2[0],nm2[1],nm2[2]])
         }
 
+        // calculo de coordenadas uv 
+        //tapa 1:
+        var uvlist = obtenerUVsTapa(new_col1, nm1)
+        cols-=1
+        for (var i=0;i<rows; i+=1) {
+            this.uv.splice( i*(cols+1)*2 , 0,...[uvlist[(2*i)],uvlist[(2*i)+1]])
+        }
+        //  
+        //tapa 2:
+        var uvlist = obtenerUVsTapa(new_col2, nm2)
+        cols+=1
+
+        for (var i=0;i<rows; i+=1) {
+            this.uv.splice( (i*(cols+1) + cols) *2 , 0, ...[uvlist[(2*i)],uvlist[(2*i)+1]] )
+        }
+
         //actualizo index
         cols+=1;
         var index=[];
@@ -201,6 +217,7 @@ class Geometria{ //geometria superficie
     }
 
     agregarFilasTapas(suavizar = false){ //creo que el parametro suavizar no es necesario en este caso?
+        console.log("enter function")
         var rows = (this.pos.length/3)/this.cant_columnas;
         var cols = this.cant_columnas
         
@@ -271,6 +288,18 @@ class Geometria{ //geometria superficie
             this.normal.unshift(...[nm1[0],nm1[1],nm1[2]])
             this.normal.push(...[nm2[0],nm2[1],nm2[2]])
         }
+
+
+        // calculo de coordenadas uv 
+        //tapa 1:
+        var uvlist = obtenerUVsTapa(new_row1, nm1)
+        this.uv.unshift(...uvlist)
+
+        //tapa 2:
+        var uvlist = obtenerUVsTapa(new_row2, nm2)
+        this.uv.push(...uvlist)
+
+        //// fin calculo coord uv.
 
         //actualizo index
         for (var j=0; j<this.index.length;j++){
@@ -394,8 +423,8 @@ class UVMapping {
 //
 
 class ModuloGeometria {
-    static obtenerGeometriaSuperficieParametrizada(superficie, filas, columnas){
-        var vertex = this._getVertexBufferSuperficieParametrizada(superficie,filas,columnas);
+    static obtenerGeometriaSuperficieParametrizada(superficie, filas, columnas, uvmapping = new UVMapping()){
+        var vertex = this._getVertexBufferSuperficieParametrizada(superficie,filas,columnas, uvmapping);
         var index = this._getIndexBuffer(filas,columnas)
         return new Geometria(vertex.pos,vertex.normal,vertex.uv,index,columnas)
     }
@@ -409,7 +438,7 @@ class ModuloGeometria {
         return new Geometria(vertex.pos,vertex.normal,vertex.uvs,index, columnas)
     }
 
-    static _getVertexBufferSuperficieParametrizada(superficie, rows,cols)
+    static _getVertexBufferSuperficieParametrizada(superficie, rows,cols, uvmapping)
         {
             var pos=[];
             var uv = [];
@@ -435,8 +464,8 @@ class ModuloGeometria {
 
                     var uvs=superficie.getCoordenadasTextura(u,v);
 
-                    uv.push(uvs[0])
-                    uv.push(uvs[1])
+                    uv.push((uvmapping.start_u + (uvs[0]/uvmapping.u_repeat)*uvmapping.len_u) ) //idem superficie barrido
+                    uv.push((uvmapping.start_v + (uvs[1]/uvmapping.v_repeat)*uvmapping.len_v) ) //idem superficie barrido
                 }
             }
             return {pos,uv,normal}
@@ -542,7 +571,6 @@ class ModuloGeometria {
             }
         }
 
-        console.log(uvs)
         return {
             pos,
             normal,
@@ -646,4 +674,78 @@ class ModuloGeometria {
             webgl_normal_buffer,
         }
     }
+}
+
+
+
+
+
+function obtenerUVsTapa(tapa_pos, normal){
+
+    // calculo de coordenadas uv tapa 2:
+    var a = vec3.fromValues(normal[0],normal[1],normal[2])
+    var b = vec3.fromValues(0,0,-1)
+    var s = vec3.create()
+
+    vec3.cross(s,a,b) 
+    if (vec3.equals(s,vec3.fromValues(0,0,0))){
+        s = vec3.fromValues(1,0,0)
+        console.log("corrected first s")
+
+    }
+    vec3.normalize(s,s) // obtengo eje de rotacion para alinear plano al eje z
+
+    var c = Math.acos(vec3.dot(a,b))
+
+    var rotmat = mat4.create()
+    mat4.fromRotation(rotmat, c, s)
+
+    //
+    var a = vec3.fromValues(normal[0],normal[1],normal[2])
+    var b = vec3.fromValues(1,0,0) // podria ser (0,1,0) tambien, si se quiere rotar el mapeo 90º
+    var s = vec3.create()
+    vec3.cross(s,a,b) 
+    if (vec3.equals(s,vec3.fromValues(0,0,0))){
+        s = vec3.fromValues(0,0,1)
+        console.log("corrected s")
+    }
+    vec3.normalize(s,s) // obtengo eje de rotacion para alinear plano al eje y
+
+    var c = Math.acos(vec3.dot(a,b))
+    var rotmat2 = mat4.create()
+    mat4.fromRotation(rotmat2, c, s)
+
+    mat4.multiply(rotmat,rotmat2,rotmat)
+    // esto es un parche y capaz no siempre funcione bien?
+    if (vec3.equals(normal, vec3.fromValues(0,0,1))){
+        mat4.identity(rotmat)
+    } else if (vec3.equals(normal, vec3.fromValues(0,0,-1))){
+        mat4.fromScaling(rotmat,vec3.fromValues(1,1,-1))
+    }
+    //
+
+    var xmax = -800000
+    var ymax = -800000
+    var xmin = 800000
+    var ymin = 800000
+    var aux = vec3.create()
+
+    for (var i = 0; i < tapa_pos.length; i+=3){
+        vec3.transformMat4(aux,vec3.fromValues(tapa_pos[i],tapa_pos[i+1],tapa_pos[i+2]),rotmat)
+        if (aux[0] > xmax) { xmax = aux[0]}
+        if (aux[1] > ymax) { ymax = aux[1]}
+        if (aux[0] < xmin) { xmin = aux[0]}
+        if (aux[1] < ymin) { ymin = aux[1]}
+    }
+
+
+    var uv_list = []
+
+    for (var i = 0; i<tapa_pos.length; i+=3){
+        vec3.transformMat4(aux,vec3.fromValues(tapa_pos[i],tapa_pos[i+1],tapa_pos[i+2]),rotmat)
+        //console.log(`${[new_row2[i].toFixed(5),new_row2[i+1].toFixed(5),new_row2[i+2].toFixed(5)]} \n=> ${[aux[0].toFixed(5), aux[1].toFixed(5), aux[2].toFixed(5)]}`)
+        uv_list.push(...[(aux[0] - xmin)/(xmax-xmin),(aux[1] - ymin)/(ymax-ymin)])
+    }
+    
+    return uv_list
 }

@@ -69,7 +69,7 @@ class Objeto3D {
         this.color = vec3.fromValues(1,1,1);
         this.hijos=[];
         this.iluminacionSimple=0.0;
-        this.texture = null;
+        this.texture = textures.default;
     }
 
     // metodo privado, usa posicion, rotacion y escala. Se actualiza cada vez que se dibuja el objeto

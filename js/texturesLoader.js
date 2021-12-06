@@ -1,9 +1,11 @@
 class TexturesLoader{
 
+    default
     tierra
     sol
     anillo
     constructor(){
+        this.default = this._loadTexture('textures/uvgrid.jpg')
         this.tierra = this._loadTexture('textures/tierra.jpg')
         this.sol = this._loadTexture('textures/sol.jpg')
         this.anillo = this._loadTexture('textures/anillo.jpg')
