@@ -185,8 +185,8 @@ function geometriaNucleoCuerpo(puntos_curvatura){
     curva_recorrido = new CurvaCircunferencia(2.8,[0,0,0])
     disc_curva_recorrido = obtenerDiscretizacionCurvaParametrizada(curva_recorrido,20)
 
-    var geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido)
-    geometria.agregarColumnasTapas()
+    var geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido, new UVMapping(0,0,1,1,2,2))
+    geometria.agregarColumnasTapas(true)
     return geometria
 }
 
@@ -200,8 +200,8 @@ function geometriaNucleoCabeza(puntos_curvatura){
     curva_recorrido = new CurvaCircunferencia(2.0,[0,0,0])
     disc_curva_recorrido = obtenerDiscretizacionCurvaParametrizada(curva_recorrido,20)
 
-    var geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido)
-    geometria.agregarColumnasTapas()
+    var geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido, new UVMapping(0,0.5,1,1,1,2)) // las texturas en las tapas se podrian mejorar
+    geometria.agregarColumnasTapas(true)
     return geometria
 }
 
@@ -350,8 +350,8 @@ function geometriaAnilloAgarreSoporte(cant_modulos,puntos_curvatura){
     curva_recorrido = new CurvaCircunferencia(16.8,[0,0,0],Math.PI/(cant_modulos))
     disc_curva_recorrido = obtenerDiscretizacionCurvaParametrizada(curva_recorrido,7)
 
-    var geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_modulo, disc_curva_recorrido)
-    geometria.agregarFilasTapas()
+    var geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_modulo, disc_curva_recorrido, new UVMapping(0,0,1,1,1,1))
+    geometria.agregarFilasTapas(true)
     return geometria
 }
 
@@ -414,7 +414,7 @@ function geometriaPanel(){
     curva_recorrido = new CurvaBezier(p_control)
     disc_curva_recorrido = obtenerDiscretizacionCurvaParametrizada(curva_recorrido,2)
 
-    var geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido)
+    var geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido,new UVMapping(0,0,1,1,2, 2))
     geometria.agregarFilasTapas()
     return geometria
 }
@@ -456,7 +456,7 @@ function geometriaCuerpoCapsula(){
 
     curva_recorrido = new CurvaCircunferencia(2.5,[0,0,0])
     disc_curva_recorrido = obtenerDiscretizacionCurvaParametrizada(curva_recorrido,20)
-    var geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido)
+    var geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido, new UVMapping(0,0,1,1,2,4))
     geometria.agregarColumnasTapas()
 
     return geometria
@@ -470,8 +470,8 @@ function geometriaCabezaCapsula(){
     curva_recorrido = new CurvaCircunferencia(1.3,[0,0,0])
     disc_curva_recorrido = obtenerDiscretizacionCurvaParametrizada(curva_recorrido,20)
 
-    var geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido)
-    geometria.agregarColumnasTapas()
+    var geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido,new UVMapping(0,0,0.4,1,1,4)) //
+    geometria.agregarColumnasTapas(false)
     return geometria
 }
 
@@ -532,26 +532,28 @@ function mainScene(){
     modulo_cuerpo = new Objeto3D()
     geometria = geometriaNucleoCuerpo()
     modulo_cuerpo.setGeometria(geometria)
-    modulo_cuerpo.setColor(0.83,0.63,0.33)
+    modulo_cuerpo.setTexture(textures.modulo_cilindrico)
     modulo_cuerpo.addTraslacion(0,0,0)
     nucleo.agregarHijo(modulo_cuerpo)
 
     modulo_cuerpo2 = new Objeto3D()
     modulo_cuerpo2.setGeometria(geometria)
-    modulo_cuerpo2.setColor(0.83,0.63,0.33)
+    modulo_cuerpo2.setTexture(textures.modulo_cilindrico)
     modulo_cuerpo2.addTraslacion(0,0,-7)
     nucleo.agregarHijo(modulo_cuerpo2)
+
+    color_modulos_cuadrados = [0.2,0.2,0.2]
 
     modulo_violeta = new Objeto3D()
     geometria = geometriaNucleoModuloVioleta(puntos_curvatura_modulo_violeta)
     modulo_violeta.setGeometria(geometria)
-    modulo_violeta.setColor(0.97,0.08,1.00)
+    modulo_violeta.setTexture(textures.createSolidTexture(color_modulos_cuadrados[0],color_modulos_cuadrados[1],color_modulos_cuadrados[2]))
     modulo_violeta.addTraslacion(0,0,3.5)
     nucleo.agregarHijo(modulo_violeta)
 
     modulo_violeta2 = new Objeto3D()
     modulo_violeta2.setGeometria(geometria)
-    modulo_violeta2.setColor(0.97,0.08,1.00)
+    modulo_violeta2.setTexture(textures.createSolidTexture(color_modulos_cuadrados[0],color_modulos_cuadrados[1],color_modulos_cuadrados[2]))
     modulo_violeta2.addTraslacion(0,0,-3.5)
     nucleo.agregarHijo(modulo_violeta2)
     nucleo.agregarHijo(modulo_violeta2)
@@ -570,6 +572,7 @@ function mainScene(){
     base_anillo = new Objeto3D()
     geometria = geometriaBaseAnillo()
     base_anillo.setGeometria(geometria)
+    base_anillo.setTexture(textures.createSolidTexture(157/255,107/255,73/255))
     base_anillo.addRotacionSegunVariablePorTiempo(Math.PI/5,0,0,1,velocidad_rotacion_anillo)
 
 
@@ -591,7 +594,6 @@ function mainScene(){
         viga_soporte_anillo.setGeometria(geometria)
         viga_soporte_anillo.setTexture(textures.createSolidTexture(color_viga[0],color_viga[1],color_viga[2],1))
 
-        //viga_soporte_anillo.setColor(0.90,0.70,0.40)
         viga_soporte_anillo.addTraslacion(0,0.8,0)
         viga_soporte_anillo.addRotacion(Math.PI*3/4,1,0,0)
         objeto_viga.agregarHijo(viga_soporte_anillo)
@@ -600,7 +602,6 @@ function mainScene(){
         viga_soporte_anillo2.setGeometria(geometria)
         viga_soporte_anillo2.setTexture(textures.createSolidTexture(color_viga[0],color_viga[1],color_viga[2],1))
 
-        //viga_soporte_anillo2.setColor(0.90,0.70,0.40)
         viga_soporte_anillo2.addTraslacion(0,-0.8,0)
         viga_soporte_anillo2.addRotacion(Math.PI*3/4,1,0,0)
         objeto_viga.agregarHijo(viga_soporte_anillo2)
@@ -611,7 +612,6 @@ function mainScene(){
             var tubo_viga = new Objeto3D()
             geometria = geometriaTuboVigaAnillo()
             tubo_viga.setGeometria(geometria)
-            //tubo_viga.setColor(0.90,0.70,0.40)
             tubo_viga.setTexture(textures.createSolidTexture(color_viga[0],color_viga[1],color_viga[2],1))
             tubo_viga.addRotacion(Math.PI*((j % 2)),1,0,0)
 
@@ -622,7 +622,7 @@ function mainScene(){
         var agarre_soporte_anillo = new Objeto3D()
         geometria = geometriaAnilloAgarreSoporte(cantidad_modulos_anillo,3)
         agarre_soporte_anillo.setGeometria(geometria)
-        agarre_soporte_anillo.setColor(0.75,1.00,0.98)
+        agarre_soporte_anillo.setTexture(textures.modulo_anillo)
         agarre_soporte_anillo.addRotacion( (-Math.PI/(2*cantidad_modulos_anillo)),0,0,1)
         objeto_viga.addRotacion((2*i*Math.PI)/(cantidad_modulos_anillo),0,0,1)
         objeto_viga.agregarHijo(agarre_soporte_anillo)
@@ -640,10 +640,12 @@ function mainScene(){
     nucleo.agregarHijo(base_anillo)
 
     // tubo con paneles
+    color_tubos_paneles = color_modulos_cuadrados
+
     var tubo_soporte_paneles = new Objeto3D()
     geometria = geometriaTuboSoportePaneles(cantidad_filas_paneles)
     tubo_soporte_paneles.setGeometria(geometria)
-    tubo_soporte_paneles.setColor(1.0,0.48,1.00)
+    tubo_soporte_paneles.setTexture(textures.createSolidTexture(color_tubos_paneles[0],color_tubos_paneles[1],color_tubos_paneles[2]))
     tubo_soporte_paneles.addTraslacion(0,0,-2.0)
     modulo_cuerpo2.agregarHijo(tubo_soporte_paneles)
 
@@ -654,26 +656,25 @@ function mainScene(){
         tubo_paneles = new Objeto3D()
         geometria = geometriaTuboFilaPaneles()
         tubo_paneles.setGeometria(geometria)
-        tubo_paneles.setColor(0.83,0.63,0.33)
+        tubo_paneles.setTexture(textures.createSolidTexture(color_tubos_paneles[0],color_tubos_paneles[1],color_tubos_paneles[2]))
+
         tubo_paneles.addTraslacion(0,0,-5.0 -5.0 * i)
         tubo_soporte_paneles.agregarHijo(tubo_paneles)
 
         var panel = new Objeto3D()
         geometria = geometriaPanel()
         panel.setGeometria(geometria)
-        panel.setColor(0.83,0.63,0.33)
+        panel.setTexture(textures.paneles)
         panel.addTraslacion(6.5,0.15, 0.15)
         tubo_paneles.agregarHijo(panel)
 
         var panel = new Objeto3D()
         geometria = geometriaPanel()
         panel.setGeometria(geometria)
-        panel.setColor(0.83,0.63,0.33)
+        panel.setTexture(textures.paneles) 
+
         panel.addTraslacion(-6.5,0.15, 0.15)
         tubo_paneles.agregarHijo(panel)
-
-        //angulo_paneles;
-        //velocidad_rotacion_anillo;
         tubo_paneles.addRotacionSegunVariable(Math.PI / 180,1,0,0, angulo_paneles)
     }
 
@@ -699,20 +700,37 @@ function mainScene(){
     sol.setColor(1,1,1)
     sol.addRotacionSegunVariable(Math.PI / 180,1,0,0, angulo_sol)
     sol.addTraslacion(posicion_sol[0],posicion_sol[1],posicion_sol[2])
-    // deberia agregar rotacion para que siempre mire hacia la tierra
     sol.addEscalado(2000,0,2000)
 
     nodo_principal.agregarHijo(sol)
+
+
+    // luna
+
+    var luna = new Objeto3D()
+    var sup_luna = new Esfera(4)
+    geometria = ModuloGeometria.obtenerGeometriaSuperficieParametrizada(sup_luna,40,40)
+    luna.setGeometria(geometria)
+    luna.setTexture(textures.luna)
+    luna.addEscalado(2000,2000,2000)
+    luna.addTraslacion(12,12, 20)
+    luna.addRotacion(Math.PI / 4,0,0,1)
+
+    luna.addRotacion(Math.PI * 0.62,1,0,0)
+    //luna.addRotacion(-Math.PI/2,1,0,0)
+
+
+
+
+    nodo_principal.agregarHijo(luna)
+    // deberia agregar rotacion para que apunte bien a la tierra?
 
     // planeta tierra
     var planeta = new Objeto3D()
     var sup_planeta = new Esfera(15,Math.PI, Math.PI)
     geometria = ModuloGeometria.obtenerGeometriaSuperficieParametrizada(sup_planeta,80,80)
     planeta.setGeometria(geometria)
-    planeta.setColor(0.50,0.50,1)
     planeta.setTexture(textures.tierra)
-
-    //planeta.addRotacion(Math.PI, 0,1,0)
 
     planeta.addEscalado(2000,2000,2000)
     planeta.addRotacion(Math.PI/2,1,0,0)//.addRotacion(-Math.PI/2,1,0,0)
@@ -734,13 +752,13 @@ function mainScene(){
     var cuerpoCapsula = new Objeto3D()
     geometria = geometriaCuerpoCapsula()
     cuerpoCapsula.setGeometria(geometria)
-    cuerpoCapsula.setColor(0.83,0.63,0.33)
+    cuerpoCapsula.setTexture(textures.capsula)
     modelo_capsula.agregarHijo(cuerpoCapsula)
 
     var cabezaCapsula = new Objeto3D()
     geometria = geometriaCabezaCapsula()
     cabezaCapsula.setGeometria(geometria)
-    cabezaCapsula.setColor(0.83,0.63,0.33)
+    cabezaCapsula.setTexture(textures.capsula)
     modelo_capsula.agregarHijo(cabezaCapsula)
 
     var propulsorCapsula = new Objeto3D()
