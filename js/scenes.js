@@ -419,6 +419,46 @@ function geometriaPanel(){
     return geometria
 }
 
+
+function geometriaLuz(size){
+    /*grosor_panel = size
+    ancho_panel = size
+    largo_panel = size
+    p_control = [[-grosor_panel,ancho_panel,0],[grosor_panel,ancho_panel,0]]
+    curva_forma = new CurvaBezier(p_control)
+    disc_curva_forma = obtenerDiscretizacionCurvaParametrizada(curva_forma,2)
+
+    p_control = [[grosor_panel,ancho_panel,0],[grosor_panel,-ancho_panel,0]]
+    curva_forma = new CurvaBezier(p_control)
+    disc_curva_forma2 = obtenerDiscretizacionCurvaParametrizada(curva_forma,2)
+
+    disc_curva_forma.position_list.push(...disc_curva_forma2.position_list)
+    disc_curva_forma.tang_list.push(...disc_curva_forma2.tang_list)
+
+    p_control = [[grosor_panel,-ancho_panel,0],[-grosor_panel,-ancho_panel,0]]
+    curva_forma = new CurvaBezier(p_control)
+    disc_curva_forma2 = obtenerDiscretizacionCurvaParametrizada(curva_forma,2)
+
+    disc_curva_forma.position_list.push(...disc_curva_forma2.position_list)
+    disc_curva_forma.tang_list.push(...disc_curva_forma2.tang_list)
+
+    p_control = [[-grosor_panel,-ancho_panel,0],[-grosor_panel,ancho_panel,0]]
+    curva_forma = new CurvaBezier(p_control)
+    disc_curva_forma2 = obtenerDiscretizacionCurvaParametrizada(curva_forma,2)
+
+    disc_curva_forma.position_list.push(...disc_curva_forma2.position_list)
+    disc_curva_forma.tang_list.push(...disc_curva_forma2.tang_list)
+
+    p_control = [[-largo_panel,0,0],[largo_panel,0,0]]
+    curva_recorrido = new CurvaBezier(p_control)
+    disc_curva_recorrido = obtenerDiscretizacionCurvaParametrizada(curva_recorrido,2)
+*/  
+    var esfera = new Esfera(size)
+    var geometria = ModuloGeometria.obtenerGeometriaSuperficieParametrizada(esfera,7,7)//ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido)
+    //geometria.agregarFilasTapas()
+    return geometria
+}
+
 function geometriaCuerpoCapsula(){
 
     p_control = [[-2.2,-1,0],[-2.0,-0.2,0],[-1.8,0,0]]
@@ -779,7 +819,34 @@ function mainScene(){
     camera_capsula.addTraslacion(0,0,-13)
     capsula.agregarHijo(camera_capsula)
 
-    capsula.setLightPositionUpdater("o1lightPos")
+    var cubo_luz_verde = new Objeto3D()
+    geometria = geometriaLuz(0.1)
+    cubo_luz_verde.setGeometria(geometria)
+    cubo_luz_verde.setTexture(textures.createSolidTexture(0.0,1.0,0.0,1))
+    cubo_luz_verde.addTraslacion(-1.7,0,1.5)
+    cubo_luz_verde.setIluminacionSimple()
+    cubo_luz_verde.setLightPositionUpdater("o1lightPos")
+
+    modelo_capsula.agregarHijo(cubo_luz_verde)
+
+    var cubo_luz_roja = new Objeto3D()
+    geometria = geometriaLuz(0.1)
+    cubo_luz_roja.setGeometria(geometria)
+    cubo_luz_roja.setTexture(textures.createSolidTexture(1.0,0.0,0.0,1))
+    cubo_luz_roja.addTraslacion(1.7,0,1.5)
+    cubo_luz_roja.setIluminacionSimple()
+    cubo_luz_roja.setLightPositionUpdater("o2lightPos")
+    modelo_capsula.agregarHijo(cubo_luz_roja)
+
+
+    var luz_spot = new Objeto3D()
+    luz_spot.addTraslacion(2.45,0,0)
+    luz_spot.setLightPositionUpdater("spotlightPos")
+
+    modelo_capsula.agregarHijo(luz_spot)
+
+
+
     nodo_principal.agregarHijo(capsula)
 
     camera3= camera_capsula;

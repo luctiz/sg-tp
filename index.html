@@ -109,6 +109,10 @@
         <script id="shader-fs-phong" type="x-shader/x-fragment">
             precision highp float;
             uniform vec3 o1lightPos;
+            uniform vec3 o2lightPos;
+            uniform vec3 spotlightPos;
+
+
             uniform float uTime;
 
             uniform float simpleColor;
@@ -165,34 +169,82 @@
                 vec3 color = ambient + difuse + specular;
 
 
-
+                // comun luces omnidireccionales:
+                float olightRadius = 5.0;
+                float olightIntensity = 1.0;
 
                 // luz omnidireccional verde
-
-                //vec3 o1lightPos = vec3(10.0,0.0,-15.0);
-                float o1lightRadius = 5.0;
+                
 
                 vec3 o1lightVec = normalize(o1lightPos - vPosWorld); //(deberia ser lightpos - vposworld)
                 vec3 o1difuse = max(dot(vNormal,o1lightVec), 0.0) * vec3(0.0,1.0,0.0);
 
                 vec3 o1materialSpecularColor = vec3(0.0,1.0,0.0);
-                float o1lightIntensity = 1.0;
-                float o1materialShininess = 100.0;
                 //
 
                 vec3 o1incidenceVector = -o1lightVec; //a unit vector
                 vec3 o1reflectionVector = reflect(o1incidenceVector, vNormal); //also a unit vector
-                // esto se puede unificar para todas las luces creo : vec3 o1surfaceToCamera = normalize(cameraPosition - vPosWorld); //also a unit vector
                 float o1cosAngle = max(0.0, dot(surfaceToCamera, o1reflectionVector));
-                float o1specularCoefficient = pow(o1cosAngle, o1materialShininess);
+                float o1specularCoefficient = pow(o1cosAngle, materialShininess);
 
-                vec3 o1specular = o1specularCoefficient * o1materialSpecularColor * o1lightIntensity;
+                vec3 o1specular = o1specularCoefficient * o1materialSpecularColor * olightIntensity;
 
-                vec3 o1color = ((o1lightRadius - min(o1lightRadius, distance(o1lightPos,vPosWorld)))/(o1lightRadius)) * (o1difuse + o1specular);
+                vec3 o1color = ((olightRadius - min(olightRadius, distance(o1lightPos,vPosWorld)))/(olightRadius)) * (o1difuse + o1specular);
+                //
+
+
+                // luz omnidireccional roja
+
+                vec3 o2lightVec = normalize(o2lightPos - vPosWorld); //(deberia ser lightpos - vposworld)
+                vec3 o2difuse = max(dot(vNormal,o2lightVec), 0.0) * vec3(1.0,0.0,0.0);
+
+                vec3 o2materialSpecularColor = vec3(1.0,0.0,0.0);
+                //
+
+                vec3 o2incidenceVector = -o2lightVec; //a unit vector
+                vec3 o2reflectionVector = reflect(o2incidenceVector, vNormal); //also a unit vector
+                float o2cosAngle = max(0.0, dot(surfaceToCamera, o2reflectionVector));
+                float o2specularCoefficient = pow(o2cosAngle, materialShininess);
+
+                vec3 o2specular = o2specularCoefficient * o2materialSpecularColor * olightIntensity;
+
+                vec3 o2color = ((olightRadius - min(olightRadius, distance(o2lightPos,vPosWorld)))/(olightRadius)) * (o2difuse + o2specular);
+                //
+
+
+                // luz spot blanca capsula
+                // float spotlightIntensity = 1.0;
+                // vec3 spotlightDirection = (1.0,0.0,0.0);
+                // float spotlightExponent = 1.0; //Exponente de atenuacion angular
+                // float spotlightCutoff = 45.0; // Angulo de corte (entre 0 y 90)
+
+                // vec3 spotmaterialSpecularColor = vec3(1.0,1.0,1.0);
+
+
+
+                // vec3 spotlightVec = normalize(spotlightPos - vPosWorld); //(deberia ser lightpos - vposworld)
+                // float angle = acos(dot(-spotlightVec, spotlightDirection));
+                // float cutoff = radians(clamp(spotlightCutoff, 0.0, 90.0));
+
+                // vec3 spotlightdifuse = max(dot(vNormal,spotlightDirection), 0.0) * vec3(1.0,0.0,0.0);
+
+                // if (angle < cutoff) {
+                //     float spotFactor = pow
+                // }
+
+                // vec3 o2incidenceVector = -o2lightVec; //a unit vector
+                // vec3 o2reflectionVector = reflect(o2incidenceVector, vNormal); //also a unit vector
+                // float o2cosAngle = max(0.0, dot(surfaceToCamera, o2reflectionVector));
+                // float o2specularCoefficient = pow(o2cosAngle, materialShininess);
+
+                // vec3 o2specular = o2specularCoefficient * o2materialSpecularColor * olightIntensity;
+
+                // vec3 o2color = ((olightRadius - min(olightRadius, distance(o2lightPos,vPosWorld)))/(olightRadius)) * (o2difuse + o2specular);
                 //
                 
+                
 
-               gl_FragColor = vec4(color + o1color,1.0);
+               gl_FragColor = vec4(color + o1color + o2color,1.0);
             }
         </script>
         

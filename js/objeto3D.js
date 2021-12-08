@@ -100,7 +100,6 @@ class Objeto3D {
 
 
         if (this.lightPositionUpdater != null){
-            console.log("intenta actualizar lightposition")
             var vec_position = vec3.create();
             mat4.getTranslation(vec_position,this.matTransformations);
             this.lightPositionUpdater.updateLightPos(vec_position);
