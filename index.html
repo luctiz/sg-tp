@@ -108,7 +108,7 @@
 
         <script id="shader-fs-phong" type="x-shader/x-fragment">
             precision highp float;
-            uniform vec3 objectColor;
+            uniform vec3 o1lightPos;
             uniform float uTime;
 
             uniform float simpleColor;
@@ -130,16 +130,19 @@
                     return;
                 }
 
-                vec3 sampledColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t)).xyz; //voy a usarlo en lugar de objectColor
+                vec3 sampledColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t)).xyz;
 
                 float ambientLight = 0.2; // conviene tenerlo como vec3
 
-                //vec3 light = ;//10.0*cos(uTime * 0.01),10.0,10.0*sin(uTime * 0.01));
                 vec3 lightVec= normalize(sunPosition);
 
                 vec3 ambient = ambientLight*sampledColor;
-                vec3 difuse = max(dot(vNormal,lightVec), 0.0)*(1.0 - ambientLight) * sampledColor;
 
+
+                
+
+                // luz direccional sol
+                vec3 difuse = max(dot(vNormal,lightVec), 0.0)*(1.0 - ambientLight) * sampledColor;
 
                 //surfaceToLight: vector unitario desde la superficie hasta la luz
                 //  para las que no son direccional se calcula como la posicion de la luz menos la posicion de la superficie
@@ -159,10 +162,37 @@
 
                 vec3 specular = specularCoefficient * materialSpecularColor * lightIntensity;
 
-
                 vec3 color = ambient + difuse + specular;
 
-               gl_FragColor = vec4(color,1.0);
+
+
+
+                // luz omnidireccional verde
+
+                //vec3 o1lightPos = vec3(10.0,0.0,-15.0);
+                float o1lightRadius = 5.0;
+
+                vec3 o1lightVec = normalize(o1lightPos - vPosWorld); //(deberia ser lightpos - vposworld)
+                vec3 o1difuse = max(dot(vNormal,o1lightVec), 0.0) * vec3(0.0,1.0,0.0);
+
+                vec3 o1materialSpecularColor = vec3(0.0,1.0,0.0);
+                float o1lightIntensity = 1.0;
+                float o1materialShininess = 100.0;
+                //
+
+                vec3 o1incidenceVector = -o1lightVec; //a unit vector
+                vec3 o1reflectionVector = reflect(o1incidenceVector, vNormal); //also a unit vector
+                // esto se puede unificar para todas las luces creo : vec3 o1surfaceToCamera = normalize(cameraPosition - vPosWorld); //also a unit vector
+                float o1cosAngle = max(0.0, dot(surfaceToCamera, o1reflectionVector));
+                float o1specularCoefficient = pow(o1cosAngle, o1materialShininess);
+
+                vec3 o1specular = o1specularCoefficient * o1materialSpecularColor * o1lightIntensity;
+
+                vec3 o1color = ((o1lightRadius - min(o1lightRadius, distance(o1lightPos,vPosWorld)))/(o1lightRadius)) * (o1difuse + o1specular);
+                //
+                
+
+               gl_FragColor = vec4(color + o1color,1.0);
             }
         </script>
         

@@ -70,6 +70,7 @@ class Objeto3D {
         this.hijos=[];
         this.iluminacionSimple=0.0;
         this.texture = textures.default;
+        this.lightPositionUpdater = null;
     }
 
     // metodo privado, usa posicion, rotacion y escala. Se actualiza cada vez que se dibuja el objeto
@@ -96,6 +97,14 @@ class Objeto3D {
         var modelMatrixUniform = gl.getUniformLocation(glProgram, "modelMatrix");
         gl.uniformMatrix4fv(modelMatrixUniform, false, m);
         
+
+
+        if (this.lightPositionUpdater != null){
+            console.log("intenta actualizar lightposition")
+            var vec_position = vec3.create();
+            mat4.getTranslation(vec_position,this.matTransformations);
+            this.lightPositionUpdater.updateLightPos(vec_position);
+        }
 
         if ((this.vertexBuffer !=null) & (this.indexBuffer!= null)) { //Los binds aca son innecesarios???
             // Dibujamos la malla de triangulos con WebGL
@@ -128,8 +137,6 @@ class Objeto3D {
             
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
 
-            let objectColorUniform = gl.getUniformLocation(glProgram, "objectColor")
-            gl.uniform3f(objectColorUniform, this.color[0],this.color[1], this.color[2])
 
             let simpleColorUniform = gl.getUniformLocation(glProgram, "simpleColor")
             gl.uniform1f(simpleColorUniform, this.iluminacionSimple)
@@ -214,8 +221,11 @@ class Objeto3D {
     setTexture(texture){
         this.texture = texture;
     }
-}
 
+    setLightPositionUpdater(uniformName){
+        this.lightPositionUpdater = new LightPositionUpdater(uniformName);
+    }
+}
 
 class ObjetoCurva3D extends Objeto3D{
     constructor(){
@@ -260,4 +270,14 @@ class ObjetoCurva3D extends Objeto3D{
         }
     }
 
+}
+
+class LightPositionUpdater{
+    constructor(uniformName){
+        this.uniformName = uniformName;
+    }
+    updateLightPos(vec_position){
+        let ulightPos = gl.getUniformLocation(glProgram, this.uniformName)
+        gl.uniform3f(ulightPos, vec_position[0],vec_position[1], vec_position[2])
+    }
 }

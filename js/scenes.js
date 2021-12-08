@@ -778,6 +778,8 @@ function mainScene(){
 
     camera_capsula.addTraslacion(0,0,-13)
     capsula.agregarHijo(camera_capsula)
+
+    capsula.setLightPositionUpdater("o1lightPos")
     nodo_principal.agregarHijo(capsula)
 
     camera3= camera_capsula;
