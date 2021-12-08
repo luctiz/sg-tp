@@ -88,7 +88,7 @@ class Geometria{ //geometria superficie
         this._verificarNormales();
     }
 
-    agregarColumnasTapas(suavizar = false){
+    agregarColumnasTapas(solid_uv = false){
         var rows = (this.pos.length/3)/this.cant_columnas;
         var cols = this.cant_columnas
 
@@ -173,14 +173,14 @@ class Geometria{ //geometria superficie
 
         // calculo de coordenadas uv 
         //tapa 1:
-        var uvlist = obtenerUVsTapa(new_col1, nm1)
+        var uvlist = obtenerUVsTapa(new_col1, nm1, solid_uv)
         cols-=1
         for (var i=0;i<rows; i+=1) {
             this.uv.splice( i*(cols+1)*2 , 0,...[uvlist[(2*i)],uvlist[(2*i)+1]])
         }
         //  
         //tapa 2:
-        var uvlist = obtenerUVsTapa(new_col2, nm2)
+        var uvlist = obtenerUVsTapa(new_col2, nm2, solid_uv)
         cols+=1
 
         for (var i=0;i<rows; i+=1) {
@@ -216,7 +216,7 @@ class Geometria{ //geometria superficie
         this.index=index;
     }
 
-    agregarFilasTapas(suavizar = false){ //creo que el parametro suavizar no es necesario en este caso?
+    agregarFilasTapas(solid_uv = false){ //creo que el parametro suavizar no es necesario en este caso?
         var rows = (this.pos.length/3)/this.cant_columnas;
         var cols = this.cant_columnas
         
@@ -291,11 +291,11 @@ class Geometria{ //geometria superficie
 
         // calculo de coordenadas uv 
         //tapa 1:
-        var uvlist = obtenerUVsTapa(new_row1, nm1)
+        var uvlist = obtenerUVsTapa(new_row1, nm1, solid_uv)
         this.uv.unshift(...uvlist)
 
         //tapa 2:
-        var uvlist = obtenerUVsTapa(new_row2, nm2)
+        var uvlist = obtenerUVsTapa(new_row2, nm2, solid_uv)
         this.uv.push(...uvlist)
 
         //// fin calculo coord uv.
@@ -565,8 +565,8 @@ class ModuloGeometria {
                 normal.push(sup_normal[1])
                 normal.push(sup_normal[2])
 
-                uvs.push((uvmapping.start_u + (i/(forma_length/uvmapping.u_repeat))*uvmapping.len_u) ) // si se quiere repetir algo que no empieza en 0 o no termina en 1 creo que esto no da bien
-                uvs.push((uvmapping.start_v + (j/(recorrido_length/uvmapping.v_repeat))*uvmapping.len_u))
+                uvs.push((uvmapping.start_u + (i/((forma_length-1)/uvmapping.u_repeat))*uvmapping.len_u) ) // si se quiere repetir algo que no empieza en 0 o no termina en 1 creo que esto no da bien
+                uvs.push((uvmapping.start_v + (j/((recorrido_length-1)/uvmapping.v_repeat))*uvmapping.len_u) )
             }
         }
 
@@ -679,7 +679,15 @@ class ModuloGeometria {
 
 
 
-function obtenerUVsTapa(tapa_pos, normal){
+function obtenerUVsTapa(tapa_pos, normal, solid_uv){
+    if (solid_uv){  
+        // caso en el que quiero una tapa de un solo color
+        uv_list = []
+        for (var i = 0; i<tapa_pos.length; i+=3){
+            uv_list.push(...[0,0])
+        }
+        return uv_list
+    }
 
     // calculo de coordenadas uv tapa 2:
     var a = vec3.fromValues(normal[0],normal[1],normal[2])

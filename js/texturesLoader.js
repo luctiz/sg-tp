@@ -6,13 +6,25 @@ class TexturesLoader{
     anillo
     modulo_cilindrico
     modulo_esferico
+    paneles
+    modulo_anillo
+    capsula
+    luna
     constructor(){
         this.default = this._loadTexture('textures/uvgrid.jpg')
         this.tierra = this._loadTexture('textures/tierra.jpg')
         this.sol = this._loadTexture('textures/sol.jpg')
+        this.luna = this._loadTexture('textures/luna.jpg')
+
         this.anillo = this._loadTexture('textures/anillo.jpg')
         this.modulo_cilindrico = this._loadTexture('textures/modulo-cilindrico.jpg')
         this.modulo_esferico = this._loadTexture('textures/modulo-esferico.jpg')
+        this.paneles = this._loadTexture('textures/paneles.jpg')
+        this.modulo_anillo = this._loadTexture('textures/modulo_anillo.jpg')
+        this.capsula = this._loadTexture('textures/shiphull.jpg')
+
+
+
 
     }
 
