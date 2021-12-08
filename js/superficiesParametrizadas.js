@@ -46,26 +46,15 @@ class Esfera extends SuperficieParametrizada{
     }
 
     getNormal=function(u,v){
-        var delta=0.001;
-        var p0=this.getPosicion(u,v);
-        var p1=this.getPosicion(u,v+delta); // tener cuidado si u o v son mayores que 1. En esfera no pasa nada
-        var p2=this.getPosicion(u+delta,v+delta);
-
+        var posicion = this.getPosicion(u,v)
         
-        var v1=vec3.fromValues(p1[0]-p0[0],p1[1]-p0[1],p1[2]-p0[2]);
-        var v2=vec3.fromValues(p2[0]-p0[0],p2[1]-p0[1],p2[2]-p0[2]);
-
-        vec3.normalize(v1,v1);
-        vec3.normalize(v2,v2);
-        
-        var n=vec3.create();
-        vec3.cross(n,v1,v2);
+        var n=vec3.fromValues(posicion[0],posicion[1],posicion[2]);
         vec3.normalize(n,n)
         
         return n                
     }
     getCoordenadasTextura=function(u,v){
-        return [u,v];
+        return [u*(this.porcion_fi/(Math.PI*2)),v*(this.porcion_tita/(Math.PI))];
     }
 }
 

@@ -217,7 +217,6 @@ class Geometria{ //geometria superficie
     }
 
     agregarFilasTapas(suavizar = false){ //creo que el parametro suavizar no es necesario en este caso?
-        console.log("enter function")
         var rows = (this.pos.length/3)/this.cant_columnas;
         var cols = this.cant_columnas
         
@@ -690,8 +689,6 @@ function obtenerUVsTapa(tapa_pos, normal){
     vec3.cross(s,a,b) 
     if (vec3.equals(s,vec3.fromValues(0,0,0))){
         s = vec3.fromValues(1,0,0)
-        console.log("corrected first s")
-
     }
     vec3.normalize(s,s) // obtengo eje de rotacion para alinear plano al eje z
 
@@ -707,7 +704,6 @@ function obtenerUVsTapa(tapa_pos, normal){
     vec3.cross(s,a,b) 
     if (vec3.equals(s,vec3.fromValues(0,0,0))){
         s = vec3.fromValues(0,0,1)
-        console.log("corrected s")
     }
     vec3.normalize(s,s) // obtengo eje de rotacion para alinear plano al eje y
 

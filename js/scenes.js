@@ -559,6 +559,7 @@ function mainScene(){
     modulo_cabeza = new Objeto3D()
     geometria = geometriaNucleoCabeza(15)
     modulo_cabeza.setGeometria(geometria)
+    modulo_cabeza.setTexture(textures.modulo_esferico)
     modulo_cabeza.setColor(0.83,0.63,0.33)
     modulo_cabeza.addTraslacion(0,0,6.3)
     nucleo.agregarHijo(modulo_cabeza)
@@ -581,20 +582,25 @@ function mainScene(){
 
     base_anillo.setColor(0.58,0.83,0.26)
 
+    color_viga = [0.5,0.5,0.5]
     for (var i = 0; i < cantidad_modulos_anillo; i++){
         var objeto_viga = new Objeto3D()
 
         var viga_soporte_anillo = new Objeto3D()
         geometria = geometriaVigaSoporteAnillo()
         viga_soporte_anillo.setGeometria(geometria)
-        viga_soporte_anillo.setColor(0.90,0.70,0.40)
+        viga_soporte_anillo.setTexture(textures.createSolidTexture(color_viga[0],color_viga[1],color_viga[2],1))
+
+        //viga_soporte_anillo.setColor(0.90,0.70,0.40)
         viga_soporte_anillo.addTraslacion(0,0.8,0)
         viga_soporte_anillo.addRotacion(Math.PI*3/4,1,0,0)
         objeto_viga.agregarHijo(viga_soporte_anillo)
 
         var viga_soporte_anillo2 = new Objeto3D()
         viga_soporte_anillo2.setGeometria(geometria)
-        viga_soporte_anillo2.setColor(0.90,0.70,0.40)
+        viga_soporte_anillo2.setTexture(textures.createSolidTexture(color_viga[0],color_viga[1],color_viga[2],1))
+
+        //viga_soporte_anillo2.setColor(0.90,0.70,0.40)
         viga_soporte_anillo2.addTraslacion(0,-0.8,0)
         viga_soporte_anillo2.addRotacion(Math.PI*3/4,1,0,0)
         objeto_viga.agregarHijo(viga_soporte_anillo2)
@@ -605,7 +611,8 @@ function mainScene(){
             var tubo_viga = new Objeto3D()
             geometria = geometriaTuboVigaAnillo()
             tubo_viga.setGeometria(geometria)
-            tubo_viga.setColor(0.90,0.70,0.40)
+            //tubo_viga.setColor(0.90,0.70,0.40)
+            tubo_viga.setTexture(textures.createSolidTexture(color_viga[0],color_viga[1],color_viga[2],1))
             tubo_viga.addRotacion(Math.PI*((j % 2)),1,0,0)
 
             tubo_viga.addTraslacion(j*(0.8)+4,0,0)
@@ -699,17 +706,20 @@ function mainScene(){
 
     // planeta tierra
     var planeta = new Objeto3D()
-    var sup_planeta = new Esfera(15,Math.PI/4)
-    geometria = ModuloGeometria.obtenerGeometriaSuperficieParametrizada(sup_planeta,40,40, new UVMapping(0,0,1,0.25))
+    var sup_planeta = new Esfera(15,Math.PI, Math.PI)
+    geometria = ModuloGeometria.obtenerGeometriaSuperficieParametrizada(sup_planeta,80,80)
     planeta.setGeometria(geometria)
     planeta.setColor(0.50,0.50,1)
     planeta.setTexture(textures.tierra)
-    planeta.addEscalado(2000,2000,2000)
-    planeta.addTraslacion(0,-16, 0)
 
-    //planeta.addRotacionSegunVariable(Math.PI / 180,1,0,0, angulo_paneles)//.addRotacion(-Math.PI/2,1,0,0)
+    //planeta.addRotacion(Math.PI, 0,1,0)
+
+    planeta.addEscalado(2000,2000,2000)
+    planeta.addRotacion(Math.PI/2,1,0,0)//.addRotacion(-Math.PI/2,1,0,0)
+
     planeta.addRotacion(Math.PI*3/2,1,0,0)
 
+    planeta.addTraslacion(0,-16, 0)
 
 
 
@@ -736,7 +746,7 @@ function mainScene(){
     var propulsorCapsula = new Objeto3D()
     geometria = geometriaPropulsorCapsula()
     propulsorCapsula.setGeometria(geometria)
-    propulsorCapsula.setColor(0.40,0.40,0.40)
+    propulsorCapsula.setTexture(textures.createSolidTexture(0.30,0.30,0.30,1))
     modelo_capsula.agregarHijo(propulsorCapsula)
 
     capsula.agregarHijo(modelo_capsula)
