@@ -4,7 +4,7 @@
         <title></title>        
         <style>
             body{ background-color: grey; }
-            canvas{ background-color: rgb(100,100,100); }
+            canvas{ background-color: black; }
 			textarea{ background-color: black; foreground-color: white;}
         </style>
     </head>
@@ -16,200 +16,168 @@
     		</canvas>    		
     	</center>
 
-        <script type="text/javascript" src="js/gl-matrix.js"></script>
+        <script type="text/javascript" src="js/lib/dat.gui.js"></script>
+        <script type="text/javascript" src="js/lib/jquery.min.js"></script>
+        <script type="text/javascript" src="js/lib/gl-matrix.js"></script>
+        <script type="text/javascript" src="js/curvasParametrizadas.js"></script>
+        <script type="text/javascript" src="js/superficiesParametrizadas.js"></script>
         <script type="text/javascript" src="js/objeto3D.js"></script>
         <script type="text/javascript" src="js/objeto3DControlable.js"></script>
-
         <script type="text/javascript" src="js/moduloGeometria.js"></script>
-        <script src="js/dat.gui.js"></script>
-        <script src="js/jquery.min.js"></script>
         <script type="text/javascript" src="js/scenes.js"></script>
-
+        <script type="text/javascript" src="js/texturesLoader.js"></script>
         
         <script id="shader-vs" type="x-shader/x-vertex">
-
             precision highp float;
 
             attribute vec3 aVertexPosition;
             attribute vec3 aVertexNormal;
+            attribute vec2 aTextureCoord;
 
             uniform mat4 modelMatrix;            
             uniform mat4 viewMatrix;
             uniform mat4 projMatrix;
 
-            uniform mat4 normalMatrix;
-
             varying vec3 vNormal;    
-            varying vec3 vPosWorld;  
+            varying vec3 vPVNormal;
+            varying vec3 vPosWorld;
+            varying highp vec2 vTextureCoord;
 
+            varying vec3 cameraPosition;
+
+            mat3 transpose(mat3 matrix) {
+                vec3 row0 = matrix[0];
+                vec3 row1 = matrix[1];
+                vec3 row2 = matrix[2];
+            
+                return mat3(
+                    vec3(row0.x, row1.x, row2.x),
+                    vec3(row0.y, row1.y, row2.y),
+                    vec3(row0.z, row1.z, row2.z));
+            }
+            
+            float det(mat2 matrix) {
+                return matrix[0].x * matrix[1].y - matrix[0].y * matrix[1].x;
+            }
+            
+            mat3 inverse(mat3 matrix) {
+                vec3 row0 = matrix[0];
+                vec3 row1 = matrix[1];
+                vec3 row2 = matrix[2];
+            
+                vec3 minors0 = vec3(
+                    det(mat2(row1.y, row1.z, row2.y, row2.z)),
+                    det(mat2(row1.z, row1.x, row2.z, row2.x)),
+                    det(mat2(row1.x, row1.y, row2.x, row2.y))
+                );
+                vec3 minors1 = vec3(
+                    det(mat2(row2.y, row2.z, row0.y, row0.z)),
+                    det(mat2(row2.z, row2.x, row0.z, row0.x)),
+                    det(mat2(row2.x, row2.y, row0.x, row0.y))
+                );
+                vec3 minors2 = vec3(
+                    det(mat2(row0.y, row0.z, row1.y, row1.z)),
+                    det(mat2(row0.z, row0.x, row1.z, row1.x)),
+                    det(mat2(row0.x, row0.y, row1.x, row1.y))
+                );
+            
+                mat3 adj = transpose(mat3(minors0, minors1, minors2));
+            
+                return (1.0 / dot(row0, minors0)) * adj;
+            }
+
+            
             void main(void) {
-                gl_Position = projMatrix * viewMatrix * modelMatrix * vec4(aVertexPosition, 1.0);
+                mat4 mvp = projMatrix * viewMatrix * modelMatrix;
+                gl_Position =  mvp * vec4(aVertexPosition, 1.0);
 
-                vPosWorld=(modelMatrix*vec4(aVertexPosition,1.0)).xyz;    //la posicion en coordenadas de mundo
-                vNormal=(normalMatrix*vec4(aVertexNormal,1.0)).xyz;       //la normal en coordenadas de mundo                
+                //vPosWorld = (mvp * vec4(aVertexPosition, 1.0)).xyz;    //la posicion en coordenadas de mundo
+                vPosWorld = (modelMatrix * vec4(aVertexPosition,1.0)).xyz;
                 
+                vPVNormal = (mvp * vec4(aVertexNormal, 1.0)).xyz;
+
+                mat3 normalMatrix = mat3(modelMatrix);
+
+                normalMatrix = inverse(normalMatrix);
+                normalMatrix = transpose(normalMatrix);
+                vNormal = normalize(normalMatrix * aVertexNormal).xyz;//(normalMatrix*vec4(aVertexNormal,1.0)).xyz;       //la normal en coordenadas de mundo                
+                cameraPosition = vec3(viewMatrix[0][3],viewMatrix[1][3],viewMatrix[2][3]);
+                vTextureCoord = aTextureCoord;
             }
         </script>
 
-        <script id="shader-fs" type="x-shader/x-fragment">
+        <script id="shader-fs-phong" type="x-shader/x-fragment">
             precision highp float;
-            uniform vec3 difuseColor;
+            uniform vec3 objectColor;
+            uniform float uTime;
+
+            uniform float simpleColor;
+
+            uniform vec3 sunPosition;
+            uniform vec3 cameraPosition;
+
+            uniform sampler2D uSampler;
+
             varying vec3 vNormal;
+            varying vec3 vPVNormal;
             varying vec3 vPosWorld;
 
-            void main(void) {
+            varying highp vec2 vTextureCoord;
 
-                vec3 lightVec=normalize(vec3(0.0,3.0,5.0))-normalize(vPosWorld);
-                vec3 diffColor=mix(vec3(0.7,0.7,0.7),vNormal,0.4);
-                vec3 color= dot(lightVec, vNormal) * difuseColor ;
+            void main(void) {
+                if (simpleColor == 1.0){
+                    gl_FragColor = vec4(texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t)).xyz,1.0);
+                    return;
+                }
+
+                vec3 sampledColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t)).xyz; //voy a usarlo en lugar de objectColor
+
+                float ambientLight = 0.2; // conviene tenerlo como vec3
+
+                //vec3 light = ;//10.0*cos(uTime * 0.01),10.0,10.0*sin(uTime * 0.01));
+                vec3 lightVec= normalize(sunPosition);
+
+                vec3 ambient = ambientLight*sampledColor;
+                vec3 difuse = max(dot(vNormal,lightVec), 0.0)*(1.0 - ambientLight) * sampledColor;
+
+
+                //surfaceToLight: vector unitario desde la superficie hasta la luz
+                //  para las que no son direccional se calcula como la posicion de la luz menos la posicion de la superficie
+                //  para la direccional el incidence creo que es lightVec
+                //surfacePos: vec3(modelMatrix * vec4(fragVert,1));
+
+                vec3 materialSpecularColor = vec3(1.0,1.0,1.0);
+                float lightIntensity = 1.0;
+                float materialShininess = 100.0;
+                //
+
+                vec3 incidenceVector = -lightVec; //a unit vector
+                vec3 reflectionVector = reflect(incidenceVector, vNormal); //also a unit vector
+                vec3 surfaceToCamera = normalize(cameraPosition - vPosWorld); //also a unit vector
+                float cosAngle = max(0.0, dot(surfaceToCamera, reflectionVector));
+                float specularCoefficient = pow(cosAngle, materialShininess);
+
+                vec3 specular = specularCoefficient * materialSpecularColor * lightIntensity;
+
+
+                vec3 color = ambient + difuse + specular;
 
                gl_FragColor = vec4(color,1.0);
             }
         </script>
         
         <script>
-            function Esfera(radio, porcion_fi=Math.PI*2){
-
-                this.getPosicion=function(u,v){
-                    var tita = v*Math.PI;
-                    var fi = u*porcion_fi
-                    var x = radio*Math.sin(tita)*Math.cos(fi)
-                    var y = radio*Math.sin(tita)*Math.sin(fi)
-                    var z = radio*Math.cos(tita)
-                    return [x,y,z];
-                }
-
-                this.getNormal=function(u,v){
-                    var delta=0.01;
-                    var p0=this.getPosicion(u,v);
-                    var p1=this.getPosicion(u,v+delta); // tener cuidado si u o v son mayores que 1. En esfera no pasa nada
-                    var p2=this.getPosicion(u+delta,v);
-
-                    
-                    var v1=vec3.fromValues(p1[0]-p0[0],p1[1]-p0[1],p1[2]-p0[2]);
-                    var v2=vec3.fromValues(p2[0]-p0[0],p2[1]-p0[1],p2[2]-p0[2]);
-
-                    vec3.normalize(v1,v1);
-                    vec3.normalize(v2,v2);
-                    
-                    var n=vec3.create();
-                    vec3.cross(n,v1,v2);
-                    vec3.scale(n,n,-1);
-                    
-                    return n                }
-
-                this.getCoordenadasTextura=function(u,v){
-                    return [u,v];
-                }
-            }
-
-            function EsferaRara(radio){
-                this.getPosicion= function(u,v){
-                    var alfa=v*Math.PI*2;
-                    var beta=(0.1+u*0.8)*Math.PI;
-                    var r=radio;
-                    var nx=Math.sin(beta)*Math.sin(alfa);
-                    var ny=Math.sin(beta)*Math.cos(alfa);
-                    var nz=Math.cos(beta);
-
-
-                    var g=beta%0.5;
-                    var h=alfa%1;
-                    var f=1;
-
-                    if (g<0.25) f=0.95;
-                    if (h<0.5) f=f*0.95;
-
-                    var x=nx*r*f;
-                    var y=ny*r*f;
-                    var z=nz*r*f;
-
-                    return [x,y,z];
-                }
-
-                this.getNormal=function(u,v){
-                    var delta=0.016;
-                    var p1=this.getPosicion(u,v);
-                    var p2=this.getPosicion(u,v+delta);
-                    var p3=this.getPosicion(u+delta,v);
-
-                    var v1=vec3.fromValues(p2[0]-p1[0],p2[1]-p1[1],p2[2]-p1[2]);
-                    var v2=vec3.fromValues(p3[0]-p1[0],p3[1]-p1[1],p3[2]-p1[2]);
-
-                    vec3.normalize(v1,v1);
-                    vec3.normalize(v2,v2);
-                    
-                    var n=vec3.create();
-                    vec3.cross(n,v1,v2);
-                    vec3.normalize(n,n)
-                    return n;
-                }
-
-                this.getCoordenadasTextura=function(u,v){
-                    return [u,v];
-                }
-            }
-
-            function CurvaBezier(poligono_control){
-                function fact(num)
-                {
-                    var rval=1;
-                    for (var i = 2; i <= num; i++)
-                        rval = rval * i;
-                    return rval;
-                }
-
-                function combinations(n,k) {
-
-                    return (fact(n) / ((fact(k)) * fact(n - k)))
-                }
-
-                function B(i,n,t) {
-                    /*if ((i == 0) &(t==0)){
-                        return (combinations(n,i)*((1-t)**(n-i)) *1)
-                    } else if (t==1){
-                        return (combinations(n,i)*(1) *(t**i))
-                    }*/
-                    return (combinations(n,i)*((1-t)**(n-i)) *(t**i))
-                }
-
-                this.evaluarPunto= function(t){
-                    resultado = vec3.fromValues(0,0,0);
-                    n = poligono_control.length;
-                    for (i = 0; i< n; i++){
-                        var auxvec = vec3.create();
-                        vec3.scale(auxvec,poligono_control[i],B(i,n-1,t));
-
-                        vec3.add(resultado,resultado, auxvec);
-                    }
-                    return resultado;
-                }
-
-            }
-
-            
-            // crea una circunferencia en el plano xy rotada segun vec_rot
-            function CurvaCircunferencia(radio, vec_rot, parametrizacion = Math.PI*2){
-                this.evaluarPunto= function(t){
-
-                    position = vec3.fromValues(Math.cos(parametrizacion*t),Math.sin(parametrizacion*t),0)
-                    vec3.scale(position, position, radio)
-                    vec3.rotateX(position, position, vec3.fromValues(0,0,0), vec_rot[0])
-                    vec3.rotateY(position, position, vec3.fromValues(0,0,0), vec_rot[1])
-                    vec3.rotateZ(position, position, vec3.fromValues(0,0,0), vec_rot[2])
-
-                    return position;
-                }
-            }
             
             var mat4=glMatrix.mat4;
             var vec3=glMatrix.vec3;
 
             var gl = null,
             canvas = null,
+            textures = null
 
             glProgram = null,
-            fragmentShader = null,
+            phongFragmentShader = null,
+            simpleFragmentShader = null,
             vertexShader = null;
                 
             var vertexPositionAttribute = null,
@@ -223,19 +191,31 @@
             var projMatrix = mat4.create();
             var normalMatrix = mat4.create();
             var rotate_angle = -1.57078;
+            
 
-
-            const MAX_DISTANCIA_VISTA = 15000;
+            const MAX_DISTANCIA_VISTA = 150000;
             var factor_fov = 1.0
 
+            var cameraactual;
             var camera = 3;
             var global_t = 0;
-            //let droneCam=new DroneCameraControl([-10,7,25]);
 
             var cantidad_filas_paneles = 4;
-            var angulo_paneles = 330;
-            var velocidad_rotacion_anillo = 0.1; // vueltas por segundo
             var cantidad_modulos_anillo = 4;
+
+            var angulo_paneles = {
+                variable: 330
+            };
+
+            var velocidad_rotacion_anillo = {
+                variable: 0//.1 // vueltas por segundo
+            };
+
+            var posicion_sol = vec3.fromValues(0,80000,0)
+
+            var angulo_sol = {
+                variable: 0 // vueltas por segundo
+            };
 
             /*var curva_vista = new ObjetoCurva3D()
             curva_vista.setColor(0,0.5,1);*/
@@ -254,7 +234,6 @@
                 case 0x33:
                     camera = 3; 
                     viewMatrix = obtenerViewMatrix(camera3);
-
                     break;
                 }
                     
@@ -306,11 +285,19 @@
 
                     setupWebGL();
                     initShaders();
-                    objeto_principal = mainScene()
-                    //objeto_principal.agregarHijo(curva_vista)
+
                     
                     setupVertexShaderMatrix();
                     initMenu();
+                    textures = new TexturesLoader()
+
+                    objeto_principal = mainScene()
+
+                    //objeto_principal.agregarHijo(curva_vista)
+
+                    //var uniformSunPosition = gl.getUniformLocation(glProgram, "sunPosition"); // asumiendo posicion del sol fija
+                    //gl.uniform3fv(uniformSunPosition, posicion_sol);
+
 
                     tick();   
                     
@@ -346,19 +333,19 @@
                     
             function initShaders() {
                 //get shader source
-                var fs_source = document.getElementById('shader-fs').innerHTML,
+                var phong_fs_source = document.getElementById('shader-fs-phong').innerHTML,
                     vs_source = document.getElementById('shader-vs').innerHTML;
 
                 //compile shaders    
                 vertexShader = makeShader(vs_source, gl.VERTEX_SHADER);
-                fragmentShader = makeShader(fs_source, gl.FRAGMENT_SHADER);
+                phongFragmentShader = makeShader(phong_fs_source, gl.FRAGMENT_SHADER);
                 
                 //create program
                 glProgram = gl.createProgram();
                 
                 //attach and link shaders to the program
                 gl.attachShader(glProgram, vertexShader);
-                gl.attachShader(glProgram, fragmentShader);
+                gl.attachShader(glProgram, phongFragmentShader);
                 gl.linkProgram(glProgram);
 
                 if (!gl.getProgramParameter(glProgram, gl.LINK_STATUS)) {
@@ -394,6 +381,24 @@
             
             function drawScene(){
                 setupVertexShaderMatrix();
+
+                var uniformTime = gl.getUniformLocation(glProgram, "uTime");
+                gl.uniform1f(uniformTime, Math.PI*15/8);//global_t);//); //   
+
+                //vario posicion de sol para probar
+                var newpossol = vec3.create()
+                var center = vec3.create()
+                vec3.rotateX(newpossol,posicion_sol,center, angulo_sol.variable*Math.PI/180)
+                var uniformSunPosition = gl.getUniformLocation(glProgram, "sunPosition"); // asumiendo posicion del sol variable (en el final puedo asumir fija)
+                gl.uniform3fv(uniformSunPosition, newpossol);
+                //
+
+                var uniformCamPosition = gl.getUniformLocation(glProgram, "cameraPosition");
+
+                var camPos = vec3.create()
+                mat4.getTranslation(camPos,cameraactual.getMatTransformations())
+                //console.log(campos);
+                gl.uniform3fv(uniformCamPosition, camPos);//global_t);//); // 
 
                 matPadre= mat4.create() // matriz identidad para nodo principal
 
@@ -520,11 +525,15 @@
 
             function initMenu(){
                 var gui = new dat.GUI();
-                
+                gui.add(angulo_paneles, "variable",0,360).step(2).name("Angulo paneles");
+                gui.add(velocidad_rotacion_anillo, "variable",0,1).step(0.05).name("velocidad rotacion anillo");
+
+                gui.add(angulo_sol, "variable",0,360).step(1).name("angulo sol");
+
+
                 const reconstruirFolder = gui.addFolder('Para reconstruir forma:')
                 reconstruirFolder.add(window, "cantidad_filas_paneles",1,10).step(1);
-                reconstruirFolder.add(window, "angulo_paneles",0,360).step(5);
-                reconstruirFolder.add(window, "velocidad_rotacion_anillo",0,1).step(0.05);
+                
                 reconstruirFolder.add(window, "cantidad_modulos_anillo",2,8).step(1);
 
                 var obj = { reconstruir:function(){ objeto_principal = mainScene(); }};

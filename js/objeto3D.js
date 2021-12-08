@@ -16,12 +16,23 @@ class Rotacion extends Transformacion{
     }
 }
 
-class RotacionSegunTiempo extends Rotacion{
-    constructor(radianes, eje){
+
+class RotacionSegunVariable extends Rotacion{
+    constructor(radianes, eje, container_ref){
         super(radianes,eje)
+        this.container_ref = container_ref;
     }
     transform(m){
-        mat4.rotate(m,m,this.radianes * global_t,this.eje)
+        mat4.rotate(m,m,this.radianes * this.container_ref.variable,this.eje)
+    }
+}
+
+class RotacionSegunVariablePorTiempo extends RotacionSegunVariable{
+    constructor(radianes, eje, container_ref){
+        super(radianes,eje, container_ref)
+    }
+    transform(m){
+        mat4.rotate(m,m,this.radianes * this.container_ref.variable * global_t,this.eje)
     }
 }
 
@@ -54,13 +65,11 @@ class Objeto3D {
         this.indexBuffer = null;
         this.matModelado = mat4.create(); // transformacion respecto de su padre
         this.matTransformations = mat4.create();
-        //this.posicion = vec3.fromValues(0,0,0); //a partir de estos atributos se calcula la matriz respectiva
-        //this.rotacion = vec3.fromValues(0,0,0);
-        //this.rotaciones = [];
         this.transformaciones = []
-        //this.escala = vec3.fromValues(1,1,1);
         this.color = vec3.fromValues(1,1,1);
         this.hijos=[];
+        this.iluminacionSimple=0.0;
+        this.texture = textures.default;
     }
 
     // metodo privado, usa posicion, rotacion y escala. Se actualiza cada vez que se dibuja el objeto
@@ -81,13 +90,14 @@ class Objeto3D {
 
         // concatenamos las transformaciones padre/hijo
         mat4.multiply(m, matPadre, this.matModelado);
-        // para mantener la concatenacion en objetos que actuan como camara
+        // para mantener la concatenacion en objetos que actuan como camara:
         this.matTransformations = m;
         //
         var modelMatrixUniform = gl.getUniformLocation(glProgram, "modelMatrix");
         gl.uniformMatrix4fv(modelMatrixUniform, false, m);
+        
 
-        if ((this.vertexBuffer !=null) & (this.indexBuffer!= null)) {
+        if ((this.vertexBuffer !=null) & (this.indexBuffer!= null)) { //Los binds aca son innecesarios???
             // Dibujamos la malla de triangulos con WebGL
             // si el objeto tiene geometria asociada.
             // Se configuran los buffers que alimentaron el pipeline
@@ -97,8 +107,19 @@ class Objeto3D {
             gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer.webgl_position_buffer);
             gl.vertexAttribPointer(vertexPositionAttribute, this.vertexBuffer.webgl_position_buffer.itemSize, gl.FLOAT, false, 0, 0);
 
-            //gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer.webgl_uvs_buffer);
-            //gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, vertexBuffer.webgl_uvs_buffer.itemSize, gl.FLOAT, false, 0, 0);
+
+
+            let textureCoordAttribute = gl.getAttribLocation(glProgram, 'aTextureCoord');
+            gl.enableVertexAttribArray(textureCoordAttribute);
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer.webgl_uvs_buffer);
+            gl.vertexAttribPointer(textureCoordAttribute, this.vertexBuffer.webgl_uvs_buffer.itemSize, gl.FLOAT, false, 0, 0);
+
+
+            let samplerUniform = gl.getUniformLocation(glProgram, 'uSampler')
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, this.texture);
+            gl.uniform1i(samplerUniform, 0);  
+            
 
             vertexNormalAttribute = gl.getAttribLocation(glProgram, "aVertexNormal");
             gl.enableVertexAttribArray(vertexNormalAttribute);
@@ -107,8 +128,11 @@ class Objeto3D {
             
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
 
-            let difuseColorUniform = gl.getUniformLocation(glProgram, "difuseColor")
-            gl.uniform3f(difuseColorUniform, this.color[0],this.color[1], this.color[2])
+            let objectColorUniform = gl.getUniformLocation(glProgram, "objectColor")
+            gl.uniform3f(objectColorUniform, this.color[0],this.color[1], this.color[2])
+
+            let simpleColorUniform = gl.getUniformLocation(glProgram, "simpleColor")
+            gl.uniform1f(simpleColorUniform, this.iluminacionSimple)
             
             gl.drawElements( gl.TRIANGLE_STRIP, this.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 
@@ -125,9 +149,20 @@ class Objeto3D {
         }
     }
 
-    setGeometria(newVertexBuffer, newIndexBuffer) {
-        this.vertexBuffer = newVertexBuffer;
-        this.indexBuffer = newIndexBuffer;
+    setGeometria(geometria, ver_normales=false) {
+        var binded_geometry = geometria.bind()
+
+        this.vertexBuffer = binded_geometry.vertexBuffer;
+        this.indexBuffer = binded_geometry.indexBuffer;
+
+        if (ver_normales){
+            //PARA CHEQUEAR NORMALES
+            var normals_geometry = geometria.obtenerGeometriaNormales()
+            var normales_sup_barrido = new ObjetoCurva3D()
+            normales_sup_barrido.setGeometria(normals_geometry, false)
+            normales_sup_barrido.setColor(Math.random(),Math.random(),Math.random())
+            this.agregarHijo(normales_sup_barrido)
+        }
     }
 
     getMatTransformations(){
@@ -154,20 +189,31 @@ class Objeto3D {
     }
 
     addRotacion = function(radianes, x,y,z) {
-        //this.rotacion = vec3.fromValues(x,y,z)
         var eje = vec3.fromValues(x,y,z)
         this.transformaciones.push(new Rotacion(radianes,eje));
     }
 
-    addRotacionSegunTiempo = function(radianes, x,y,z) {
+    addRotacionSegunVariable = function(radianes, x,y,z, variable) {
         var eje = vec3.fromValues(x,y,z)
-        this.transformaciones.push(new RotacionSegunTiempo(radianes,eje));
+        this.transformaciones.push(new RotacionSegunVariable(radianes,eje,variable));
+    }
+
+    addRotacionSegunVariablePorTiempo = function(radianes, x,y,z, variable) {
+        var eje = vec3.fromValues(x,y,z)
+        this.transformaciones.push(new RotacionSegunVariablePorTiempo(radianes,eje, variable));
     }
 
     setColor = function (r,g,b) {
         this.color = vec3.fromValues(r,g,b)
     }
 
+    setIluminacionSimple(){
+        this.iluminacionSimple = 1.0;
+    }
+
+    setTexture(texture){
+        this.texture = texture;
+    }
 }
 
 
@@ -188,9 +234,6 @@ class ObjetoCurva3D extends Objeto3D{
 
         if (this.vertexBuffer && this.indexBuffer) {
             // Dibuja cada segmento de linea con WEBGL
-            //console.log(this.indexBuffer)
-            //console.log(this.vertexBuffer.webgl_position_buffer)
-            //console.log(this.vertexBuffer.webgl_normal_buffer)
             vertexPositionAttribute = gl.getAttribLocation(glProgram, "aVertexPosition");
             gl.enableVertexAttribArray(vertexPositionAttribute);
             gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer.webgl_position_buffer);
@@ -203,8 +246,11 @@ class ObjetoCurva3D extends Objeto3D{
             
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
 
-            let difuseColorUniform = gl.getUniformLocation(glProgram, "difuseColor")
+            let difuseColorUniform = gl.getUniformLocation(glProgram, "objectColor")
             gl.uniform3f(difuseColorUniform, this.color[0],this.color[1], this.color[2])
+
+            let simpleColorUniform = gl.getUniformLocation(glProgram, "simpleColor")
+            gl.uniform1f(simpleColorUniform, 1.0)
             
             gl.drawElements( gl.LINES, this.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
         }
