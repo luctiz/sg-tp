@@ -421,41 +421,8 @@ function geometriaPanel(){
 
 
 function geometriaLuz(size){
-    /*grosor_panel = size
-    ancho_panel = size
-    largo_panel = size
-    p_control = [[-grosor_panel,ancho_panel,0],[grosor_panel,ancho_panel,0]]
-    curva_forma = new CurvaBezier(p_control)
-    disc_curva_forma = obtenerDiscretizacionCurvaParametrizada(curva_forma,2)
-
-    p_control = [[grosor_panel,ancho_panel,0],[grosor_panel,-ancho_panel,0]]
-    curva_forma = new CurvaBezier(p_control)
-    disc_curva_forma2 = obtenerDiscretizacionCurvaParametrizada(curva_forma,2)
-
-    disc_curva_forma.position_list.push(...disc_curva_forma2.position_list)
-    disc_curva_forma.tang_list.push(...disc_curva_forma2.tang_list)
-
-    p_control = [[grosor_panel,-ancho_panel,0],[-grosor_panel,-ancho_panel,0]]
-    curva_forma = new CurvaBezier(p_control)
-    disc_curva_forma2 = obtenerDiscretizacionCurvaParametrizada(curva_forma,2)
-
-    disc_curva_forma.position_list.push(...disc_curva_forma2.position_list)
-    disc_curva_forma.tang_list.push(...disc_curva_forma2.tang_list)
-
-    p_control = [[-grosor_panel,-ancho_panel,0],[-grosor_panel,ancho_panel,0]]
-    curva_forma = new CurvaBezier(p_control)
-    disc_curva_forma2 = obtenerDiscretizacionCurvaParametrizada(curva_forma,2)
-
-    disc_curva_forma.position_list.push(...disc_curva_forma2.position_list)
-    disc_curva_forma.tang_list.push(...disc_curva_forma2.tang_list)
-
-    p_control = [[-largo_panel,0,0],[largo_panel,0,0]]
-    curva_recorrido = new CurvaBezier(p_control)
-    disc_curva_recorrido = obtenerDiscretizacionCurvaParametrizada(curva_recorrido,2)
-*/  
     var esfera = new Esfera(size)
-    var geometria = ModuloGeometria.obtenerGeometriaSuperficieParametrizada(esfera,7,7)//ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido)
-    //geometria.agregarFilasTapas()
+    var geometria = ModuloGeometria.obtenerGeometriaSuperficieParametrizada(esfera,7,7)
     return geometria
 }
 
@@ -516,9 +483,6 @@ function geometriaCabezaCapsula(){
 }
 
 function geometriaPropulsorCapsula(){
-    //p_control = [[-2.2,0,0],[-2.2,0.3,0],[-4,0.8,0]]
-    //curva_forma = new CurvaBezier(p_control)
-    //disc_curva_forma = obtenerDiscretizacionCurvaParametrizada(curva_forma,10)
 
     p_control = [[-2.2,0.01,0],[-2.2,0.31,0],[-4,0.81,0]]
     curva_forma = new CurvaBezier(p_control)
@@ -768,9 +732,7 @@ function mainScene(){
 
 
 
-
     nodo_principal.agregarHijo(luna)
-    // deberia agregar rotacion para que apunte bien a la tierra?
 
     // planeta tierra
     var planeta = new Objeto3D()

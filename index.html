@@ -495,9 +495,6 @@
             function drawScene(){
                 setupVertexShaderMatrix();
 
-                /*var uniformTime = gl.getUniformLocation(glProgram, "uTime");
-                gl.uniform1f(uniformTime, Math.PI*15/8);//global_t);//); //  */ 
-
                 //vario posicion de sol para probar
                 var newpossol = vec3.create()
                 var center = vec3.create()
@@ -540,7 +537,6 @@
                 global_t+=0.1
             }
             // orbital
-
 
             // manejo de mouse y teclado
             var previousClientX = 0;

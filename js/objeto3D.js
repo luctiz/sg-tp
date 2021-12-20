@@ -30,9 +30,11 @@ class RotacionSegunVariable extends Rotacion{
 class RotacionSegunVariablePorTiempo extends RotacionSegunVariable{
     constructor(radianes, eje, container_ref){
         super(radianes,eje, container_ref)
+        this.acum_rot = 0;
     }
     transform(m){
-        mat4.rotate(m,m,this.radianes * this.container_ref.variable * global_t,this.eje)
+        this.acum_rot+= this.container_ref.variable/10;
+        mat4.rotate(m,m,this.radianes * this.acum_rot,this.eje)
     }
 }
 
@@ -167,12 +169,6 @@ class Objeto3D {
             
             gl.drawElements( gl.TRIANGLE_STRIP, this.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 
-            /*
-            
-            if (modo!="smooth") {
-                //gl.uniform1i(shaderProgram.useLightingUniform,false);
-                gl.drawElements(gl.LINE_STRIP, indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
-            }*/
         }
 
         for (var i = 0; i < this.hijos.length; i++) {
