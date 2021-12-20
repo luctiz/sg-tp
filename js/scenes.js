@@ -185,7 +185,7 @@ function geometriaNucleoCuerpo(puntos_curvatura){
     curva_recorrido = new CurvaCircunferencia(2.8,[0,0,0])
     disc_curva_recorrido = obtenerDiscretizacionCurvaParametrizada(curva_recorrido,20)
 
-    var geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido, new UVMapping(0,0,1,1,2,2))
+    var geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido, new UVMappingDistanciaRecorrida())
     geometria.agregarColumnasTapas(true)
     return geometria
 }
@@ -200,7 +200,7 @@ function geometriaNucleoCabeza(puntos_curvatura){
     curva_recorrido = new CurvaCircunferencia(2.0,[0,0,0])
     disc_curva_recorrido = obtenerDiscretizacionCurvaParametrizada(curva_recorrido,20)
 
-    var geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido, new UVMapping(0,0.5,1,1,1,2)) // las texturas en las tapas se podrian mejorar
+    var geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido, new UVMappingDistanciaRecorrida(0,0.5,1,2)) // las texturas en las tapas se podrian mejorar
     geometria.agregarColumnasTapas(true)
     return geometria
 }
@@ -243,7 +243,7 @@ function geometriaAnillo(){
     curva_recorrido = new CurvaCircunferencia(16.8,[0,0,0])
     disc_curva_recorrido = obtenerDiscretizacionCurvaParametrizada(curva_recorrido,36)
 
-    return ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido, new UVMapping(0,0,1,1,0.10, 10))
+    return ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido, new UVMappingSimple(0,0,1,1,0.10, 10))
 }
 
 function geometriaVigaSoporteAnillo(){
@@ -350,7 +350,7 @@ function geometriaAnilloAgarreSoporte(cant_modulos,puntos_curvatura){
     curva_recorrido = new CurvaCircunferencia(16.8,[0,0,0],Math.PI/(cant_modulos))
     disc_curva_recorrido = obtenerDiscretizacionCurvaParametrizada(curva_recorrido,7)
 
-    var geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_modulo, disc_curva_recorrido, new UVMapping(0,0,1,1,1,1))
+    var geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_modulo, disc_curva_recorrido, new UVMappingDistanciaRecorrida());
     geometria.agregarFilasTapas(true)
     return geometria
 }
@@ -414,7 +414,7 @@ function geometriaPanel(){
     curva_recorrido = new CurvaBezier(p_control)
     disc_curva_recorrido = obtenerDiscretizacionCurvaParametrizada(curva_recorrido,2)
 
-    var geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido,new UVMapping(0,0,1,1,2, 2))
+    var geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido,new UVMappingDistanciaRecorrida(0,0,0.5,1.67));//UVMappingSimple(0,0,1,1,2, 2))
     geometria.agregarFilasTapas()
     return geometria
 }
@@ -496,7 +496,7 @@ function geometriaCuerpoCapsula(){
 
     curva_recorrido = new CurvaCircunferencia(2.5,[0,0,0])
     disc_curva_recorrido = obtenerDiscretizacionCurvaParametrizada(curva_recorrido,20)
-    var geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido, new UVMapping(0,0,1,1,2,4))
+    var geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido, new UVMappingSimple(0,0,1,1,2,4))
     geometria.agregarColumnasTapas()
 
     return geometria
@@ -510,7 +510,7 @@ function geometriaCabezaCapsula(){
     curva_recorrido = new CurvaCircunferencia(1.3,[0,0,0])
     disc_curva_recorrido = obtenerDiscretizacionCurvaParametrizada(curva_recorrido,20)
 
-    var geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido,new UVMapping(0,0,0.4,1,1,4)) //
+    var geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido,new UVMappingSimple(0,0,0.4,1,1,4)) //
     geometria.agregarColumnasTapas(false)
     return geometria
 }

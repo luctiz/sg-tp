@@ -23,6 +23,7 @@
         <script type="text/javascript" src="js/superficiesParametrizadas.js"></script>
         <script type="text/javascript" src="js/objeto3D.js"></script>
         <script type="text/javascript" src="js/objeto3DControlable.js"></script>
+        <script type="text/javascript" src="js/uvmappings.js"></script>
         <script type="text/javascript" src="js/moduloGeometria.js"></script>
         <script type="text/javascript" src="js/scenes.js"></script>
         <script type="text/javascript" src="js/texturesLoader.js"></script>
@@ -276,7 +277,7 @@
                 vec3 earthReflection = texture2D(uRMSampler, vec2((alpha/(PI)) , beta/PI)).xyz;
                 
 
-               gl_FragColor = vec4(earthReflection*0.4 + ambient + 0.8*dirColor + 0.5*o1color + 0.5*o2color + spotlightColor ,1.0);
+               gl_FragColor = vec4( ambient + 0.8*dirColor + 0.5*o1color + 0.5*o2color + spotlightColor + earthReflection*0.4,1.0);
             }
         </script>
         

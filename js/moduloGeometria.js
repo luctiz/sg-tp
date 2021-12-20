@@ -402,33 +402,15 @@ class Geometria{ //geometria superficie
     }
 }
 
-// mover a otro archivo?
-class UVMapping {
-    start_u
-    start_v
-    len_u
-    len_v
-    u_repeat
-    v_repeat
-    constructor(start_u = 0, start_v = 0, len_u = 1, len_v = 1, u_repeat = 1, v_repeat = 1){
-        this.start_u = start_u
-        this.start_v = start_v
-        this.len_u = len_u
-        this.len_v = len_v
-        this.u_repeat = u_repeat
-        this.v_repeat = v_repeat
-    }
-}
-//
 
 class ModuloGeometria {
-    static obtenerGeometriaSuperficieParametrizada(superficie, filas, columnas, uvmapping = new UVMapping()){
+    static obtenerGeometriaSuperficieParametrizada(superficie, filas, columnas, uvmapping = new UVMappingSimple()){
         var vertex = this._getVertexBufferSuperficieParametrizada(superficie,filas,columnas, uvmapping);
         var index = this._getIndexBuffer(filas,columnas)
         return new Geometria(vertex.pos,vertex.normal,vertex.uv,index,columnas)
     }
 
-    static obtenerGeometriaSuperficieBarrido(forma_discretizada, recorrido_discretizado, uvmapping = new UVMapping()){
+    static obtenerGeometriaSuperficieBarrido(forma_discretizada, recorrido_discretizado, uvmapping = new UVMappingSimple()){
         var vertex = this._getVertexBufferSuperficieBarrido(forma_discretizada,recorrido_discretizado,uvmapping)
         var columnas = forma_discretizada.position_list.length / 3
         var filas = recorrido_discretizado.position_list.length / 3
@@ -565,10 +547,9 @@ class ModuloGeometria {
                 normal.push(sup_normal[1])
                 normal.push(sup_normal[2])
 
-                uvs.push((uvmapping.start_u + (i/((forma_length-1)/uvmapping.u_repeat))*uvmapping.len_u) ) // si se quiere repetir algo que no empieza en 0 o no termina en 1 creo que esto no da bien
-                uvs.push((uvmapping.start_v + (j/((recorrido_length-1)/uvmapping.v_repeat))*uvmapping.len_u) )
             }
         }
+        uvs = uvmapping.mapBarrido(forma_discretizada, recorrido_discretizado);
 
         return {
             pos,
