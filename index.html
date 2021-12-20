@@ -119,9 +119,7 @@
             uniform vec3 spotlightPos;
             uniform vec3 spotlightDir;
 
-
-
-            uniform float uTime;
+            uniform float materialShininess;
 
             uniform float simpleColor;
 
@@ -162,7 +160,7 @@
 
                 vec3 materialSpecularColor = vec3(1.0,1.0,1.0);
                 float lightIntensity = 1.0;
-                float materialShininess = 100.0;
+                //float materialShininess = 100.0;
                 //
 
                 vec3 incidenceVector = -lightVec; //a unit vector
@@ -239,7 +237,7 @@
                     float spotFactor = pow(dot(-surfaceToSpotlight, spotlightDirection), spotlightExponent);
                     //vec3 h = normalize(normalize(-angle) + surfaceToSpotlight);
 
-                    vec3 spotlightDifuse = max(dot(vNormal,-spotlightDirection), 0.0) * sampledColor; // ver que tenga decaimiento
+                    vec3 spotlightDifuse = max(dot(vNormal,-spotlightDirection), 0.0) * sampledColor; 
                     //vec3 spotlightSpecular = spotmaterialSpecularcolor * pow(max(dot(h,vNormal),0.0),materialShininess);
 
                     vec3 spotincidenceVector = -surfaceToSpotlight; //a unit vector
@@ -277,7 +275,7 @@
                 vec3 earthReflection = texture2D(uRMSampler, vec2((alpha/(PI)) , beta/PI)).xyz;
                 
 
-               gl_FragColor = vec4( ambient + 0.8*dirColor + 0.5*o1color + 0.5*o2color + spotlightColor + earthReflection*0.4,1.0);
+               gl_FragColor = vec4( ambient + 0.5*dirColor + 0.3*o1color + 0.3*o2color + 0.5*spotlightColor + earthReflection*(materialShininess/400.0),1.0);
             }
         </script>
         
@@ -319,7 +317,7 @@
             var cantidad_modulos_anillo = 4;
 
             var angulo_paneles = {
-                variable: 330
+                variable: 280
             };
 
             var velocidad_rotacion_anillo = {
@@ -329,7 +327,7 @@
             var posicion_sol = vec3.fromValues(0,80000,0)
 
             var angulo_sol = {
-                variable: 315 
+                variable: 290 
             };
 
             /*var curva_vista = new ObjetoCurva3D()

@@ -573,12 +573,14 @@ function mainScene(){
     geometria = geometriaNucleoCuerpo()
     modulo_cuerpo.setGeometria(geometria)
     modulo_cuerpo.setTexture(textures.modulo_cilindrico)
+    modulo_cuerpo.setMaterialShininess(10.0)
     modulo_cuerpo.addTraslacion(0,0,0)
     nucleo.agregarHijo(modulo_cuerpo)
 
     modulo_cuerpo2 = new Objeto3D()
     modulo_cuerpo2.setGeometria(geometria)
     modulo_cuerpo2.setTexture(textures.modulo_cilindrico)
+    modulo_cuerpo2.setMaterialShininess(10.0)
     modulo_cuerpo2.addTraslacion(0,0,-7)
     nucleo.agregarHijo(modulo_cuerpo2)
 
@@ -602,6 +604,7 @@ function mainScene(){
     geometria = geometriaNucleoCabeza(15)
     modulo_cabeza.setGeometria(geometria)
     modulo_cabeza.setTexture(textures.modulo_esferico)
+    modulo_cabeza.setMaterialShininess(10.0)
     modulo_cabeza.setColor(0.83,0.63,0.33)
     modulo_cabeza.addTraslacion(0,0,6.3)
     nucleo.agregarHijo(modulo_cabeza)
@@ -663,6 +666,7 @@ function mainScene(){
         geometria = geometriaAnilloAgarreSoporte(cantidad_modulos_anillo,3)
         agarre_soporte_anillo.setGeometria(geometria)
         agarre_soporte_anillo.setTexture(textures.modulo_anillo)
+        agarre_soporte_anillo.setMaterialShininess(10.0)
         agarre_soporte_anillo.addRotacion( (-Math.PI/(2*cantidad_modulos_anillo)),0,0,1)
         objeto_viga.addRotacion((2*i*Math.PI)/(cantidad_modulos_anillo),0,0,1)
         objeto_viga.agregarHijo(agarre_soporte_anillo)
@@ -705,6 +709,8 @@ function mainScene(){
         geometria = geometriaPanel()
         panel.setGeometria(geometria)
         panel.setTexture(textures.paneles)
+        panel.setMaterialShininess(50.0);
+
         panel.addTraslacion(6.5,0.15, 0.15)
         tubo_paneles.agregarHijo(panel)
 
@@ -752,6 +758,7 @@ function mainScene(){
     geometria = ModuloGeometria.obtenerGeometriaSuperficieParametrizada(sup_luna,40,40)
     luna.setGeometria(geometria)
     luna.setTexture(textures.luna)
+    luna.setMaterialShininess(5.0);
     luna.addEscalado(2000,2000,2000)
     luna.addTraslacion(12,12, 20)
     luna.addRotacion(Math.PI / 4,0,0,1)
@@ -771,7 +778,7 @@ function mainScene(){
     geometria = ModuloGeometria.obtenerGeometriaSuperficieParametrizada(sup_planeta,80,80)
     planeta.setGeometria(geometria)
     planeta.setTexture(textures.tierra)
-    planeta.setIluminacionSimple(); // sacar?
+    planeta.setIluminacionSimple();
 
     planeta.addEscalado(2000,2000,2000)
     planeta.addRotacion(Math.PI/2,1,0,0)//.addRotacion(-Math.PI/2,1,0,0)
@@ -793,6 +800,7 @@ function mainScene(){
     var cuerpoCapsula = new Objeto3D()
     geometria = geometriaCuerpoCapsula()
     cuerpoCapsula.setGeometria(geometria)
+    cuerpoCapsula.setMaterialShininess(50.0)
     cuerpoCapsula.setTexture(textures.capsula)
     modelo_capsula.agregarHijo(cuerpoCapsula)
 
@@ -800,11 +808,15 @@ function mainScene(){
     geometria = geometriaCabezaCapsula()
     cabezaCapsula.setGeometria(geometria)
     cabezaCapsula.setTexture(textures.capsula)
+    cabezaCapsula.setMaterialShininess(50.0)
+
     modelo_capsula.agregarHijo(cabezaCapsula)
 
     var propulsorCapsula = new Objeto3D()
     geometria = geometriaPropulsorCapsula()
     propulsorCapsula.setGeometria(geometria)
+    propulsorCapsula.setMaterialShininess(20.0)
+
     propulsorCapsula.setTexture(textures.createSolidTexture(0.30,0.30,0.30,1))
     modelo_capsula.agregarHijo(propulsorCapsula)
 

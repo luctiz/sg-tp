@@ -72,7 +72,7 @@ class Objeto3D {
         this.texture = textures.default;
         this.lightPositionUpdater = null;
         this.spotlightUpdater = null;
-
+        this.materialShininess = 100.0;
     }
 
     // metodo privado, usa posicion, rotacion y escala. Se actualiza cada vez que se dibuja el objeto
@@ -159,6 +159,9 @@ class Objeto3D {
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
 
 
+            let materialShininess = gl.getUniformLocation(glProgram, "materialShininess")
+            gl.uniform1f(materialShininess, this.materialShininess)
+            
             let simpleColorUniform = gl.getUniformLocation(glProgram, "simpleColor")
             gl.uniform1f(simpleColorUniform, this.iluminacionSimple)
             
@@ -249,6 +252,10 @@ class Objeto3D {
 
     setSpotlightUpdater(){
         this.spotlightUpdater = new SpotlightUpdater();
+    }
+
+    setMaterialShininess(shininess){
+        this.materialShininess = shininess;
     }
 }
 
