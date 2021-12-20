@@ -771,6 +771,7 @@ function mainScene(){
     geometria = ModuloGeometria.obtenerGeometriaSuperficieParametrizada(sup_planeta,80,80)
     planeta.setGeometria(geometria)
     planeta.setTexture(textures.tierra)
+    planeta.setIluminacionSimple(); // sacar?
 
     planeta.addEscalado(2000,2000,2000)
     planeta.addRotacion(Math.PI/2,1,0,0)//.addRotacion(-Math.PI/2,1,0,0)
@@ -840,10 +841,10 @@ function mainScene(){
 
 
     var luz_spot = new Objeto3D()
-    luz_spot.addTraslacion(2.45,0,0)
-    luz_spot.setLightPositionUpdater("spotlightPos")
+    luz_spot.addTraslacion(0,0,1.5)
+    luz_spot.setSpotlightUpdater()
 
-    modelo_capsula.agregarHijo(luz_spot)
+    cabezaCapsula.agregarHijo(luz_spot)
 
 
 

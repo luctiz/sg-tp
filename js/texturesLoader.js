@@ -10,6 +10,7 @@ class TexturesLoader{
     modulo_anillo
     capsula
     luna
+    refmap
     constructor(){
         this.default = this._loadTexture('textures/uvgrid.jpg')
         this.tierra = this._loadTexture('textures/tierra.jpg')
@@ -23,8 +24,7 @@ class TexturesLoader{
         this.modulo_anillo = this._loadTexture('textures/modulo_anillo.jpg')
         this.capsula = this._loadTexture('textures/shiphull.jpg')
 
-
-
+        this.refmap = this._loadTexture('textures/earth_refmap.jpg')
 
     }
 

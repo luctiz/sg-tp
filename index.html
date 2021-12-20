@@ -107,10 +107,17 @@
         </script>
 
         <script id="shader-fs-phong" type="x-shader/x-fragment">
+
             precision highp float;
+
+            const highp float PI = 3.141592654; 
+            const highp float PI_2 = 6.283185307;
+
             uniform vec3 o1lightPos;
             uniform vec3 o2lightPos;
             uniform vec3 spotlightPos;
+            uniform vec3 spotlightDir;
+
 
 
             uniform float uTime;
@@ -121,6 +128,7 @@
             uniform vec3 cameraPosition;
 
             uniform sampler2D uSampler;
+            uniform sampler2D uRMSampler;
 
             varying vec3 vNormal;
             varying vec3 vPVNormal;
@@ -136,17 +144,15 @@
 
                 vec3 sampledColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t)).xyz;
 
-                float ambientLight = 0.2; // conviene tenerlo como vec3
+                float ambientLight = 0.1; // conviene tenerlo como vec3
 
                 vec3 lightVec= normalize(sunPosition);
 
                 vec3 ambient = ambientLight*sampledColor;
 
 
-                
-
                 // luz direccional sol
-                vec3 difuse = max(dot(vNormal,lightVec), 0.0)*(1.0 - ambientLight) * sampledColor;
+                vec3 difuse = max(dot(vNormal,lightVec), 0.0) * sampledColor;
 
                 //surfaceToLight: vector unitario desde la superficie hasta la luz
                 //  para las que no son direccional se calcula como la posicion de la luz menos la posicion de la superficie
@@ -166,7 +172,7 @@
 
                 vec3 specular = specularCoefficient * materialSpecularColor * lightIntensity;
 
-                vec3 color = ambient + difuse + specular;
+                vec3 dirColor =  difuse + specular;
 
 
                 // comun luces omnidireccionales:
@@ -211,40 +217,66 @@
                 vec3 o2color = ((olightRadius - min(olightRadius, distance(o2lightPos,vPosWorld)))/(olightRadius)) * (o2difuse + o2specular);
                 //
 
-
                 // luz spot blanca capsula
-                // float spotlightIntensity = 1.0;
-                // vec3 spotlightDirection = (1.0,0.0,0.0);
-                // float spotlightExponent = 1.0; //Exponente de atenuacion angular
-                // float spotlightCutoff = 45.0; // Angulo de corte (entre 0 y 90)
 
-                // vec3 spotmaterialSpecularColor = vec3(1.0,1.0,1.0);
+                vec3 spotmaterialDifuseColor = vec3(1.0,1.0,1.0);
+                vec3 spotmaterialSpecularcolor = vec3(1.0,1.0,1.0);
+
+                float spotlightMaxDistance = 100.0;
+                float spotlightIntensity = 1.0;
+                vec3 spotlightDirection = normalize(spotlightDir);
+                float spotlightExponent = 15.0; // Exponente de atenuacion angular
+                float spotlightCutoff = 30.0; // Angulo de corte en grados(entre 0 y 90)
 
 
+                vec3 surfaceToSpotlight = normalize(spotlightPos - vPosWorld);
+                float angle = acos( dot(-surfaceToSpotlight, spotlightDirection));
+                float cutoff = radians( clamp( spotlightCutoff, 0.0, 90.0 ) );
+                vec3 spotlightColor = vec3(0.0,0.0,0.0);
 
-                // vec3 spotlightVec = normalize(spotlightPos - vPosWorld); //(deberia ser lightpos - vposworld)
-                // float angle = acos(dot(-spotlightVec, spotlightDirection));
-                // float cutoff = radians(clamp(spotlightCutoff, 0.0, 90.0));
+                if (angle < cutoff) {
+                    float spotFactor = pow(dot(-surfaceToSpotlight, spotlightDirection), spotlightExponent);
+                    //vec3 h = normalize(normalize(-angle) + surfaceToSpotlight);
 
-                // vec3 spotlightdifuse = max(dot(vNormal,spotlightDirection), 0.0) * vec3(1.0,0.0,0.0);
+                    vec3 spotlightDifuse = max(dot(vNormal,-spotlightDirection), 0.0) * sampledColor; // ver que tenga decaimiento
+                    //vec3 spotlightSpecular = spotmaterialSpecularcolor * pow(max(dot(h,vNormal),0.0),materialShininess);
 
-                // if (angle < cutoff) {
-                //     float spotFactor = pow
-                // }
+                    vec3 spotincidenceVector = -surfaceToSpotlight; //a unit vector
+                    vec3 spotreflectionVector = reflect(spotincidenceVector, vNormal); //also a unit vector
+                    float spotcosAngle = max(0.0, dot(surfaceToCamera, spotreflectionVector));
+                    float spotspecularCoefficient = pow(spotcosAngle, materialShininess);
 
-                // vec3 o2incidenceVector = -o2lightVec; //a unit vector
-                // vec3 o2reflectionVector = reflect(o2incidenceVector, vNormal); //also a unit vector
-                // float o2cosAngle = max(0.0, dot(surfaceToCamera, o2reflectionVector));
-                // float o2specularCoefficient = pow(o2cosAngle, materialShininess);
+                    vec3 spotlightSpecular = spotspecularCoefficient * spotmaterialSpecularcolor * spotlightIntensity;
 
-                // vec3 o2specular = o2specularCoefficient * o2materialSpecularColor * olightIntensity;
+                    float linearAtenuation = ((spotlightMaxDistance - min(spotlightMaxDistance, distance(spotlightPos,vPosWorld)))/(spotlightMaxDistance));
+    
+                    spotlightColor = linearAtenuation*(spotlightDifuse + spotlightSpecular)*spotFactor*spotlightIntensity;
 
-                // vec3 o2color = ((olightRadius - min(olightRadius, distance(o2lightPos,vPosWorld)))/(olightRadius)) * (o2difuse + o2specular);
-                //
+                }   
+
+                vec3 camtoSurface = -surfaceToCamera;
+                vec3 refVec = normalize(reflect(camtoSurface, vNormal));
+                float rotdeg = -PI*(3.0/2.0);
+                refVec = vec3(refVec.x, refVec.y*cos(rotdeg) - refVec.z*sin(rotdeg), refVec.y*sin(rotdeg) + refVec.z*cos(rotdeg));
+
+                //if (refVec.x == 0.0){
+                //    refVec = vec3(10.0,refVec.y, refVec.z);
+                //}
                 
+
+                float r = sqrt(pow(refVec.x,2.0) + pow(refVec.y,2.0) + pow(refVec.z,2.0));
+
+                //if (r == 0.0){
+                //    r = 0.1;
+                //}
+                float alpha = atan(refVec.y/refVec.x);
+                float beta = acos(refVec.z/r);
+
+
+                vec3 earthReflection = texture2D(uRMSampler, vec2((alpha/(PI)) , beta/PI)).xyz;
                 
 
-               gl_FragColor = vec4(color + o1color + o2color,1.0);
+               gl_FragColor = vec4(earthReflection*0.4 + ambient + 0.8*dirColor + 0.5*o1color + 0.5*o2color + spotlightColor ,1.0);
             }
         </script>
         
@@ -380,7 +412,7 @@
                     //var uniformSunPosition = gl.getUniformLocation(glProgram, "sunPosition"); // asumiendo posicion del sol fija
                     //gl.uniform3fv(uniformSunPosition, posicion_sol);
 
-
+                    
                     tick();   
                     
 
@@ -464,8 +496,8 @@
             function drawScene(){
                 setupVertexShaderMatrix();
 
-                var uniformTime = gl.getUniformLocation(glProgram, "uTime");
-                gl.uniform1f(uniformTime, Math.PI*15/8);//global_t);//); //   
+                /*var uniformTime = gl.getUniformLocation(glProgram, "uTime");
+                gl.uniform1f(uniformTime, Math.PI*15/8);//global_t);//); //  */ 
 
                 //vario posicion de sol para probar
                 var newpossol = vec3.create()

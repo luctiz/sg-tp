@@ -71,6 +71,8 @@ class Objeto3D {
         this.iluminacionSimple=0.0;
         this.texture = textures.default;
         this.lightPositionUpdater = null;
+        this.spotlightUpdater = null;
+
     }
 
     // metodo privado, usa posicion, rotacion y escala. Se actualiza cada vez que se dibuja el objeto
@@ -105,6 +107,17 @@ class Objeto3D {
             this.lightPositionUpdater.updateLightPos(vec_position);
         }
 
+        if (this.spotlightUpdater != null){
+            var vec_position = vec3.create();
+            mat4.getTranslation(vec_position,this.matTransformations);
+
+            var vec_dir= vec3.fromValues(0,0,1)
+            vec3.transformMat4(vec_dir, vec_dir, this.matTransformations)
+            vec3.sub(vec_dir,vec_dir,vec_position)
+
+            this.spotlightUpdater.updateSpotlight(vec_position, vec_dir);
+        }
+
         if ((this.vertexBuffer !=null) & (this.indexBuffer!= null)) { //Los binds aca son innecesarios???
             // Dibujamos la malla de triangulos con WebGL
             // si el objeto tiene geometria asociada.
@@ -123,10 +136,19 @@ class Objeto3D {
             gl.vertexAttribPointer(textureCoordAttribute, this.vertexBuffer.webgl_uvs_buffer.itemSize, gl.FLOAT, false, 0, 0);
 
 
-            let samplerUniform = gl.getUniformLocation(glProgram, 'uSampler')
+            // setup reflection map:
+            let uRMsamplerUniform = gl.getUniformLocation(glProgram, 'uRMSampler')
             gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, textures.refmap);
+            gl.uniform1i(uRMsamplerUniform, 0);    
+            //
+
+            let samplerUniform = gl.getUniformLocation(glProgram, 'uSampler')
+            gl.activeTexture(gl.TEXTURE1);
             gl.bindTexture(gl.TEXTURE_2D, this.texture);
-            gl.uniform1i(samplerUniform, 0);  
+            gl.uniform1i(samplerUniform, 1);  
+
+            
             
 
             vertexNormalAttribute = gl.getAttribLocation(glProgram, "aVertexNormal");
@@ -224,6 +246,10 @@ class Objeto3D {
     setLightPositionUpdater(uniformName){
         this.lightPositionUpdater = new LightPositionUpdater(uniformName);
     }
+
+    setSpotlightUpdater(){
+        this.spotlightUpdater = new SpotlightUpdater();
+    }
 }
 
 class ObjetoCurva3D extends Objeto3D{
@@ -278,5 +304,17 @@ class LightPositionUpdater{
     updateLightPos(vec_position){
         let ulightPos = gl.getUniformLocation(glProgram, this.uniformName)
         gl.uniform3f(ulightPos, vec_position[0],vec_position[1], vec_position[2])
+    }
+}
+
+
+class SpotlightUpdater{
+    constructor(){}
+    updateSpotlight(vec_position, vec_direction){
+        let ulightPos = gl.getUniformLocation(glProgram, "spotlightPos")
+        gl.uniform3f(ulightPos, vec_position[0],vec_position[1], vec_position[2])
+
+        let uLightDir = gl.getUniformLocation(glProgram, "spotlightDir")
+        gl.uniform3f(uLightDir, vec_direction[0],vec_direction[1], vec_direction[2])
     }
 }
