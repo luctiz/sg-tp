@@ -736,7 +736,7 @@ function mainScene(){
 
     // planeta tierra
     var planeta = new Objeto3D()
-    var sup_planeta = new Esfera(15,Math.PI, Math.PI)
+    var sup_planeta = new Esfera(15)//,Math.PI, Math.PI)
     geometria = ModuloGeometria.obtenerGeometriaSuperficieParametrizada(sup_planeta,80,80)
     planeta.setGeometria(geometria)
     planeta.setTexture(textures.tierra)

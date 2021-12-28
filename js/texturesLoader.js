@@ -24,7 +24,7 @@ class TexturesLoader{
         this.modulo_anillo = this._loadTexture('textures/modulo_anillo.jpg')
         this.capsula = this._loadTexture('textures/shiphull.jpg')
 
-        this.refmap = this._loadTexture('textures/earth_refmap.jpg')
+        this.refmap = this._loadTexture2('textures/earth_refmap.jpg')
 
     }
 
@@ -35,13 +35,31 @@ class TexturesLoader{
         image.onload = function() { auxthis._handleTextureLoaded(image, texture); }
         image.src = src;
         return texture
+    }
+
+    _loadTexture2(src) {
+        var texture = gl.createTexture();
+        var image = new Image();
+        var auxthis = this
+        image.onload = function() { auxthis._handleTextureLoaded2(image, texture); }
+        image.src = src;
+        return texture
     }   
 
     _handleTextureLoaded(image, texture) {
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST); //minificacion: mas de 1 texel por pixel
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR); //magnificacion: menos de 1 texel por pixel
+        gl.generateMipmap(gl.TEXTURE_2D);
+        gl.bindTexture(gl.TEXTURE_2D, null);
+    }
+
+    _handleTextureLoaded2(image, texture) {
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); 
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR_MIPMAP_NEAREST); 
         gl.generateMipmap(gl.TEXTURE_2D);
         gl.bindTexture(gl.TEXTURE_2D, null);
     }
