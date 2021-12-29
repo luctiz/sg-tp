@@ -585,8 +585,8 @@ function mainScene(){
 
     //camara 1
     camara_centro = new Objeto3D()
-    camara_centro.addTraslacion(5,0,5)
-    base_anillo.agregarHijo(camara_centro)
+    camara_centro.addTransformacionOrbital(orbital_cam_values)
+    nucleo.agregarHijo(camara_centro)
     camera1 = camara_centro;
     //
 
@@ -692,7 +692,7 @@ function mainScene(){
 
     camara_paneles.addTraslacion(0,0,-5.0 -2.5 * (cantidad_filas_paneles - 1))
 
-    camara_paneles.addTransformacionOrbital(orbital_cam1_values)
+    camara_paneles.addTransformacionOrbital(orbital_cam_values)
     tubo_soporte_paneles.agregarHijo(camara_paneles)
 
     camera2 = camara_paneles
@@ -728,7 +728,6 @@ function mainScene(){
     luna.addRotacion(Math.PI / 4,0,0,1)
 
     luna.addRotacion(Math.PI * 0.62,1,0,0)
-    //luna.addRotacion(-Math.PI/2,1,0,0)
 
 
 
@@ -743,8 +742,7 @@ function mainScene(){
     planeta.setIluminacionSimple();
 
     planeta.addEscalado(2000,2000,2000)
-    planeta.addRotacion(Math.PI/2,1,0,0)//.addRotacion(-Math.PI/2,1,0,0)
-
+    planeta.addRotacion(Math.PI/2,1,0,0)
     planeta.addRotacion(Math.PI*3/2,1,0,0)
 
     planeta.addTraslacion(0,-16, 0)

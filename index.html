@@ -328,12 +328,12 @@
                 variable: 280
             };
 
-            var orbital_cam1_values = {
-                distancia: 15,
-                alfa:0,
-                beta:0,
-                alfaprev:0,
-                betaprev:0
+            var orbital_cam_values = {
+                distancia: 26,
+                alfa:0.03,
+                beta:0.24,
+                alfaprev:0.03,
+                betaprev:0.24
             };
 
             var velocidad_rotacion_anillo = {
@@ -358,11 +358,11 @@
                 switch (event.keyCode) {
                 case 0x31:
                     camera = 1; 
-                    viewMatrix = obtenerViewMatrixOrbital(camera1,true);
+                    viewMatrix = obtenerViewMatrix(camera1);
                     break;
                 case 0x32:
                     camera = 2; 
-                    viewMatrix = obtenerViewMatrixOrbital(camera2,true);
+                    viewMatrix = obtenerViewMatrix(camera2);
                     break;
                 case 0x33:
                     camera = 3; 
@@ -375,22 +375,14 @@
             $('body').on("wheel",function(event, delta){
                 switch (event.originalEvent.wheelDelta >= 0) {
                 case true:
-                    if (orbital_cam1_values.distancia > 1){
-                        orbital_cam1_values.distancia -= 0.2;
+                    if (orbital_cam_values.distancia > 1){
+                        orbital_cam_values.distancia -= 0.2;
                     }
-                    /*if (factor_fov >= 0.98){
-                        factor_fov-=0.001; 
-                        updateProjMatrix();
-                    }*/
                     break;
                 case false:
-                if (orbital_cam1_values.distancia < 50){
-                        orbital_cam1_values.distancia += 0.2;
+                if (orbital_cam_values.distancia < 50){
+                        orbital_cam_values.distancia += 0.2;
                     }
-                    /*if (factor_fov <= 1.02){
-                        factor_fov+=0.001; 
-                        updateProjMatrix();
-                    }*/
                     break;
                 }
                     
@@ -398,7 +390,6 @@
             function initWebGL(){
 
                 canvas = document.getElementById("my-canvas");  
-                //init orbital mouse control
                 $(canvas).mousemove(function(e){ 
                     mouse.x = e.clientX || e.pageX; 
                     mouse.y = e.clientY || e.pageY 
@@ -413,8 +404,8 @@
 
                 $(canvas).mouseup(function(event){
                     isMouseDown = false;
-                    orbital_cam1_values.alfaprev = orbital_cam1_values.alfa;
-                    orbital_cam1_values.betaprev = orbital_cam1_values.beta;		
+                    orbital_cam_values.alfaprev = orbital_cam_values.alfa;
+                    orbital_cam_values.betaprev = orbital_cam_values.beta;		
                 });
                 //
 
@@ -555,21 +546,18 @@
                     deltaX = last_click.x - mouse.x;
                     deltaY = mouse.y - last_click.y;
                     
-                    orbital_cam1_values.beta = orbital_cam1_values.betaprev - deltaX * factorVelocidad;
-                    orbital_cam1_values.alfa = orbital_cam1_values.alfaprev + deltaY * factorVelocidad;
-
-                    //if (orbital_cam1_values.beta<=-1.0) orbital_cam1_values.beta=-0.999;
-                    //if (orbital_cam1_values.beta>=1) orbital_cam1_values.beta=0.999;
+                    orbital_cam_values.beta = orbital_cam_values.betaprev - deltaX * factorVelocidad;
+                    orbital_cam_values.alfa = orbital_cam_values.alfaprev + deltaY * factorVelocidad;
                 }
 
                 requestAnimationFrame(tick);
                 if (camera == 1) {
                     cameraactual = camera1;
-                    viewMatrix = obtenerViewMatrixOrbital(cameraactual,isMouseDown);
+                    viewMatrix = obtenerViewMatrix(cameraactual,isMouseDown);
                 }
                 else if (camera == 2) {
                     cameraactual = camera2;
-                    viewMatrix = obtenerViewMatrixOrbital(cameraactual,isMouseDown);
+                    viewMatrix = obtenerViewMatrix(cameraactual,isMouseDown);
                 }
                 else if (camera == 3) {
                     cameraactual = camera3;
@@ -594,8 +582,8 @@
 
             var mouse = {x: 0, y: 0};
 
-            function obtenerViewMatrixOrbital(o_camara, updateAngle)
-            {   
+            //function obtenerViewMatrixOrbital(o_camara, updateAngle)
+            //{   
                 
 
                 /*var mat = o_camara.getMatTransformations();
@@ -639,16 +627,15 @@
                 curva_vista.setGeometria({webgl_position_buffer,webgl_normal_buffer}, vidxbuffer)
                 //*/
                 //return result
-                return obtenerViewMatrix(o_camara,1)
-            }
+            //}
 
-            function obtenerViewMatrix(o_camara, aux_neg=1)
+            function obtenerViewMatrix(o_camara)
             {   
                 var mat = o_camara.getMatTransformations();
                 var vec_position = vec3.create();
                 mat4.getTranslation(vec_position,mat);
 
-                var vec_direccion = vec3.fromValues(0,0,10*aux_neg);	
+                var vec_direccion = vec3.fromValues(0,0,10);	
                 vec3.transformMat4(vec_direccion, vec_direccion, mat)
 
                 var vec3upvector = vec3.fromValues(0,-1,0)
