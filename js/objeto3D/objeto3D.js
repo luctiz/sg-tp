@@ -167,6 +167,12 @@ class Objeto3D {
         this.transformaciones.push(new RotacionSegunVariablePorTiempo(radianes,eje, variable));
     }
 
+
+    addTransformacionOrbital = function(orbital_values) {
+        //var eje = vec3.fromValues(x,y,z)
+        this.transformaciones.push(new TransformacionOrbital(orbital_values));
+    }
+
     setColor = function (r,g,b) {
         this.color = vec3.fromValues(r,g,b)
     }

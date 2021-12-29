@@ -83,7 +83,7 @@ class UVMappingDistanciaRecorrida extends UVMapping {
                 uvs.push((this.start_v + (j/((recorrido_length-1)))*this.len_v) )
             }
         }
-        console.log(uvs)
+        //console.log(uvs)
 
         return uvs;
     }

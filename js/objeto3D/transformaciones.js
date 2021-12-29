@@ -48,6 +48,22 @@ class Traslacion extends Transformacion{
     }
 }
 
+class TransformacionOrbital extends Transformacion{
+    constructor(orbital_refs){
+        super()
+        this.orbital_refs = orbital_refs;
+    }
+    transform(m){
+        mat4.rotate(m,m,this.orbital_refs.alfa * Math.PI*2,vec3.fromValues(0,0,1))
+        mat4.rotate(m,m,this.orbital_refs.beta * Math.PI + Math.PI/2,vec3.fromValues(0,1,0))
+
+        mat4.translate(m,m, vec3.fromValues(1*this.orbital_refs.distancia,0,0));
+
+        mat4.rotate(m,m,-Math.PI/2,vec3.fromValues(0,1,0))
+
+    }
+}
+
 class Escalado extends Transformacion{
     constructor(escala){
         super()

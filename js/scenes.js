@@ -690,10 +690,10 @@ function mainScene(){
 
     var camara_paneles = new Objeto3D()
 
-    camara_paneles.addTraslacion(3,0.5,0.5)
-    camara_paneles.addRotacion(7*Math.PI/4,1,0,0)
+    camara_paneles.addTraslacion(0,0,-5.0 -2.5 * (cantidad_filas_paneles - 1))
 
-    tubo_paneles.agregarHijo(camara_paneles) // agrego camara en el ultimo tubo de paneles
+    camara_paneles.addTransformacionOrbital(orbital_cam1_values)
+    tubo_soporte_paneles.agregarHijo(camara_paneles)
 
     camera2 = camara_paneles
     nodo_principal.agregarHijo(nucleo)
@@ -736,7 +736,7 @@ function mainScene(){
 
     // planeta tierra
     var planeta = new Objeto3D()
-    var sup_planeta = new Esfera(15)//,Math.PI, Math.PI)
+    var sup_planeta = new Esfera(15,Math.PI, Math.PI)
     geometria = ModuloGeometria.obtenerGeometriaSuperficieParametrizada(sup_planeta,80,80)
     planeta.setGeometria(geometria)
     planeta.setTexture(textures.tierra)
@@ -787,6 +787,7 @@ function mainScene(){
     modelo_capsula.addRotacion(Math.PI,0,1,0)
 
     var camera_capsula = new Objeto3D()
+
     camera_capsula.addRotacion(-Math.PI,0,1,0)
     camera_capsula.addRotacion(Math.PI/6,1,0,0)
     camera_capsula.addRotacion(Math.PI,0,0,1)
