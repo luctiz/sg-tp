@@ -126,6 +126,8 @@ class Geometria{ //geometria superficie
         //tomo a v0 como vector tg//
         var tg1 = vec3.create()
         vec3.add(tg1,tg1,v0)
+        vec3.normalize(tg1,tg1)
+
 
         //chequeo que la normal no haya quedado apuntando hacia dentro:
         var aux_vecdir_to_center = vec3.fromValues(
@@ -155,6 +157,8 @@ class Geometria{ //geometria superficie
         //tomo a v0 como vector tg//
         var tg2 = vec3.create()
         vec3.add(tg2,tg2,v0)
+        vec3.normalize(tg2,tg2)
+
 
         //chequeo que la normal no haya quedado apuntando hacia dentro:
         var aux_vecdir_to_center = vec3.fromValues(
@@ -271,6 +275,8 @@ class Geometria{ //geometria superficie
         //tangente1//
         var tg1 = vec3.create()
         vec3.add(tg1,tg1,v0)
+        vec3.normalize(tg1,tg1)
+
 
         //chequeo que la normal no haya quedado apuntando hacia dentro:
         var aux_vecdir_to_center = vec3.fromValues(
@@ -304,6 +310,7 @@ class Geometria{ //geometria superficie
         //tangente2//
         var tg2 = vec3.create()
         vec3.add(tg2,tg2,v0)
+        vec3.normalize(tg2,tg2)
 
         //chequeo que la normal no haya quedado apuntando hacia dentro:
         var aux_vecdir_to_center = vec3.fromValues(
@@ -374,9 +381,9 @@ class Geometria{ //geometria superficie
             normallines_pos.push(this.pos.at(i-3))
             normallines_pos.push(this.pos.at(i-2))
             normallines_pos.push(this.pos.at(i-1))
-            normallines_pos.push(this.pos.at(i-3) + this.normal.at(i-3))
-            normallines_pos.push(this.pos.at(i-2) + this.normal.at(i-2))
-            normallines_pos.push(this.pos.at(i-1) + this.normal.at(i-1))
+            normallines_pos.push(this.pos.at(i-3) + this.tangente.at(i-3))
+            normallines_pos.push(this.pos.at(i-2) + this.tangente.at(i-2))
+            normallines_pos.push(this.pos.at(i-1) + this.tangente.at(i-1))
 
             normallines_normal.push(1)
             normallines_normal.push(1)
@@ -468,7 +475,7 @@ class ModuloGeometria {
     static obtenerGeometriaSuperficieParametrizada(superficie, filas, columnas, uvmapping = new UVMappingSimple()){
         var vertex = this._getVertexBufferSuperficieParametrizada(superficie,filas,columnas, uvmapping);
         var index = this._getIndexBuffer(filas,columnas)
-        return new Geometria(vertex.pos,vertex.normal,vertex.uv,index,columnas)
+        return new Geometria(vertex.pos,vertex.normal,vertex.tangente,vertex.binormal,vertex.uv, index,columnas)
     }
 
     static obtenerGeometriaSuperficieBarrido(forma_discretizada, recorrido_discretizado, uvmapping = new UVMappingSimple()){
@@ -477,7 +484,7 @@ class ModuloGeometria {
         var filas = recorrido_discretizado.position_list.length / 3
         var index = this._getIndexBuffer(filas, columnas)
 
-        return new Geometria(vertex.pos,vertex.normal,vertex.tangente, vertex.binormal, vertex.uvs,index, columnas)
+        return new Geometria(vertex.pos,vertex.normal,vertex.tangente,vertex.binormal,vertex.uvs, index, columnas)
     }
 
     static _getVertexBufferSuperficieParametrizada(superficie, rows,cols, uvmapping)
@@ -485,6 +492,8 @@ class ModuloGeometria {
             var pos=[];
             var uv = [];
             var normal=[];
+            var tangente = []
+            var binormal = []
 
             for (var i=0;i<rows;i++){
                 for (var j=0;j<cols;j++){
@@ -504,13 +513,25 @@ class ModuloGeometria {
                     normal.push(n[1]);
                     normal.push(n[2]);
 
+                    var t=superficie.getTangente(u,v);
+
+                    tangente.push(t[0]);
+                    tangente.push(t[1]);
+                    tangente.push(t[2]);
+
+                    var bn=superficie.getBinormal(u,v);
+
+                    binormal.push(bn[0]);
+                    binormal.push(bn[1]);
+                    binormal.push(bn[2]);
+
                     var uvs=superficie.getCoordenadasTextura(u,v);
 
                     uv.push((uvmapping.start_u + (uvs[0]/uvmapping.u_repeat)*uvmapping.len_u) ) //idem superficie barrido
                     uv.push((uvmapping.start_v + (uvs[1]/uvmapping.v_repeat)*uvmapping.len_v) ) //idem superficie barrido
                 }
             }
-            return {pos,uv,normal}
+            return {pos,uv,normal,tangente,binormal}
         }
     static _getIndexBuffer(rows,cols){
         var index=[];

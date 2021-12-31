@@ -36,6 +36,7 @@ class TexturesLoader{
 
         this.luna_nm = this._loadTexture('textures/luna_nm.png')
 
+
         this.anillo_nm = this._loadTexture('textures/anillo_nm.png')
         this.modulo_cilindrico_nm = this._loadTexture('textures/modulo-cilindrico_nm.png')
         this.modulo_esferico_nm = this._loadTexture('textures/modulo-esferico_nm.png')

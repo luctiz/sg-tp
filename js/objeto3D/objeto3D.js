@@ -11,7 +11,7 @@ class Objeto3D {
         this.hijos=[];
         this.iluminacionSimple=0.0;
         this.texture = textures.default;
-        this.texture_nm = textures.createSolidTexture(0.0,0.0,1,1);
+        this.texture_nm = textures.createSolidTexture(0.5,0.5,1,1);
 
         this.lightPositionUpdater = null;
         this.spotlightUpdater = null;
@@ -240,12 +240,12 @@ class ObjetoCurva3D extends Objeto3D{
 
         if (this.vertexBuffer && this.indexBuffer) {
             // Dibuja cada segmento de linea con WEBGL
-            vertexPositionAttribute = gl.getAttribLocation(glProgram, "aVertexPosition");
+            let vertexPositionAttribute = gl.getAttribLocation(glProgram, "aVertexPosition");
             gl.enableVertexAttribArray(vertexPositionAttribute);
             gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer.webgl_position_buffer);
             gl.vertexAttribPointer(vertexPositionAttribute, this.vertexBuffer.webgl_position_buffer.itemSize, gl.FLOAT, false, 0, 0);
 
-            vertexNormalAttribute = gl.getAttribLocation(glProgram, "aVertexNormal");
+            let vertexNormalAttribute = gl.getAttribLocation(glProgram, "aVertexNormal");
             gl.enableVertexAttribArray(vertexNormalAttribute);
             gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer.webgl_normal_buffer);
             gl.vertexAttribPointer(vertexNormalAttribute, this.vertexBuffer.webgl_normal_buffer.itemSize, gl.FLOAT, false, 0, 0);

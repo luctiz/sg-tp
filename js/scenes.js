@@ -232,6 +232,18 @@ function geometriaBaseAnillo(){
     var geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido)
     geometria.agregarColumnasTapas()
     return geometria
+
+    // p_control = [[-0.5,0,0],[0,0.3,0],[0.5,0,0]]
+    // curva_forma = new CurvaBezier(p_control)
+    // disc_curva_forma = obtenerDiscretizacionCurvaParametrizada(curva_forma,4)
+    
+    // curva_recorrido = new CurvaCircunferencia(3.7,[0,0,0])
+    // disc_curva_recorrido = obtenerDiscretizacionCurvaParametrizada(curva_recorrido,20)
+
+    // var geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido, new UVMappingDistanciaRecorrida())
+    // geometria.agregarColumnasTapas(true)
+
+    // return geometria
 }
 
 
@@ -706,14 +718,14 @@ function mainScene(){
     sol.setIluminacionSimple()
     var sup_sol = new Plano(10)
     geometria = ModuloGeometria.obtenerGeometriaSuperficieParametrizada(sup_sol, 2, 2)
-    //sol.setGeometria(geometria)
+    sol.setGeometria(geometria)
     sol.setTexture(textures.sol)
     sol.setColor(1,1,1)
     sol.addRotacionSegunVariable(Math.PI / 180,1,0,0, angulo_sol)
     sol.addTraslacion(posicion_sol[0],posicion_sol[1],posicion_sol[2])
     sol.addEscalado(2000,0,2000)
 
-    //nodo_principal.agregarHijo(sol)
+    nodo_principal.agregarHijo(sol)
 
 
     // luna
@@ -721,7 +733,8 @@ function mainScene(){
     var luna = new Objeto3D()
     var sup_luna = new Esfera(4)
     geometria = ModuloGeometria.obtenerGeometriaSuperficieParametrizada(sup_luna,40,40)
-    //luna.setGeometria(geometria)
+    console.log(geometria)
+    luna.setGeometria(geometria)
     luna.setTexture(textures.luna,textures.luna_nm)
     luna.setMaterialShininess(5.0);
     luna.addEscalado(2000,2000,2000)
@@ -732,13 +745,13 @@ function mainScene(){
 
 
 
-    //nodo_principal.agregarHijo(luna)
+    nodo_principal.agregarHijo(luna)
 
     // planeta tierra
     var planeta = new Objeto3D()
     var sup_planeta = new Esfera(15,Math.PI, Math.PI)
     geometria = ModuloGeometria.obtenerGeometriaSuperficieParametrizada(sup_planeta,80,80)
-    //planeta.setGeometria(geometria)
+    planeta.setGeometria(geometria)
     planeta.setTexture(textures.tierra)
     planeta.setIluminacionSimple();
 
@@ -748,12 +761,14 @@ function mainScene(){
 
     planeta.addTraslacion(0,-16, 0)
 
-    //nodo_principal.agregarHijo(planeta)
+    nodo_principal.agregarHijo(planeta)
 
 
     // capsula
     var capsula = new Objeto3DControlable()
+    capsula.addEscalado(0.5,0.5,0.5)
     capsula.addTraslacion(0,0,10)
+    
 
     var modelo_capsula = new Objeto3D()
     var cuerpoCapsula = new Objeto3D()
@@ -794,22 +809,22 @@ function mainScene(){
 
     var cubo_luz_verde = new Objeto3D()
     geometria = geometriaLuz(0.1)
-    //cubo_luz_verde.setGeometria(geometria)
+    cubo_luz_verde.setGeometria(geometria)
     cubo_luz_verde.setTexture(textures.createSolidTexture(0.0,1.0,0.0,1))
     cubo_luz_verde.addTraslacion(-1.7,0,1.5)
     cubo_luz_verde.setIluminacionSimple()
     cubo_luz_verde.setLightPositionUpdater("o1lightPos")
 
-    //modelo_capsula.agregarHijo(cubo_luz_verde)
+    modelo_capsula.agregarHijo(cubo_luz_verde)
 
     var cubo_luz_roja = new Objeto3D()
     geometria = geometriaLuz(0.1)
-    //cubo_luz_roja.setGeometria(geometria)
+    cubo_luz_roja.setGeometria(geometria)
     cubo_luz_roja.setTexture(textures.createSolidTexture(1.0,0.0,0.0,1))
     cubo_luz_roja.addTraslacion(1.7,0,1.5)
     cubo_luz_roja.setIluminacionSimple()
     cubo_luz_roja.setLightPositionUpdater("o2lightPos")
-    //modelo_capsula.agregarHijo(cubo_luz_roja)
+    modelo_capsula.agregarHijo(cubo_luz_roja)
 
 
     var luz_spot = new Objeto3D()

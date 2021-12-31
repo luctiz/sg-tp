@@ -2,6 +2,14 @@ class SuperficieParametrizada {
     constructor(){}
     getPosicion(){}
     getNormal(){}
+    getTangente(){}
+    getBinormal(u,v){
+        var result = this.getNormal(u,v)
+        var t = this.getTangente(u,v)
+        vec3.cross(result,result,t)
+        return result
+    }
+
     getCoordenadasTextura(){}
 }
 
@@ -20,6 +28,10 @@ class Plano extends SuperficieParametrizada {
 
     getNormal=function(u,v){
         return [0,1,0];
+    }
+
+    getTangente=function(u,v){
+        return [1,0,0];
     }
 
     getCoordenadasTextura=function(u,v){
@@ -42,7 +54,8 @@ class Esfera extends SuperficieParametrizada{
         var x = this.radio*Math.sin(tita)*Math.cos(fi)
         var y = this.radio*Math.sin(tita)*Math.sin(fi)
         var z = this.radio*Math.cos(tita)
-        return [x,y,z];
+        var p = vec3.fromValues(x,y,z)
+        return p;
     }
 
     getNormal=function(u,v){
@@ -53,12 +66,21 @@ class Esfera extends SuperficieParametrizada{
         
         return n                
     }
+
+    getTangente=function(u,v){
+        var p0 = this.getPosicion(u,v)
+        var p1 = this.getPosicion(u,v+0.02)
+        vec3.sub(p1,p1,p0)
+        return p1;
+    }
+    
+
     getCoordenadasTextura=function(u,v){
         return [u*(this.porcion_fi/(Math.PI*2)),v*(this.porcion_tita/(Math.PI))];
     }
 }
 
-class EsferaRara extends SuperficieParametrizada{
+/*class EsferaRara extends SuperficieParametrizada{
     constructor(radio){
         super()
         this.radio = radio;
@@ -107,4 +129,4 @@ class EsferaRara extends SuperficieParametrizada{
     getCoordenadasTextura=function(u,v){
         return [u,v];
     }
-}
+}*/
