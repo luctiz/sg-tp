@@ -11,6 +11,8 @@ class Objeto3D {
         this.hijos=[];
         this.iluminacionSimple=0.0;
         this.texture = textures.default;
+        this.texture_nm = textures.createSolidTexture(0.0,0.0,1,1);
+
         this.lightPositionUpdater = null;
         this.spotlightUpdater = null;
         this.materialShininess = 100.0;
@@ -64,45 +66,65 @@ class Objeto3D {
             // si el objeto tiene geometria asociada.
             // Se configuran los buffers que alimentaron el pipeline
 
-            vertexPositionAttribute = gl.getAttribLocation(glProgram, "aVertexPosition");
+            let vertexPositionAttribute = gl.getAttribLocation(glProgram, "aVertexPosition");
             gl.enableVertexAttribArray(vertexPositionAttribute);
             gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer.webgl_position_buffer);
             gl.vertexAttribPointer(vertexPositionAttribute, this.vertexBuffer.webgl_position_buffer.itemSize, gl.FLOAT, false, 0, 0);
 
+            let vertexNormalAttribute = gl.getAttribLocation(glProgram, "aVertexNormal");
+            gl.enableVertexAttribArray(vertexNormalAttribute);
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer.webgl_normal_buffer);
+            gl.vertexAttribPointer(vertexNormalAttribute, this.vertexBuffer.webgl_normal_buffer.itemSize, gl.FLOAT, false, 0, 0);
 
+            let vertexTangentAttribute = gl.getAttribLocation(glProgram, "aVertexTangent");
+            gl.enableVertexAttribArray(vertexTangentAttribute);
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer.webgl_tangent_buffer);
+            gl.vertexAttribPointer(vertexTangentAttribute, this.vertexBuffer.webgl_tangent_buffer.itemSize, gl.FLOAT, false, 0, 0);
+
+            let vertexBinormalAttribute = gl.getAttribLocation(glProgram, "aVertexBinormal");
+            gl.enableVertexAttribArray(vertexBinormalAttribute);
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer.webgl_binormal_buffer);
+            gl.vertexAttribPointer(vertexBinormalAttribute, this.vertexBuffer.webgl_binormal_buffer.itemSize, gl.FLOAT, false, 0, 0);
 
             let textureCoordAttribute = gl.getAttribLocation(glProgram, 'aTextureCoord');
             gl.enableVertexAttribArray(textureCoordAttribute);
             gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer.webgl_uvs_buffer);
             gl.vertexAttribPointer(textureCoordAttribute, this.vertexBuffer.webgl_uvs_buffer.itemSize, gl.FLOAT, false, 0, 0);
 
+            let materialShininess = gl.getUniformLocation(glProgram, "materialShininess")
+            gl.uniform1f(materialShininess, this.materialShininess)
+
+            let samplerUniform = gl.getUniformLocation(glProgram, 'uSampler')
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, this.texture);
+            gl.uniform1i(samplerUniform, 0);  
+            
+
+
+            // setup normal map:
+            let uNMsamplerUniform = gl.getUniformLocation(glProgram, 'uNMSampler')
+            gl.activeTexture(gl.TEXTURE1);
+            gl.bindTexture(gl.TEXTURE_2D, this.texture_nm);
+            gl.uniform1i(uNMsamplerUniform, 1);    
+            //
 
             // setup reflection map:
             let uRMsamplerUniform = gl.getUniformLocation(glProgram, 'uRMSampler')
-            gl.activeTexture(gl.TEXTURE0);
+            gl.activeTexture(gl.TEXTURE2);
             gl.bindTexture(gl.TEXTURE_2D, textures.refmap);
-            gl.uniform1i(uRMsamplerUniform, 0);    
+            gl.uniform1i(uRMsamplerUniform, 2);    
             //
 
-            let samplerUniform = gl.getUniformLocation(glProgram, 'uSampler')
-            gl.activeTexture(gl.TEXTURE1);
-            gl.bindTexture(gl.TEXTURE_2D, this.texture);
-            gl.uniform1i(samplerUniform, 1);  
-            
 
-            vertexNormalAttribute = gl.getAttribLocation(glProgram, "aVertexNormal");
-            gl.enableVertexAttribArray(vertexNormalAttribute);
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer.webgl_normal_buffer);
-            gl.vertexAttribPointer(vertexNormalAttribute, this.vertexBuffer.webgl_normal_buffer.itemSize, gl.FLOAT, false, 0, 0);
-            
+
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
-
-
-            let materialShininess = gl.getUniformLocation(glProgram, "materialShininess")
-            gl.uniform1f(materialShininess, this.materialShininess)
             
             let simpleColorUniform = gl.getUniformLocation(glProgram, "simpleColor")
             gl.uniform1f(simpleColorUniform, this.iluminacionSimple)
+
+            
+
+            
             
             gl.drawElements( gl.TRIANGLE_STRIP, this.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 
@@ -181,8 +203,11 @@ class Objeto3D {
         this.iluminacionSimple = 1.0;
     }
 
-    setTexture(texture){
+    setTexture(texture, texture_nm = null){
         this.texture = texture;
+        if (texture_nm != null){
+            this.texture_nm = texture_nm;
+        }
     }
 
     setLightPositionUpdater(uniformName){

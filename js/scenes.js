@@ -536,14 +536,14 @@ function mainScene(){
     modulo_cuerpo = new Objeto3D()
     geometria = geometriaNucleoCuerpo()
     modulo_cuerpo.setGeometria(geometria)
-    modulo_cuerpo.setTexture(textures.modulo_cilindrico)
+    modulo_cuerpo.setTexture(textures.modulo_cilindrico, textures.modulo_cilindrico_nm)
     modulo_cuerpo.setMaterialShininess(10.0)
     modulo_cuerpo.addTraslacion(0,0,0)
     nucleo.agregarHijo(modulo_cuerpo)
 
     modulo_cuerpo2 = new Objeto3D()
     modulo_cuerpo2.setGeometria(geometria)
-    modulo_cuerpo2.setTexture(textures.modulo_cilindrico)
+    modulo_cuerpo2.setTexture(textures.modulo_cilindrico,  textures.modulo_cilindrico_nm)
     modulo_cuerpo2.setMaterialShininess(10.0)
     modulo_cuerpo2.addTraslacion(0,0,-7)
     nucleo.agregarHijo(modulo_cuerpo2)
@@ -567,7 +567,7 @@ function mainScene(){
     modulo_cabeza = new Objeto3D()
     geometria = geometriaNucleoCabeza(15)
     modulo_cabeza.setGeometria(geometria)
-    modulo_cabeza.setTexture(textures.modulo_esferico)
+    modulo_cabeza.setTexture(textures.modulo_esferico, textures.modulo_esferico_nm)
     modulo_cabeza.setMaterialShininess(10.0)
     modulo_cabeza.setColor(0.83,0.63,0.33)
     modulo_cabeza.addTraslacion(0,0,6.3)
@@ -629,7 +629,7 @@ function mainScene(){
         var agarre_soporte_anillo = new Objeto3D()
         geometria = geometriaAnilloAgarreSoporte(cantidad_modulos_anillo,3)
         agarre_soporte_anillo.setGeometria(geometria)
-        agarre_soporte_anillo.setTexture(textures.modulo_anillo)
+        agarre_soporte_anillo.setTexture(textures.modulo_anillo, textures.modulo_anillo_nm)
         agarre_soporte_anillo.setMaterialShininess(10.0)
         agarre_soporte_anillo.addRotacion( (-Math.PI/(2*cantidad_modulos_anillo)),0,0,1)
         objeto_viga.addRotacion((2*i*Math.PI)/(cantidad_modulos_anillo),0,0,1)
@@ -643,7 +643,7 @@ function mainScene(){
     geometria = geometriaAnillo()
     anillo.setGeometria(geometria)
     anillo.setColor(1,1,0.8)
-    anillo.setTexture(textures.anillo)
+    anillo.setTexture(textures.anillo,textures.anillo_nm)
     base_anillo.agregarHijo(anillo)
     nucleo.agregarHijo(base_anillo)
 
@@ -672,7 +672,8 @@ function mainScene(){
         var panel = new Objeto3D()
         geometria = geometriaPanel()
         panel.setGeometria(geometria)
-        panel.setTexture(textures.paneles)
+        panel.setTexture(textures.paneles,textures.paneles_nm)
+
         panel.setMaterialShininess(50.0);
 
         panel.addTraslacion(6.5,0.15, 0.15)
@@ -681,7 +682,7 @@ function mainScene(){
         var panel = new Objeto3D()
         geometria = geometriaPanel()
         panel.setGeometria(geometria)
-        panel.setTexture(textures.paneles) 
+        panel.setTexture(textures.paneles,textures.paneles_nm) 
 
         panel.addTraslacion(-6.5,0.15, 0.15)
         tubo_paneles.agregarHijo(panel)
@@ -705,14 +706,14 @@ function mainScene(){
     sol.setIluminacionSimple()
     var sup_sol = new Plano(10)
     geometria = ModuloGeometria.obtenerGeometriaSuperficieParametrizada(sup_sol, 2, 2)
-    sol.setGeometria(geometria)
+    //sol.setGeometria(geometria)
     sol.setTexture(textures.sol)
     sol.setColor(1,1,1)
     sol.addRotacionSegunVariable(Math.PI / 180,1,0,0, angulo_sol)
     sol.addTraslacion(posicion_sol[0],posicion_sol[1],posicion_sol[2])
     sol.addEscalado(2000,0,2000)
 
-    nodo_principal.agregarHijo(sol)
+    //nodo_principal.agregarHijo(sol)
 
 
     // luna
@@ -720,8 +721,8 @@ function mainScene(){
     var luna = new Objeto3D()
     var sup_luna = new Esfera(4)
     geometria = ModuloGeometria.obtenerGeometriaSuperficieParametrizada(sup_luna,40,40)
-    luna.setGeometria(geometria)
-    luna.setTexture(textures.luna)
+    //luna.setGeometria(geometria)
+    luna.setTexture(textures.luna,textures.luna_nm)
     luna.setMaterialShininess(5.0);
     luna.addEscalado(2000,2000,2000)
     luna.addTraslacion(12,12, 20)
@@ -731,13 +732,13 @@ function mainScene(){
 
 
 
-    nodo_principal.agregarHijo(luna)
+    //nodo_principal.agregarHijo(luna)
 
     // planeta tierra
     var planeta = new Objeto3D()
     var sup_planeta = new Esfera(15,Math.PI, Math.PI)
     geometria = ModuloGeometria.obtenerGeometriaSuperficieParametrizada(sup_planeta,80,80)
-    planeta.setGeometria(geometria)
+    //planeta.setGeometria(geometria)
     planeta.setTexture(textures.tierra)
     planeta.setIluminacionSimple();
 
@@ -747,9 +748,7 @@ function mainScene(){
 
     planeta.addTraslacion(0,-16, 0)
 
-
-
-    nodo_principal.agregarHijo(planeta)
+    //nodo_principal.agregarHijo(planeta)
 
 
     // capsula
@@ -760,15 +759,15 @@ function mainScene(){
     var cuerpoCapsula = new Objeto3D()
     geometria = geometriaCuerpoCapsula()
     cuerpoCapsula.setGeometria(geometria)
-    cuerpoCapsula.setMaterialShininess(50.0)
-    cuerpoCapsula.setTexture(textures.capsula)
+    cuerpoCapsula.setMaterialShininess(20.0)
+    cuerpoCapsula.setTexture(textures.capsula,textures.capsula_nm)
     modelo_capsula.agregarHijo(cuerpoCapsula)
 
     var cabezaCapsula = new Objeto3D()
     geometria = geometriaCabezaCapsula()
     cabezaCapsula.setGeometria(geometria)
-    cabezaCapsula.setTexture(textures.capsula)
-    cabezaCapsula.setMaterialShininess(50.0)
+    cabezaCapsula.setTexture(textures.capsula,textures.capsula_nm)
+    cabezaCapsula.setMaterialShininess(20.0)
 
     modelo_capsula.agregarHijo(cabezaCapsula)
 
@@ -795,22 +794,22 @@ function mainScene(){
 
     var cubo_luz_verde = new Objeto3D()
     geometria = geometriaLuz(0.1)
-    cubo_luz_verde.setGeometria(geometria)
+    //cubo_luz_verde.setGeometria(geometria)
     cubo_luz_verde.setTexture(textures.createSolidTexture(0.0,1.0,0.0,1))
     cubo_luz_verde.addTraslacion(-1.7,0,1.5)
     cubo_luz_verde.setIluminacionSimple()
     cubo_luz_verde.setLightPositionUpdater("o1lightPos")
 
-    modelo_capsula.agregarHijo(cubo_luz_verde)
+    //modelo_capsula.agregarHijo(cubo_luz_verde)
 
     var cubo_luz_roja = new Objeto3D()
     geometria = geometriaLuz(0.1)
-    cubo_luz_roja.setGeometria(geometria)
+    //cubo_luz_roja.setGeometria(geometria)
     cubo_luz_roja.setTexture(textures.createSolidTexture(1.0,0.0,0.0,1))
     cubo_luz_roja.addTraslacion(1.7,0,1.5)
     cubo_luz_roja.setIluminacionSimple()
     cubo_luz_roja.setLightPositionUpdater("o2lightPos")
-    modelo_capsula.agregarHijo(cubo_luz_roja)
+    //modelo_capsula.agregarHijo(cubo_luz_roja)
 
 
     var luz_spot = new Objeto3D()

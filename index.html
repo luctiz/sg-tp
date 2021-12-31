@@ -36,6 +36,8 @@
 
             attribute vec3 aVertexPosition;
             attribute vec3 aVertexNormal;
+            attribute vec3 aVertexTangent;
+            attribute vec3 aVertexBinormal;
             attribute vec2 aTextureCoord;
 
             uniform mat4 modelMatrix;            
@@ -48,6 +50,8 @@
             varying highp vec2 vTextureCoord;
 
             varying vec3 cameraPosition;
+
+            varying mat3 TBN;
 
             mat3 transpose(mat3 matrix) {
                 vec3 row0 = matrix[0];
@@ -104,9 +108,14 @@
 
                 normalMatrix = inverse(normalMatrix);
                 normalMatrix = transpose(normalMatrix);
-                vNormal = normalize(normalMatrix * aVertexNormal).xyz;//(normalMatrix*vec4(aVertexNormal,1.0)).xyz;       //la normal en coordenadas de mundo                
+                //vNormal = normalize(normalMatrix * aVertexNormal).xyz;//(normalMatrix*vec4(aVertexNormal,1.0)).xyz;       //la normal en coordenadas de mundo                
                 cameraPosition = vec3(viewMatrix[0][3],viewMatrix[1][3],viewMatrix[2][3]);
                 vTextureCoord = aTextureCoord;
+
+                vec3 T = normalize(vec3(modelMatrix * vec4(aVertexTangent,   0.0)));
+                vec3 B = normalize(vec3(modelMatrix * vec4(aVertexBinormal, 0.0)));
+                vec3 N = normalize(vec3(modelMatrix * vec4(aVertexNormal,    0.0)));
+                TBN = mat3(T, B, N);
             }
         </script>
 
@@ -130,11 +139,15 @@
             uniform vec3 cameraPosition;
 
             uniform sampler2D uSampler;
+            uniform sampler2D uNMSampler;
+
             uniform sampler2D uRMSampler;
 
-            varying vec3 vNormal;
+            //varying vec3 vNormal;
             varying vec3 vPVNormal;
             varying vec3 vPosWorld;
+
+            varying mat3 TBN;
 
             varying highp vec2 vTextureCoord;
 
@@ -150,7 +163,14 @@
                     return;
                 }
 
+
+
                 vec3 sampledColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t)).xyz;
+
+                vec3 vNormal = texture2D(uNMSampler, vec2(vTextureCoord.s, vTextureCoord.t)).xyz;
+                vNormal = vNormal * 2.0 - 1.0;
+                vNormal = normalize(TBN * vNormal);
+
 
                 float ambientLight = 0.1; // conviene tenerlo como vec3
 
@@ -300,12 +320,6 @@
             phongFragmentShader = null,
             simpleFragmentShader = null,
             vertexShader = null;
-                
-            var vertexPositionAttribute = null,
-            trianglesVerticeBuffer = null,
-            vertexNormalAttribute = null,
-            trianglesNormalBuffer = null,
-            trianglesIndexBuffer = null;
                
             var modelMatrix = mat4.create();
             var viewMatrix = mat4.create();
@@ -376,12 +390,12 @@
                 switch (event.originalEvent.wheelDelta >= 0) {
                 case true:
                     if (orbital_cam_values.distancia > 1){
-                        orbital_cam_values.distancia -= 0.2;
+                        orbital_cam_values.distancia = orbital_cam_values.distancia / 1.1;
                     }
                     break;
                 case false:
-                if (orbital_cam_values.distancia < 50){
-                        orbital_cam_values.distancia += 0.2;
+                if (orbital_cam_values.distancia < 150){
+                        orbital_cam_values.distancia = orbital_cam_values.distancia * 1.1;
                     }
                     break;
                 }

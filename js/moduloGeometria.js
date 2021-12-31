@@ -65,9 +65,11 @@ class GeometriaCurva{
 }
 
 class Geometria{ //geometria superficie
-    constructor(pos,normal,uv,index, cant_columnas){
+    constructor(pos,normal,tangente, binormal,uv,index, cant_columnas){
         this.pos=pos;
         this.normal=normal;
+        this.tangente=tangente;
+        this.binormal=binormal;
         this.uv=uv;
         this.index=index;
         this.cant_columnas=cant_columnas
@@ -121,6 +123,10 @@ class Geometria{ //geometria superficie
         vec3.cross(nm1,v0,v1)
         vec3.normalize(nm1,nm1)
 
+        //tomo a v0 como vector tg//
+        var tg1 = vec3.create()
+        vec3.add(tg1,tg1,v0)
+
         //chequeo que la normal no haya quedado apuntando hacia dentro:
         var aux_vecdir_to_center = vec3.fromValues(
             this.centro[0]-p0[0],
@@ -146,6 +152,10 @@ class Geometria{ //geometria superficie
         vec3.cross(nm2,v0,v1)
         vec3.normalize(nm2,nm2)
 
+        //tomo a v0 como vector tg//
+        var tg2 = vec3.create()
+        vec3.add(tg2,tg2,v0)
+
         //chequeo que la normal no haya quedado apuntando hacia dentro:
         var aux_vecdir_to_center = vec3.fromValues(
             this.centro[0]-p0[0],
@@ -157,18 +167,33 @@ class Geometria{ //geometria superficie
         if (x > 0) {
             vec3.scale(nm2,nm2,-1)
         }
+
+
+        //Obtengo binormales//
+        var binormal1 = vec3.create()
+        vec3.cross(binormal1,tg1,nm1)
+
+        var binormal2 = vec3.create()
+        vec3.cross(binormal2,tg2,nm2)
+        //
+
+
         /////////
         for (var i=0;i<rows; i+=1) {
             this.pos.splice(i*(cols+1)*3,0,...[new_col1[(3*i)],new_col1[(3*i)+1],new_col1[(3*i)+2]])
             this.normal.splice(i*(cols+1)*3,0,...[nm1[0],nm1[1],nm1[2]])
+            this.tangente.splice(i*(cols+1)*3,0,...[tg1[0],tg1[1],tg1[2]])
+            this.binormal.splice(i*(cols+1)*3,0,...[binormal1[0],binormal1[1],binormal1[2]])
         }
         //  
-
+        
         cols+=1
 
         for (var i=0;i<rows; i+=1) {
             this.pos.splice( (i*(cols+1) + cols) *3 , 0, ...[new_col2[(3*i)],new_col2[(3*i)+1],new_col2[(3*i)+2]])
             this.normal.splice( (i*(cols+1) + cols) *3 , 0, ...[nm2[0],nm2[1],nm2[2]])
+            this.tangente.splice( (i*(cols+1) + cols) *3 , 0, ...[tg2[0],tg2[1],tg2[2]])
+            this.binormal.splice( (i*(cols+1) + cols) *3 , 0, ...[binormal2[0],binormal2[1],binormal2[2]])
         }
 
         // calculo de coordenadas uv 
@@ -243,6 +268,10 @@ class Geometria{ //geometria superficie
         vec3.cross(nm1,v0,v1)
         vec3.normalize(nm1,nm1)
 
+        //tangente1//
+        var tg1 = vec3.create()
+        vec3.add(tg1,tg1,v0)
+
         //chequeo que la normal no haya quedado apuntando hacia dentro:
         var aux_vecdir_to_center = vec3.fromValues(
             this.centro[0]-p0[0],
@@ -255,6 +284,10 @@ class Geometria{ //geometria superficie
             vec3.scale(nm1,nm1,-1)
         }
         
+        //binormal1//
+        var binormal1 = vec3.create()
+        vec3.cross(binormal1,nm1,tg1)
+
         /// normal segunda tapa:
         var p0 = vec3.fromValues(new_row2[0],new_row2[0+1],new_row2[0+2])
         var p1 = vec3.fromValues(new_row2[0+3],new_row2[0+4],new_row2[0+5])
@@ -268,6 +301,10 @@ class Geometria{ //geometria superficie
         vec3.cross(nm2,v0,v1)
         vec3.normalize(nm2,nm2)
 
+        //tangente2//
+        var tg2 = vec3.create()
+        vec3.add(tg2,tg2,v0)
+
         //chequeo que la normal no haya quedado apuntando hacia dentro:
         var aux_vecdir_to_center = vec3.fromValues(
             this.centro[0]-p0[0],
@@ -279,6 +316,11 @@ class Geometria{ //geometria superficie
         if (x > 0) {
             vec3.scale(nm2,nm2,-1)
         }
+
+        //binormal2//
+        var binormal2 = vec3.create()
+        vec3.cross(binormal2,nm2,tg2)
+
         /////////
         this.pos.unshift(...new_row1)
         this.pos.push(...new_row2)
@@ -286,6 +328,12 @@ class Geometria{ //geometria superficie
         for (var i= 0; i<cols; i++){
             this.normal.unshift(...[nm1[0],nm1[1],nm1[2]])
             this.normal.push(...[nm2[0],nm2[1],nm2[2]])
+
+            this.tangente.unshift(...[tg1[0],tg1[1],tg1[2]])
+            this.tangente.push(...[tg2[0],tg2[1],tg2[2]])
+
+            this.binormal.unshift(...[binormal1[0],binormal1[1],binormal1[2]])
+            this.binormal.push(...[binormal2[0],binormal2[1],binormal2[2]])
         }
 
 
@@ -391,13 +439,26 @@ class Geometria{ //geometria superficie
         webgl_normal_buffer.itemSize = 3;
         webgl_normal_buffer.numItems = this.normal.length / 3;
 
+        var webgl_tangent_buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, webgl_tangent_buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.tangente), gl.STATIC_DRAW);
+        webgl_tangent_buffer.itemSize = 3;
+        webgl_tangent_buffer.numItems = this.tangente.length / 3;
+
+        var webgl_binormal_buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, webgl_binormal_buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.binormal), gl.STATIC_DRAW);
+        webgl_binormal_buffer.itemSize = 3;
+        webgl_binormal_buffer.numItems = this.binormal.length / 3;
+
         var indexBuffer = gl.createBuffer();
         indexBuffer.itemSize = 1;
         indexBuffer.numItems = this.index.length;
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.index), gl.STATIC_DRAW);  
 
-        var vertexBuffer = {webgl_position_buffer,webgl_normal_buffer,webgl_uvs_buffer}
+        var vertexBuffer = {webgl_position_buffer,webgl_normal_buffer,webgl_tangent_buffer,webgl_binormal_buffer,webgl_uvs_buffer}
+
         return {vertexBuffer, indexBuffer}
     }
 }
@@ -416,7 +477,7 @@ class ModuloGeometria {
         var filas = recorrido_discretizado.position_list.length / 3
         var index = this._getIndexBuffer(filas, columnas)
 
-        return new Geometria(vertex.pos,vertex.normal,vertex.uvs,index, columnas)
+        return new Geometria(vertex.pos,vertex.normal,vertex.tangente, vertex.binormal, vertex.uvs,index, columnas)
     }
 
     static _getVertexBufferSuperficieParametrizada(superficie, rows,cols, uvmapping)
@@ -471,6 +532,8 @@ class ModuloGeometria {
 
         var pos = []
         var normal = []
+        var tangente = []
+        var binormal = []
         var uvs = []
 
         var p0 = vec3.fromValues(recorrido_discretizado.position_list[0],recorrido_discretizado.position_list[0+1],recorrido_discretizado.position_list[0+2])
@@ -482,22 +545,22 @@ class ModuloGeometria {
 
         var v0 =vec3.create()
         var v1 = vec3.create()
-        var nm = vec3.create()
+        var vec_nm = vec3.create()
         // asumo que la normal es constante (los puntos de la curva recorrido estan contenidos en un plano)
 
         vec3.sub(v0,p1,p0)
         vec3.sub(v1,p2,p0)
-        vec3.cross(nm,v0,v1)
-        if ((nm[0] == 0) & (nm[1] == 0) & (nm[2] == 0)){ // en este caso me quedo con un vector normal cualquiera a la recta
+        vec3.cross(vec_nm,v0,v1)
+        if ((vec_nm[0] == 0) & (vec_nm[1] == 0) & (vec_nm[2] == 0)){ // en este caso me quedo con un vector normal cualquiera a la recta
             if (v0[0] != 0) {
-                nm = vec3.fromValues((-v0[1]*2 - v0[2]*2)/v0[0], 2, 2)
+                vec_nm = vec3.fromValues((-v0[1]*2 - v0[2]*2)/v0[0], 2, 2)
             } else if (v0[1] != 0){
-                nm=  vec3.fromValues(2,(-v0[0]*2 - v0[2]*2)/v0[1],2)
+                vec_nm=  vec3.fromValues(2,(-v0[0]*2 - v0[2]*2)/v0[1],2)
             } else {
-                nm=  vec3.fromValues(2,2,(-v0[0]*2 - v0[1]*2)/v0[2])
+                vec_nm=  vec3.fromValues(2,2,(-v0[0]*2 - v0[1]*2)/v0[2])
             }
         }
-        vec3.normalize(nm,nm)
+        vec3.normalize(vec_nm,vec_nm)
 
         let recorrido_length = recorrido_discretizado.position_list.length
         let forma_length = forma_discretizada.position_list.length
@@ -506,9 +569,9 @@ class ModuloGeometria {
         
         for (var j = 0; j<recorrido_length; j+=3){
             var punto_recorrido = vec3.fromValues(recorrido_discretizado.position_list[j], recorrido_discretizado.position_list[j+1], recorrido_discretizado.position_list[j+2])
-            var tg = vec3.fromValues(recorrido_discretizado.tang_list[j],recorrido_discretizado.tang_list[j+1],recorrido_discretizado.tang_list[j+2])
-            var binormal = vec3.create()
-            vec3.cross(binormal, tg, nm) //producto vectorial entre tangente y normal
+            var vec_tg = vec3.fromValues(recorrido_discretizado.tang_list[j],recorrido_discretizado.tang_list[j+1],recorrido_discretizado.tang_list[j+2])
+            var vec_binormal = vec3.create()
+            vec3.cross(vec_binormal, vec_tg, vec_nm) //producto vectorial entre tangente y normal
 
             for (var i = 0; i<(forma_length); i+=3){
                 var forma_pos = vec3.fromValues(forma_discretizada.position_list[i],forma_discretizada.position_list[i+1],forma_discretizada.position_list[i+2])
@@ -517,9 +580,9 @@ class ModuloGeometria {
                 var aux2 = vec3.create() 
                 var aux3 = vec3.create();
 
-                vec3.scale(aux1, nm, forma_pos[0]) 
-                vec3.scale(aux2, binormal,forma_pos[1])
-                vec3.scale(aux3, tg, forma_pos[2])
+                vec3.scale(aux1, vec_nm, forma_pos[0]) 
+                vec3.scale(aux2, vec_binormal,forma_pos[1])
+                vec3.scale(aux3, vec_tg, forma_pos[2])
 
                 var new_forma_pos = vec3.create()
                 vec3.add(new_forma_pos, new_forma_pos, punto_recorrido)
@@ -531,22 +594,30 @@ class ModuloGeometria {
                 pos.push(new_forma_pos[1])
                 pos.push(new_forma_pos[2])
 
-
                 var forma_tg = vec3.fromValues(forma_discretizada.tang_list[i],forma_discretizada.tang_list[i+1],forma_discretizada.tang_list[i+2])
-                vec3.scale(aux1, nm, forma_tg[0]) 
-                vec3.scale(aux2, binormal,forma_tg[1])
-                vec3.scale(aux3, tg, forma_tg[2])
+                vec3.scale(aux1, vec_nm, forma_tg[0]) 
+                vec3.scale(aux2, vec_binormal,forma_tg[1])
+                vec3.scale(aux3, vec_tg, forma_tg[2])
                 var new_forma_tg = vec3.create()
                 vec3.add(new_forma_tg, new_forma_tg, aux1)
                 vec3.add(new_forma_tg, new_forma_tg, aux2)
                 vec3.add(new_forma_tg, new_forma_tg, aux3)
                 var sup_normal = vec3.create()
-                vec3.cross(sup_normal, new_forma_tg, tg)
+                vec3.cross(sup_normal, new_forma_tg, vec_tg)
                 vec3.normalize(sup_normal,sup_normal)
                 normal.push(sup_normal[0])
                 normal.push(sup_normal[1])
                 normal.push(sup_normal[2])
 
+                tangente.push(vec_tg[0])
+                tangente.push(vec_tg[1])
+                tangente.push(vec_tg[2])
+
+                var sup_binormal = vec3.create()
+                vec3.cross(sup_binormal, vec_tg, sup_normal)
+                binormal.push(sup_binormal[0])
+                binormal.push(sup_binormal[1])
+                binormal.push(sup_binormal[2])
             }
         }
         uvs = uvmapping.mapBarrido(forma_discretizada, recorrido_discretizado);
@@ -554,6 +625,8 @@ class ModuloGeometria {
         return {
             pos,
             normal,
+            tangente,
+            binormal,
             uvs
         }
     }

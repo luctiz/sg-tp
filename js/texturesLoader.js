@@ -9,7 +9,16 @@ class TexturesLoader{
     paneles
     modulo_anillo
     capsula
+
+    anillo_nm
+    modulo_cilindrico_nm
+    modulo_esferico_nm
+    paneles_nm
+    modulo_anillo_nm
+    capsula_nm
+
     luna
+    luna_nm
     refmap
     constructor(){
         this.default = this._loadTexture('textures/uvgrid.jpg')
@@ -17,12 +26,22 @@ class TexturesLoader{
         this.sol = this._loadTexture('textures/sol.jpg')
         this.luna = this._loadTexture('textures/luna.jpg')
 
+
         this.anillo = this._loadTexture('textures/anillo.jpg')
         this.modulo_cilindrico = this._loadTexture('textures/modulo-cilindrico.jpg')
         this.modulo_esferico = this._loadTexture('textures/modulo-esferico.jpg')
         this.paneles = this._loadTexture('textures/paneles.jpg')
         this.modulo_anillo = this._loadTexture('textures/modulo_anillo.jpg')
         this.capsula = this._loadTexture('textures/shiphull.jpg')
+
+        this.luna_nm = this._loadTexture('textures/luna_nm.png')
+
+        this.anillo_nm = this._loadTexture('textures/anillo_nm.png')
+        this.modulo_cilindrico_nm = this._loadTexture('textures/modulo-cilindrico_nm.png')
+        this.modulo_esferico_nm = this._loadTexture('textures/modulo-esferico_nm.png')
+        this.paneles_nm = this._loadTexture('textures/paneles_nm.png')
+        this.modulo_anillo_nm = this._loadTexture('textures/modulo_anillo_nm.png')
+        this.capsula_nm = this._loadTexture('textures/shiphull_nm.png')
 
         this.refmap = this._loadTexture2('textures/earth_refmap.jpg')
 
