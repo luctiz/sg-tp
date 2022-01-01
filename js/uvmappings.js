@@ -1,4 +1,3 @@
-
 class UVMapping {
     constructor(){};
     mapBarrido(forma_discretizada, recorrido_discretizado){};
@@ -83,8 +82,6 @@ class UVMappingDistanciaRecorrida extends UVMapping {
                 uvs.push((this.start_v + (j/((recorrido_length-1)))*this.len_v) )
             }
         }
-        //console.log(uvs)
-
         return uvs;
     }
 }

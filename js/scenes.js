@@ -1,4 +1,4 @@
-function testScene() {
+/*function testScene() {
     esferaRara = new Esfera(4);
     objeto_principal = new Objeto3D()
 
@@ -96,7 +96,7 @@ function testScene() {
 
 
     return objeto_principal
-}
+}*/
 
 
 function geometriaNucleoModuloVioleta(puntos_curvatura){
@@ -490,7 +490,7 @@ function geometriaCabezaCapsula(){
     disc_curva_recorrido = obtenerDiscretizacionCurvaParametrizada(curva_recorrido,20)
 
     var geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido,new UVMappingSimple(0,0,0.4,1,1,4)) //
-    geometria.agregarColumnasTapas(false)
+    geometria.agregarColumnasTapas(true)
     return geometria
 }
 
@@ -767,7 +767,7 @@ function mainScene(){
     // capsula
     var capsula = new Objeto3DControlable()
     capsula.addEscalado(0.5,0.5,0.5)
-    capsula.addTraslacion(0,0,10)
+    capsula.addTraslacion(30,20,30)
     
 
     var modelo_capsula = new Objeto3D()
@@ -781,8 +781,8 @@ function mainScene(){
     var cabezaCapsula = new Objeto3D()
     geometria = geometriaCabezaCapsula()
     cabezaCapsula.setGeometria(geometria)
-    cabezaCapsula.setTexture(textures.capsula,textures.capsula_nm)
-    cabezaCapsula.setMaterialShininess(20.0)
+    cabezaCapsula.setTexture(textures.capsula)
+    cabezaCapsula.setMaterialShininess(10.0)
 
     modelo_capsula.agregarHijo(cabezaCapsula)
 
@@ -802,7 +802,7 @@ function mainScene(){
 
     camera_capsula.addRotacion(-Math.PI,0,1,0)
     camera_capsula.addRotacion(Math.PI/6,1,0,0)
-    camera_capsula.addRotacion(Math.PI,0,0,1)
+    //camera_capsula.addRotacion(Math.PI,0,0,1)
 
     camera_capsula.addTraslacion(0,0,-13)
     capsula.agregarHijo(camera_capsula)

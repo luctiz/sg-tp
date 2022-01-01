@@ -1,13 +1,8 @@
-
-    
     var MIN_Y=1;
 
     var DELTA_TRASLACION=0.2;        // velocidad de traslacion 
     var DELTA_ROTACION=0.02;         // velocidad de rotacion
     var FACTOR_INERCIA=0.05;
-
-    //let vec3=glMatrix.vec3;          // defino vec3 para no tener que escribir glMatrix.vec3
-    //let mat4=glMatrix.mat4;
 
     class Objeto3DControlable extends Objeto3D {
 

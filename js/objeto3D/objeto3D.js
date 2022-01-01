@@ -21,11 +21,9 @@ class Objeto3D {
     // metodo privado, usa posicion, rotacion y escala. Se actualiza cada vez que se dibuja el objeto
     _actualizarMatrizModelado() {
         let m = mat4.create(); // crear una matriz identidad
-        //mat4.translate(m,m, this.posicion);
         for (var i = 0; i < this.transformaciones.length; i++) {
             this.transformaciones[i].transform(m)
         }
-        //mat4.scale(m,m, this.escala);
         this.matModelado = m;
     } 
 
@@ -115,16 +113,10 @@ class Objeto3D {
             gl.uniform1i(uRMsamplerUniform, 2);    
             //
 
-
-
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
             
             let simpleColorUniform = gl.getUniformLocation(glProgram, "simpleColor")
             gl.uniform1f(simpleColorUniform, this.iluminacionSimple)
-
-            
-
-            
             
             gl.drawElements( gl.TRIANGLE_STRIP, this.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 
@@ -142,7 +134,7 @@ class Objeto3D {
         this.indexBuffer = binded_geometry.indexBuffer;
 
         if (ver_normales){
-            //PARA CHEQUEAR NORMALES
+            //PARA CHEQUEAR NORMALES VISUALMENTE
             var normals_geometry = geometria.obtenerGeometriaNormales()
             var normales_sup_barrido = new ObjetoCurva3D()
             normales_sup_barrido.setGeometria(normals_geometry, false)
@@ -189,9 +181,7 @@ class Objeto3D {
         this.transformaciones.push(new RotacionSegunVariablePorTiempo(radianes,eje, variable));
     }
 
-
     addTransformacionOrbital = function(orbital_values) {
-        //var eje = vec3.fromValues(x,y,z)
         this.transformaciones.push(new TransformacionOrbital(orbital_values));
     }
 

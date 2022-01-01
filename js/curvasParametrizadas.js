@@ -18,16 +18,10 @@ class CurvaBezier extends CurvaParametrizada{
     }
 
     _combinations(n,k) {
-
         return (this._fact(n) / ((this._fact(k)) * this._fact(n - k)))
     }
 
     _B(i,n,t) {
-        /*if ((i == 0) &(t==0)){
-            return (combinations(n,i)*((1-t)**(n-i)) *1)
-        } else if (t==1){
-            return (combinations(n,i)*(1) *(t**i))
-        }*/
         return (this._combinations(n,i)*((1-t)**(n-i)) *(t**i))
     }
 

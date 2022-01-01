@@ -498,8 +498,8 @@ class ModuloGeometria {
             for (var i=0;i<rows;i++){
                 for (var j=0;j<cols;j++){
 
-                    var u=i/(rows-1); //esto capaz se tenga que cambiar despues (creo que los nombres u y v no son representativos)
-                    var v=j/(cols-1); //Ademas en mi tp de grillas esto lo tenia un poco distinto, no se si va a estar del todo bien
+                    var u=i/(rows-1); 
+                    var v=j/(cols-1);
 
                     var p=superficie.getPosicion(u,v);
 
@@ -749,9 +749,6 @@ class ModuloGeometria {
         }
     }
 }
-
-
-
 
 
 function obtenerUVsTapa(tapa_pos, normal, solid_uv){

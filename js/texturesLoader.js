@@ -26,7 +26,6 @@ class TexturesLoader{
         this.sol = this._loadTexture('textures/sol.jpg')
         this.luna = this._loadTexture('textures/luna.jpg')
 
-
         this.anillo = this._loadTexture('textures/anillo.jpg')
         this.modulo_cilindrico = this._loadTexture('textures/modulo-cilindrico.jpg')
         this.modulo_esferico = this._loadTexture('textures/modulo-esferico.jpg')
@@ -35,7 +34,6 @@ class TexturesLoader{
         this.capsula = this._loadTexture('textures/shiphull.jpg')
 
         this.luna_nm = this._loadTexture('textures/luna_nm.png')
-
 
         this.anillo_nm = this._loadTexture('textures/anillo_nm.png')
         this.modulo_cilindrico_nm = this._loadTexture('textures/modulo-cilindrico_nm.png')

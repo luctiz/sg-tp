@@ -99,7 +99,6 @@
                 mat4 mvp = projMatrix * viewMatrix * modelMatrix;
                 gl_Position =  mvp * vec4(aVertexPosition, 1.0);
 
-                //vPosWorld = (mvp * vec4(aVertexPosition, 1.0)).xyz;    //la posicion en coordenadas de mundo
                 vPosWorld = (modelMatrix * vec4(aVertexPosition,1.0)).xyz;
                 
                 vPVNormal = (mvp * vec4(aVertexNormal, 1.0)).xyz;
@@ -108,7 +107,6 @@
 
                 normalMatrix = inverse(normalMatrix);
                 normalMatrix = transpose(normalMatrix);
-                //vNormal = normalize(normalMatrix * aVertexNormal).xyz;//(normalMatrix*vec4(aVertexNormal,1.0)).xyz;       //la normal en coordenadas de mundo                
                 cameraPosition = vec3(viewMatrix[0][3],viewMatrix[1][3],viewMatrix[2][3]);
                 vTextureCoord = aTextureCoord;
 
@@ -140,10 +138,8 @@
 
             uniform sampler2D uSampler;
             uniform sampler2D uNMSampler;
-
             uniform sampler2D uRMSampler;
 
-            //varying vec3 vNormal;
             varying vec3 vPVNormal;
             varying vec3 vPosWorld;
 
@@ -151,19 +147,11 @@
 
             varying highp vec2 vTextureCoord;
 
-            float atan2(in float y, in float x)
-            {
-                return x == 0.0 ? sign(y)*PI/2.0 : atan(y, x);
-
-            }
-
             void main(void) {
                 if (simpleColor == 1.0){
                     gl_FragColor = vec4(texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t)).xyz,1.0);
                     return;
                 }
-
-
 
                 vec3 sampledColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t)).xyz;
 
@@ -172,7 +160,7 @@
                 vNormal = normalize(TBN * vNormal);
 
 
-                float ambientLight = 0.1; // conviene tenerlo como vec3
+                float ambientLight = 0.1; 
 
                 vec3 lightVec= normalize(sunPosition);
 
@@ -182,19 +170,13 @@
                 // luz direccional sol
                 vec3 difuse = max(dot(vNormal,lightVec), 0.0) * sampledColor;
 
-                //surfaceToLight: vector unitario desde la superficie hasta la luz
-                //  para las que no son direccional se calcula como la posicion de la luz menos la posicion de la superficie
-                //  para la direccional el incidence creo que es lightVec
-                //surfacePos: vec3(modelMatrix * vec4(fragVert,1));
-
                 vec3 materialSpecularColor = vec3(1.0,1.0,1.0);
                 float lightIntensity = 1.0;
-                //float materialShininess = 100.0;
                 //
 
-                vec3 incidenceVector = -lightVec; //a unit vector
-                vec3 reflectionVector = reflect(incidenceVector, vNormal); //also a unit vector
-                vec3 surfaceToCamera = normalize(cameraPosition - vPosWorld); //also a unit vector
+                vec3 incidenceVector = -lightVec;
+                vec3 reflectionVector = reflect(incidenceVector, vNormal); 
+                vec3 surfaceToCamera = normalize(cameraPosition - vPosWorld);
                 float cosAngle = max(0.0, dot(surfaceToCamera, reflectionVector));
                 float specularCoefficient = pow(cosAngle, materialShininess);
 
@@ -210,14 +192,14 @@
                 // luz omnidireccional verde
                 
 
-                vec3 o1lightVec = normalize(o1lightPos - vPosWorld); //(deberia ser lightpos - vposworld)
+                vec3 o1lightVec = normalize(o1lightPos - vPosWorld); 
                 vec3 o1difuse = max(dot(vNormal,o1lightVec), 0.0) * vec3(0.0,1.0,0.0);
 
                 vec3 o1materialSpecularColor = vec3(0.0,1.0,0.0);
                 //
 
-                vec3 o1incidenceVector = -o1lightVec; //a unit vector
-                vec3 o1reflectionVector = reflect(o1incidenceVector, vNormal); //also a unit vector
+                vec3 o1incidenceVector = -o1lightVec;
+                vec3 o1reflectionVector = reflect(o1incidenceVector, vNormal);
                 float o1cosAngle = max(0.0, dot(surfaceToCamera, o1reflectionVector));
                 float o1specularCoefficient = pow(o1cosAngle, materialShininess);
 
@@ -229,14 +211,14 @@
 
                 // luz omnidireccional roja
 
-                vec3 o2lightVec = normalize(o2lightPos - vPosWorld); //(deberia ser lightpos - vposworld)
+                vec3 o2lightVec = normalize(o2lightPos - vPosWorld); 
                 vec3 o2difuse = max(dot(vNormal,o2lightVec), 0.0) * vec3(1.0,0.0,0.0);
 
                 vec3 o2materialSpecularColor = vec3(1.0,0.0,0.0);
                 //
 
-                vec3 o2incidenceVector = -o2lightVec; //a unit vector
-                vec3 o2reflectionVector = reflect(o2incidenceVector, vNormal); //also a unit vector
+                vec3 o2incidenceVector = -o2lightVec; 
+                vec3 o2reflectionVector = reflect(o2incidenceVector, vNormal); 
                 float o2cosAngle = max(0.0, dot(surfaceToCamera, o2reflectionVector));
                 float o2specularCoefficient = pow(o2cosAngle, materialShininess);
 
@@ -264,13 +246,11 @@
 
                 if (angle < cutoff) {
                     float spotFactor = pow(dot(-surfaceToSpotlight, spotlightDirection), spotlightExponent);
-                    //vec3 h = normalize(normalize(-angle) + surfaceToSpotlight);
 
                     vec3 spotlightDifuse = max(dot(vNormal,-spotlightDirection), 0.0) * sampledColor; 
-                    //vec3 spotlightSpecular = spotmaterialSpecularcolor * pow(max(dot(h,vNormal),0.0),materialShininess);
 
-                    vec3 spotincidenceVector = -surfaceToSpotlight; //a unit vector
-                    vec3 spotreflectionVector = reflect(spotincidenceVector, vNormal); //also a unit vector
+                    vec3 spotincidenceVector = -surfaceToSpotlight; 
+                    vec3 spotreflectionVector = reflect(spotincidenceVector, vNormal); 
                     float spotcosAngle = max(0.0, dot(surfaceToCamera, spotreflectionVector));
                     float spotspecularCoefficient = pow(spotcosAngle, materialShininess);
 
@@ -288,10 +268,6 @@
                 float rotdeg = -PI*(3.0/2.0);
                 refVec = vec3(refVec.x, refVec.y*cos(rotdeg) - refVec.z*sin(rotdeg), refVec.y*sin(rotdeg) + refVec.z*cos(rotdeg));
 
-                if (refVec.x == 0.0){
-                    refVec = vec3(0.01,refVec.y, refVec.z);
-                }
-
                 float alpha = atan(refVec.y,refVec.x) + PI;
 
                 float beta = acos(refVec.z);
@@ -302,7 +278,6 @@
 
                 vec3 earthReflection = texture2D(uRMSampler, uvsample).xyz;
                 
-
                gl_FragColor = vec4(ambient + 0.5*dirColor + 0.3*o1color + 0.3*o2color + 0.5*spotlightColor + earthReflection*(materialShininess/400.0),1.0);
             }
         </script>
@@ -333,7 +308,6 @@
 
             var cameraactual;
             var camera = 3;
-            var global_t = 0;
 
             var cantidad_filas_paneles = 4;
             var cantidad_modulos_anillo = 4;
@@ -359,9 +333,6 @@
             var angulo_sol = {
                 variable: 290 
             };
-
-            /*var curva_vista = new ObjetoCurva3D()
-            curva_vista.setColor(0,0.5,1);*/
 
             var last_click = {
                 x: 0,
@@ -434,24 +405,15 @@
 
                     setupWebGL();
                     initShaders();
-
                     
                     setupVertexShaderMatrix();
                     initMenu();
                     textures = new TexturesLoader()
 
                     objeto_principal = mainScene()
-
-                    //objeto_principal.agregarHijo(curva_vista)
-
-                    //var uniformSunPosition = gl.getUniformLocation(glProgram, "sunPosition"); // asumiendo posicion del sol fija
-                    //gl.uniform3fv(uniformSunPosition, posicion_sol);
-
                     
-                    tick();   
-                    
-
-                }else{    
+                    tick();
+                } else {    
                     alert(  "Error: Your browser does not appear to support WebGL.");
                 }
 
@@ -535,7 +497,7 @@
                 var newpossol = vec3.create()
                 var center = vec3.create()
                 vec3.rotateX(newpossol,posicion_sol,center, angulo_sol.variable*Math.PI/180)
-                var uniformSunPosition = gl.getUniformLocation(glProgram, "sunPosition"); // asumiendo posicion del sol variable (en el final puedo asumir fija)
+                var uniformSunPosition = gl.getUniformLocation(glProgram, "sunPosition"); // asumiendo posicion del sol variable
                 gl.uniform3fv(uniformSunPosition, newpossol);
                 //
 
@@ -543,8 +505,7 @@
 
                 var camPos = vec3.create()
                 mat4.getTranslation(camPos,cameraactual.getMatTransformations())
-                //console.log(campos);
-                gl.uniform3fv(uniformCamPosition, camPos);//global_t);//); // 
+                gl.uniform3fv(uniformCamPosition, camPos);
 
                 matPadre= mat4.create() // matriz identidad para nodo principal
 
@@ -553,14 +514,13 @@
             
             
             function tick(){
-                //updateAngle=
                 if (isMouseDown){
                     var deltaX=0;
                     var deltaY=0;
                     deltaX = last_click.x - mouse.x;
                     deltaY = mouse.y - last_click.y;
                     
-                    orbital_cam_values.beta = orbital_cam_values.betaprev - deltaX * factorVelocidad;
+                    orbital_cam_values.beta = orbital_cam_values.betaprev + deltaX * factorVelocidad;
                     orbital_cam_values.alfa = orbital_cam_values.alfaprev + deltaY * factorVelocidad;
                 }
 
@@ -576,12 +536,9 @@
                 else if (camera == 3) {
                     cameraactual = camera3;
                     viewMatrix = obtenerViewMatrix(cameraactual);
-                    //viewMatrix=droneCam.getViewMatrix();
                 }
 
                 drawScene();
-
-                global_t+=0.1
             }
             // orbital
 
@@ -596,53 +553,6 @@
 
             var mouse = {x: 0, y: 0};
 
-            //function obtenerViewMatrixOrbital(o_camara, updateAngle)
-            //{   
-                
-
-                /*var mat = o_camara.getMatTransformations();
-                var vec_position = vec3.create();
-                mat4.getTranslation(vec_position,mat);
-
-                var vec_direccion = vec3.fromValues(0,0,1)//vec3.fromValues(radio * Math.cos(alfa) * Math.sin(beta) ,radio * Math.sin(alfa) * Math.sin(beta), radio * Math.cos(beta));	
-                vec3.transformMat4(vec_direccion, vec_direccion, mat)
-
-                var vec3upvector = vec3.fromValues(0,0,1)
-                //vec3.transformMat4(vec3upvector, vec3upvector, mat)
-                //vec3.sub(vec3upvector,vec3upvector,vec_position)
-                //
-
-                var result = mat4.create()
-                mat4.lookAt(result, vec_position, vec_direccion, vec3upvector)
-
-                //setear curva vista:
-                /*vec3.add(vec3upvector,vec3upvector,vec_position)
-
-                vista_pos_buffer = [vec_position[0],vec_position[1],vec_position[2],vec_direccion[0],vec_direccion[1],vec_direccion[2],vec_position[0],vec_position[1],vec_position[2],vec3upvector[0],vec3upvector[1],vec3upvector[2]]
-                console.log(vista_pos_buffer)
-                var webgl_position_buffer = gl.createBuffer();
-                webgl_position_buffer.itemSize = 3;
-                gl.bindBuffer(gl.ARRAY_BUFFER, webgl_position_buffer);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vista_pos_buffer), gl.STATIC_DRAW);
-
-                vista_nm_buffer = [1,1,1,1,1,1,1,1,1,1,1,1]
-                var webgl_normal_buffer = gl.createBuffer();
-                gl.bindBuffer(gl.ARRAY_BUFFER, webgl_normal_buffer);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vista_nm_buffer), gl.STATIC_DRAW);
-                webgl_normal_buffer.itemSize = 3;
-
-                vista_idx_buffer = [0,1,2,3]
-                var vidxbuffer = gl.createBuffer();
-                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, vidxbuffer);
-                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(vista_idx_buffer), gl.STATIC_DRAW);
-                vidxbuffer.itemSize = 1;
-                vidxbuffer.numItems = 4;
-
-                curva_vista.setGeometria({webgl_position_buffer,webgl_normal_buffer}, vidxbuffer)
-                //*/
-                //return result
-            //}
-
             function obtenerViewMatrix(o_camara)
             {   
                 var mat = o_camara.getMatTransformations();
@@ -652,7 +562,7 @@
                 var vec_direccion = vec3.fromValues(0,0,10);	
                 vec3.transformMat4(vec_direccion, vec_direccion, mat)
 
-                var vec3upvector = vec3.fromValues(0,-1,0)
+                var vec3upvector = vec3.fromValues(0,1,0)
                 vec3.transformMat4(vec3upvector, vec3upvector, mat)
                 vec3.sub(vec3upvector,vec3upvector,vec_position)
                 //
