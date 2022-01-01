@@ -1,104 +1,3 @@
-/*function testScene() {
-    esferaRara = new Esfera(4);
-    objeto_principal = new Objeto3D()
-
-    geometria = ModuloGeometria.obtenerGeometriaSuperficieParametrizada(esferaRara,100,100)
-    objeto_principal.setGeometria(geometria)
-    objeto_principal.addTraslacion(0,10,0);
-    objeto_principal.setColor(0,1,0);
-
-    poligono_control=[vec3.fromValues(1,0,0), vec3.fromValues(0,3,0), vec3.fromValues(-1,0,0)]
-    curva_forma = new CurvaCircunferencia(1,[0,0,1.57])//new CurvaBezier(poligono_control);
-
-
-    poligono_control=[vec3.fromValues(0,0,8),vec3.fromValues(0,0,-8)]
-    curva_recorrido = new CurvaBezier(poligono_control);//new CurvaCircunferencia(3,[0,0,0])//////
-
-    discretizacion_forma = obtenerDiscretizacionCurvaParametrizada(curva_forma, 10)
-    discretizacion_recorrido = obtenerDiscretizacionCurvaParametrizada(curva_recorrido, 2)
-
-
-    objeto_forma = new ObjetoCurva3D();
-    geometria = ModuloGeometria.obtenerGeometriaCurvaParametrizada(curva_forma, 15)
-    objeto_forma.setGeometria(geometria)
-    objeto_forma.setColor(1,0,0)
-    objeto_forma.addTraslacion(0,-10,0)
-
-    //
-    objeto_tangentes_forma = new ObjetoCurva3D();
-    geometria = ModuloGeometria.obtenerGeometriaTangentesCurvaParametrizada(discretizacion_forma);
-    objeto_tangentes_forma.setGeometria(geometria)
-    objeto_tangentes_forma.setColor(1,0,0)
-    objeto_forma.agregarHijo(objeto_tangentes_forma)
-    //
-
-
-    objeto_recorrido = new ObjetoCurva3D();
-    geometria = ModuloGeometria.obtenerGeometriaCurvaParametrizada(curva_recorrido, 20)
-    objeto_recorrido.setGeometria(geometria)
-    objeto_recorrido.setColor(0,1,0)
-
-
-    //
-    objeto_tangentes_recorrido = new ObjetoCurva3D();
-    geometria = ModuloGeometria.obtenerGeometriaTangentesCurvaParametrizada(discretizacion_recorrido);
-    objeto_tangentes_recorrido.setGeometria(geometria)
-    objeto_tangentes_recorrido.setColor(0.5,1,0.5)
-    objeto_recorrido.agregarHijo(objeto_tangentes_recorrido)
-    //
-
-    objeto_forma.agregarHijo(objeto_recorrido)
-
-    objeto_principal.agregarHijo(objeto_forma)
-
-
-    superficie_barrido = new Objeto3D()
-    geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(discretizacion_forma, discretizacion_recorrido)
-    superficie_barrido.setGeometria(geometria)
-    superficie_barrido.setColor(0,1,1)
-    superficie_barrido.addTraslacion(0,-10,0)
-
-    normales_sup_barrido = new ObjetoCurva3D()
-    normales_sup_barrido.setGeometria(geometria.normalVertexBuffer, geometria.normalIndexBuffer)
-    normales_sup_barrido.setColor(1,1,1)
-    superficie_barrido.agregarHijo(normales_sup_barrido)
-    objeto_principal.agregarHijo(superficie_barrido)
-
-
-
-
-    p_control = [[-1.8,0,0],[0,1,0],[1.8,0,0]]
-    curva_forma = new CurvaBezier(p_control)
-    disc_curva_forma = obtenerDiscretizacionCurvaParametrizada(curva_forma,15)
-
-    
-    curva_recorrido = new CurvaCircunferencia(2.0,[0,0,0])
-    disc_curva_recorrido = obtenerDiscretizacionCurvaParametrizada(curva_recorrido,20)
-
-
-    superficie_barrido = new Objeto3D()
-    geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido)
-    superficie_barrido.setGeometria(geometria)
-    superficie_barrido.setColor(0,1,1)
-    superficie_barrido.addTraslacion(0,-10,0)
-    
-
-    normales_sup_barrido = new ObjetoCurva3D()
-    normales_sup_barrido.setGeometria(geometria.normalVertexBuffer, geometria.normalIndexBuffer)
-    normales_sup_barrido.setColor(1,1,1)
-    superficie_barrido.agregarHijo(normales_sup_barrido)
-    objeto_principal.agregarHijo(superficie_barrido)
-
-    var capsula = new Objeto3DControlable()
-
-    camera3 = capsula
-    objeto_principal.agregarHijo(capsula)
-
-
-    return objeto_principal
-}*/
-
-
 function geometriaNucleoModuloVioleta(puntos_curvatura){
 
     p_control = [[-1,-0.5,0],[-1,-1,0],[-0.5,-1,0]]
@@ -227,7 +126,7 @@ function geometriaBaseAnillo(){
 
     
     curva_recorrido = new CurvaCircunferencia(3.8,[0,0,0])
-    disc_curva_recorrido = obtenerDiscretizacionCurvaParametrizada(curva_recorrido,20)
+    disc_curva_recorrido = obtenerDiscretizacionCurvaParametrizada(curva_recorrido,30)
 
     var geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido)
     geometria.agregarColumnasTapas()
@@ -373,7 +272,7 @@ function geometriaTuboSoportePaneles(cant_paneles){
     disc_curva_forma = obtenerDiscretizacionCurvaParametrizada(curva_forma,2)
     
     curva_recorrido = new CurvaCircunferencia(0.5,[0,0,0])
-    disc_curva_recorrido = obtenerDiscretizacionCurvaParametrizada(curva_recorrido,9)
+    disc_curva_recorrido = obtenerDiscretizacionCurvaParametrizada(curva_recorrido,13)
 
     var geometria = ModuloGeometria.obtenerGeometriaSuperficieBarrido(disc_curva_forma, disc_curva_recorrido)
     geometria.agregarColumnasTapas()
@@ -539,9 +438,7 @@ var camera3;
 function mainScene(){
 
     nodo_principal = new Objeto3D()
-    
-    var puntos_curvatura_modulo_violeta = 6
-    
+        
     // nucleo
     nucleo = new Objeto3D()
 
@@ -563,7 +460,7 @@ function mainScene(){
     color_modulos_cuadrados = [0.2,0.2,0.2]
 
     modulo_violeta = new Objeto3D()
-    geometria = geometriaNucleoModuloVioleta(puntos_curvatura_modulo_violeta)
+    geometria = geometriaNucleoModuloVioleta(6)
     modulo_violeta.setGeometria(geometria)
     modulo_violeta.setTexture(textures.createSolidTexture(color_modulos_cuadrados[0],color_modulos_cuadrados[1],color_modulos_cuadrados[2]))
     modulo_violeta.addTraslacion(0,0,3.5)
@@ -581,7 +478,6 @@ function mainScene(){
     modulo_cabeza.setGeometria(geometria)
     modulo_cabeza.setTexture(textures.modulo_esferico, textures.modulo_esferico_nm)
     modulo_cabeza.setMaterialShininess(10.0)
-    modulo_cabeza.setColor(0.83,0.63,0.33)
     modulo_cabeza.addTraslacion(0,0,6.3)
     nucleo.agregarHijo(modulo_cabeza)
 
@@ -595,14 +491,12 @@ function mainScene(){
     base_anillo.addRotacionSegunVariablePorTiempo(Math.PI/5,0,0,1,velocidad_rotacion_anillo)
 
 
-    //camara 1
+    // camara 1
     camara_centro = new Objeto3D()
     camara_centro.addTransformacionOrbital(orbitalCam.values)
     nucleo.agregarHijo(camara_centro)
     camera1 = camara_centro;
     //
-
-    base_anillo.setColor(0.58,0.83,0.26)
 
     color_viga = [0.5,0.5,0.5]
     for (var i = 0; i < cantidad_modulos_anillo; i++){
@@ -612,7 +506,6 @@ function mainScene(){
         geometria = geometriaVigaSoporteAnillo()
         viga_soporte_anillo.setGeometria(geometria)
         viga_soporte_anillo.setTexture(textures.createSolidTexture(color_viga[0],color_viga[1],color_viga[2],1))
-
         viga_soporte_anillo.addTraslacion(0,0.8,0)
         viga_soporte_anillo.addRotacion(Math.PI*3/4,1,0,0)
         objeto_viga.agregarHijo(viga_soporte_anillo)
@@ -620,7 +513,6 @@ function mainScene(){
         var viga_soporte_anillo2 = new Objeto3D()
         viga_soporte_anillo2.setGeometria(geometria)
         viga_soporte_anillo2.setTexture(textures.createSolidTexture(color_viga[0],color_viga[1],color_viga[2],1))
-
         viga_soporte_anillo2.addTraslacion(0,-0.8,0)
         viga_soporte_anillo2.addRotacion(Math.PI*3/4,1,0,0)
         objeto_viga.agregarHijo(viga_soporte_anillo2)
@@ -633,7 +525,6 @@ function mainScene(){
             tubo_viga.setGeometria(geometria)
             tubo_viga.setTexture(textures.createSolidTexture(color_viga[0],color_viga[1],color_viga[2],1))
             tubo_viga.addRotacion(Math.PI*((j % 2)),1,0,0)
-
             tubo_viga.addTraslacion(j*(0.8)+4,0,0)
             objeto_viga.agregarHijo(tubo_viga)
         }
@@ -646,7 +537,6 @@ function mainScene(){
         agarre_soporte_anillo.addRotacion( (-Math.PI/(2*cantidad_modulos_anillo)),0,0,1)
         objeto_viga.addRotacion((2*i*Math.PI)/(cantidad_modulos_anillo),0,0,1)
         objeto_viga.agregarHijo(agarre_soporte_anillo)
-
         base_anillo.agregarHijo(objeto_viga)
 
     }
@@ -654,7 +544,6 @@ function mainScene(){
     var anillo = new Objeto3D()
     geometria = geometriaAnillo()
     anillo.setGeometria(geometria)
-    anillo.setColor(1,1,0.8)
     anillo.setTexture(textures.anillo,textures.anillo_nm)
     base_anillo.agregarHijo(anillo)
     nucleo.agregarHijo(base_anillo)
@@ -677,7 +566,6 @@ function mainScene(){
         geometria = geometriaTuboFilaPaneles()
         tubo_paneles.setGeometria(geometria)
         tubo_paneles.setTexture(textures.createSolidTexture(color_tubos_paneles[0],color_tubos_paneles[1],color_tubos_paneles[2]))
-
         tubo_paneles.addTraslacion(0,0,-5.0 -5.0 * i)
         tubo_soporte_paneles.agregarHijo(tubo_paneles)
 
@@ -685,9 +573,7 @@ function mainScene(){
         geometria = geometriaPanel()
         panel.setGeometria(geometria)
         panel.setTexture(textures.paneles,textures.paneles_nm)
-
         panel.setMaterialShininess(50.0);
-
         panel.addTraslacion(6.5,0.15, 0.15)
         tubo_paneles.agregarHijo(panel)
 
@@ -701,15 +587,14 @@ function mainScene(){
         tubo_paneles.addRotacionSegunVariable(Math.PI / 180,1,0,0, angulo_paneles)
     }
 
+    nodo_principal.agregarHijo(nucleo)
+    // camara 2//
     var camara_paneles = new Objeto3D()
-
     camara_paneles.addTraslacion(0,0,-5.0 -2.5 * (cantidad_filas_paneles - 1))
-
     camara_paneles.addTransformacionOrbital(orbitalCam.values)
     tubo_soporte_paneles.agregarHijo(camara_paneles)
-
     camera2 = camara_paneles
-    nodo_principal.agregarHijo(nucleo)
+    //
 
 
     // fondo 
@@ -720,11 +605,9 @@ function mainScene(){
     geometria = ModuloGeometria.obtenerGeometriaSuperficieParametrizada(sup_sol, 2, 2)
     sol.setGeometria(geometria)
     sol.setTexture(textures.sol)
-    sol.setColor(1,1,1)
     sol.addRotacionSegunVariable(Math.PI / 180,1,0,0, angulo_sol)
     sol.addTraslacion(posicion_sol[0],posicion_sol[1],posicion_sol[2])
     sol.addEscalado(2000,0,2000)
-
     nodo_principal.agregarHijo(sol)
 
 
@@ -739,11 +622,7 @@ function mainScene(){
     luna.addEscalado(2000,2000,2000)
     luna.addTraslacion(12,12, 20)
     luna.addRotacion(Math.PI / 4,0,0,1)
-
     luna.addRotacion(Math.PI * 0.62,1,0,0)
-
-
-
     nodo_principal.agregarHijo(luna)
 
     // planeta tierra
@@ -753,13 +632,10 @@ function mainScene(){
     planeta.setGeometria(geometria)
     planeta.setTexture(textures.tierra)
     planeta.setIluminacionSimple();
-
     planeta.addEscalado(2000,2000,2000)
     planeta.addRotacion(Math.PI/2,1,0,0)
     planeta.addRotacion(Math.PI*3/2,1,0,0)
-
     planeta.addTraslacion(0,-16, 0)
-
     nodo_principal.agregarHijo(planeta)
 
 
@@ -767,13 +643,12 @@ function mainScene(){
     var capsula = new Objeto3DControlable()
     capsula.addEscalado(0.5,0.5,0.5)
     capsula.addTraslacion(30,20,30)
-    
 
     var modelo_capsula = new Objeto3D()
     var cuerpoCapsula = new Objeto3D()
     geometria = geometriaCuerpoCapsula()
     cuerpoCapsula.setGeometria(geometria)
-    cuerpoCapsula.setMaterialShininess(20.0)
+    cuerpoCapsula.setMaterialShininess(10.0)
     cuerpoCapsula.setTexture(textures.capsula,textures.capsula_nm)
     modelo_capsula.agregarHijo(cuerpoCapsula)
 
@@ -782,28 +657,27 @@ function mainScene(){
     cabezaCapsula.setGeometria(geometria)
     cabezaCapsula.setTexture(textures.capsula)
     cabezaCapsula.setMaterialShininess(10.0)
-
     modelo_capsula.agregarHijo(cabezaCapsula)
 
     var propulsorCapsula = new Objeto3D()
     geometria = geometriaPropulsorCapsula()
     propulsorCapsula.setGeometria(geometria)
     propulsorCapsula.setMaterialShininess(20.0)
-
     propulsorCapsula.setTexture(textures.createSolidTexture(0.30,0.30,0.30,1))
     modelo_capsula.agregarHijo(propulsorCapsula)
 
     capsula.agregarHijo(modelo_capsula)
-
     modelo_capsula.addRotacion(Math.PI,0,1,0)
 
+    // camara 3//
     var camera_capsula = new Objeto3D()
-
     camera_capsula.addRotacion(-Math.PI,0,1,0)
     camera_capsula.addRotacion(Math.PI/6,1,0,0)
-
     camera_capsula.addTraslacion(0,0,-13)
     capsula.agregarHijo(camera_capsula)
+    camera3= camera_capsula;
+    //
+
 
     var cubo_luz_verde = new Objeto3D()
     geometria = geometriaLuz(0.1)
@@ -812,7 +686,6 @@ function mainScene(){
     cubo_luz_verde.addTraslacion(-1.7,0,1.5)
     cubo_luz_verde.setIluminacionSimple()
     cubo_luz_verde.setLightPositionUpdater("o1lightPos")
-
     modelo_capsula.agregarHijo(cubo_luz_verde)
 
     var cubo_luz_roja = new Objeto3D()
@@ -828,13 +701,9 @@ function mainScene(){
     var luz_spot = new Objeto3D()
     luz_spot.addTraslacion(0,0,1.5)
     luz_spot.setSpotlightUpdater()
-
     cabezaCapsula.agregarHijo(luz_spot)
 
     nodo_principal.agregarHijo(capsula)
 
-    camera3= camera_capsula;
-    
     return nodo_principal;
-
 }

@@ -362,7 +362,7 @@
                     textures = new TexturesLoader()
 
                     objeto_principal = mainScene()
-                    cameraactual=camera3;
+                    cameraactual=camera2;
                     
                     tick();
                 } else {    
@@ -469,14 +469,14 @@
                 orbitalCam.update()
 
                 requestAnimationFrame(tick);
-                viewMatrix = obtenerViewMatrix(cameraactual);
+                viewMatrix = getViewMatrix(cameraactual);
 
                 drawScene();
             }
 
-            function obtenerViewMatrix(o_camara)
+            function getViewMatrix(objeto_camera)
             {   
-                var mat = o_camara.getMatTransformations();
+                var mat = objeto_camera.getMatTransformations();
                 var vec_position = vec3.create();
                 mat4.getTranslation(vec_position,mat);
 
