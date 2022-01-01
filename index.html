@@ -501,7 +501,7 @@
                 const reconstruirFolder = gui.addFolder('Para reconstruir forma:')
                 reconstruirFolder.add(window, "cantidad_filas_paneles",1,10).step(1);
                 reconstruirFolder.add(window, "cantidad_modulos_anillo",2,8).step(1);
-                var obj = { reconstruir:function(){ objeto_principal = mainScene(); }};
+                var obj = { reconstruir:function(){ objeto_principal = mainScene(); cameraactual=camera2}};
                 reconstruirFolder.add(obj,'reconstruir');
                 reconstruirFolder.open()
             }
