@@ -22,6 +22,8 @@
         <script type="text/javascript" src="js/curvasParametrizadas.js"></script>
         <script type="text/javascript" src="js/superficiesParametrizadas.js"></script>
 
+        <script type="text/javascript" src="js/orbitalCamera.js"></script>
+
         <script type="text/javascript" src="js/objeto3D/transformaciones.js"></script>
         <script type="text/javascript" src="js/objeto3D/objeto3D.js"></script>
         <script type="text/javascript" src="js/objeto3D/objeto3DControlable.js"></script>
@@ -30,6 +32,7 @@
         <script type="text/javascript" src="js/moduloGeometria.js"></script>
         <script type="text/javascript" src="js/scenes.js"></script>
         <script type="text/javascript" src="js/texturesLoader.js"></script>
+
         
         <script id="shader-vs" type="x-shader/x-vertex">
             precision highp float;
@@ -299,29 +302,19 @@
             var modelMatrix = mat4.create();
             var viewMatrix = mat4.create();
             var projMatrix = mat4.create();
-            var normalMatrix = mat4.create();
-            var rotate_angle = -1.57078;
-            
+            var normalMatrix = mat4.create();            
 
             const MAX_DISTANCIA_VISTA = 150000;
             var factor_fov = 1.0
 
             var cameraactual;
-            var camera = 3;
+            var orbitalCam = new OrbitalCamera();
 
             var cantidad_filas_paneles = 4;
             var cantidad_modulos_anillo = 4;
 
             var angulo_paneles = {
                 variable: 280
-            };
-
-            var orbital_cam_values = {
-                distancia: 26,
-                alfa:0.03,
-                beta:0.24,
-                alfaprev:0.03,
-                betaprev:0.24
             };
 
             var velocidad_rotacion_anillo = {
@@ -334,64 +327,22 @@
                 variable: 290 
             };
 
-            var last_click = {
-                x: 0,
-                y: 0
-            };
-
             $('body').on("keydown",function(event){
                 switch (event.keyCode) {
                 case 0x31:
-                    camera = 1; 
-                    viewMatrix = obtenerViewMatrix(camera1);
+                    cameraactual = camera1;
                     break;
                 case 0x32:
-                    camera = 2; 
-                    viewMatrix = obtenerViewMatrix(camera2);
+                    cameraactual = camera2;
                     break;
                 case 0x33:
-                    camera = 3; 
-                    viewMatrix = obtenerViewMatrix(camera3);
+                    cameraactual = camera3;
                     break;
-                }
-                    
+                } 
             });
             
-            $('body').on("wheel",function(event, delta){
-                switch (event.originalEvent.wheelDelta >= 0) {
-                case true:
-                    if (orbital_cam_values.distancia > 1){
-                        orbital_cam_values.distancia = orbital_cam_values.distancia / 1.1;
-                    }
-                    break;
-                case false:
-                if (orbital_cam_values.distancia < 150){
-                        orbital_cam_values.distancia = orbital_cam_values.distancia * 1.1;
-                    }
-                    break;
-                }
-                    
-            });  
+            
             function initWebGL(){
-
-                canvas = document.getElementById("my-canvas");  
-                $(canvas).mousemove(function(e){ 
-                    mouse.x = e.clientX || e.pageX; 
-                    mouse.y = e.clientY || e.pageY 
-                });
-                
-                $(canvas).mousedown(function(event){		
-                    isMouseDown = true;
-                    last_click.x = mouse.x;
-                    last_click.y = mouse.y;
-
-                });
-
-                $(canvas).mouseup(function(event){
-                    isMouseDown = false;
-                    orbital_cam_values.alfaprev = orbital_cam_values.alfa;
-                    orbital_cam_values.betaprev = orbital_cam_values.beta;		
-                });
                 //
 
                 try{
@@ -411,6 +362,7 @@
                     textures = new TexturesLoader()
 
                     objeto_principal = mainScene()
+                    cameraactual=camera3;
                     
                     tick();
                 } else {    
@@ -493,7 +445,7 @@
             function drawScene(){
                 setupVertexShaderMatrix();
 
-                //vario posicion de sol para probar
+                //actualizar posicion del sol
                 var newpossol = vec3.create()
                 var center = vec3.create()
                 vec3.rotateX(newpossol,posicion_sol,center, angulo_sol.variable*Math.PI/180)
@@ -514,44 +466,13 @@
             
             
             function tick(){
-                if (isMouseDown){
-                    var deltaX=0;
-                    var deltaY=0;
-                    deltaX = last_click.x - mouse.x;
-                    deltaY = mouse.y - last_click.y;
-                    
-                    orbital_cam_values.beta = orbital_cam_values.betaprev + deltaX * factorVelocidad;
-                    orbital_cam_values.alfa = orbital_cam_values.alfaprev + deltaY * factorVelocidad;
-                }
+                orbitalCam.update()
 
                 requestAnimationFrame(tick);
-                if (camera == 1) {
-                    cameraactual = camera1;
-                    viewMatrix = obtenerViewMatrix(cameraactual,isMouseDown);
-                }
-                else if (camera == 2) {
-                    cameraactual = camera2;
-                    viewMatrix = obtenerViewMatrix(cameraactual,isMouseDown);
-                }
-                else if (camera == 3) {
-                    cameraactual = camera3;
-                    viewMatrix = obtenerViewMatrix(cameraactual);
-                }
+                viewMatrix = obtenerViewMatrix(cameraactual);
 
                 drawScene();
             }
-            // orbital
-
-            // manejo de mouse y teclado
-            var previousClientX = 0;
-            var previousClientY = 0;
-            var radio = 5;
-            var factorVelocidad = 0.001;
-
-            var isMouseDown = false;
-            var actualEvent;
-
-            var mouse = {x: 0, y: 0};
 
             function obtenerViewMatrix(o_camara)
             {   
@@ -565,32 +486,24 @@
                 var vec3upvector = vec3.fromValues(0,1,0)
                 vec3.transformMat4(vec3upvector, vec3upvector, mat)
                 vec3.sub(vec3upvector,vec3upvector,vec_position)
-                //
 
                 var result = mat4.create()
                 mat4.lookAt(result, vec_position, vec_direccion, vec3upvector)
                 return result
             }
-    //
 
             function initMenu(){
                 var gui = new dat.GUI();
                 gui.add(angulo_paneles, "variable",0,360).step(2).name("Angulo paneles");
                 gui.add(velocidad_rotacion_anillo, "variable",0,1).step(0.05).name("velocidad rotacion anillo");
-
                 gui.add(angulo_sol, "variable",0,360).step(1).name("angulo sol");
-
 
                 const reconstruirFolder = gui.addFolder('Para reconstruir forma:')
                 reconstruirFolder.add(window, "cantidad_filas_paneles",1,10).step(1);
-                
                 reconstruirFolder.add(window, "cantidad_modulos_anillo",2,8).step(1);
-
                 var obj = { reconstruir:function(){ objeto_principal = mainScene(); }};
-
                 reconstruirFolder.add(obj,'reconstruir');
                 reconstruirFolder.open()
-                
             }
             window.onload=initWebGL;
 

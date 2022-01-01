@@ -597,7 +597,7 @@ function mainScene(){
 
     //camara 1
     camara_centro = new Objeto3D()
-    camara_centro.addTransformacionOrbital(orbital_cam_values)
+    camara_centro.addTransformacionOrbital(orbitalCam.values)
     nucleo.agregarHijo(camara_centro)
     camera1 = camara_centro;
     //
@@ -705,7 +705,7 @@ function mainScene(){
 
     camara_paneles.addTraslacion(0,0,-5.0 -2.5 * (cantidad_filas_paneles - 1))
 
-    camara_paneles.addTransformacionOrbital(orbital_cam_values)
+    camara_paneles.addTransformacionOrbital(orbitalCam.values)
     tubo_soporte_paneles.agregarHijo(camara_paneles)
 
     camera2 = camara_paneles
@@ -733,7 +733,6 @@ function mainScene(){
     var luna = new Objeto3D()
     var sup_luna = new Esfera(4)
     geometria = ModuloGeometria.obtenerGeometriaSuperficieParametrizada(sup_luna,40,40)
-    console.log(geometria)
     luna.setGeometria(geometria)
     luna.setTexture(textures.luna,textures.luna_nm)
     luna.setMaterialShininess(5.0);
@@ -802,7 +801,6 @@ function mainScene(){
 
     camera_capsula.addRotacion(-Math.PI,0,1,0)
     camera_capsula.addRotacion(Math.PI/6,1,0,0)
-    //camera_capsula.addRotacion(Math.PI,0,0,1)
 
     camera_capsula.addTraslacion(0,0,-13)
     capsula.agregarHijo(camera_capsula)
@@ -832,8 +830,6 @@ function mainScene(){
     luz_spot.setSpotlightUpdater()
 
     cabezaCapsula.agregarHijo(luz_spot)
-
-
 
     nodo_principal.agregarHijo(capsula)
 
