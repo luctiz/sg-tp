@@ -35,4 +35,4 @@ Se implementó un menú con la biblioteca dat.gui que permite ajustar los parám
 
 - Mapas de reflexión: Simulan reflejo de la superficie de la tierra en las superficies metálicas o brillantes de la escena
 
-- Mapas de normales: Simulan relieve en los módulos de la estación espacial y cápsula, en base a texturas que contienen información del mismo
+- Mapas de normales: Simulan relieve en los módulos de la estación espacial, cápsula y superficie de la luna, en base a texturas que contienen información del relieve a simular
